@@ -305,6 +305,20 @@ object ProgressiveNative {
     @JvmStatic external fun nativeThreadCount(): Int
     @JvmStatic external fun nativeThreadRemoveRoom(roomId: String)
 
+    // --- User Messages ---
+
+    @JvmStatic external fun nativeFormatUserMessagePreview(roomName: String, body: String, msgType: String, maxLen: Int): String
+
+    // --- Room Version ---
+
+    @JvmStatic external fun nativeGetRoomVersionsJson(): String
+    @JvmStatic external fun nativeIsValidRoomVersion(version: String): Boolean
+
+    // --- Chat Preview ---
+
+    @JvmStatic external fun nativeFormatShortTime(epochMs: Long): String
+    @JvmStatic external fun nativeTruncateMessage(body: String, maxLen: Int): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

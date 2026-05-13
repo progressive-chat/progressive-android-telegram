@@ -3072,6 +3072,13 @@
      <string name="all_threads_title">All Threads</string>
      <string name="invite_hide_action">Hide</string>
      <string name="invite_hidden_list">Hidden invitations</string>
+     <string name="labs_enable_user_messages_list">User message history</string>
+     <string name="labs_enable_user_messages_list_summary">Show \"All cached messages from user\" in user profile. Lists last messages from this user across all rooms.</string>
+     <string name="labs_enable_room_version_select">Select room version</string>
+     <string name="labs_enable_room_version_select_summary">Show a room version selector in advanced room creation settings. C++ native validation of versions.</string>
+     <string name="room_version_label">Room version</string>
+     <string name="labs_enable_expanded_preview">Expanded chat previews</string>
+     <string name="labs_enable_expanded_preview_summary">Show 2-3x larger chat preview blocks with compact last messages. C++ native rendering.</string>
      <string name="jump_to_source">Jump to source</string>
 
 

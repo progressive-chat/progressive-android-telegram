@@ -313,4 +313,22 @@
         android:summary="@string/labs_enable_all_threads_summary"
         android:title="@string/labs_enable_all_threads" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_USER_MESSAGES_KEY"
+        android:summary="@string/labs_enable_user_messages_list_summary"
+        android:title="@string/labs_enable_user_messages_list" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_ROOM_VERSION_KEY"
+        android:summary="@string/labs_enable_room_version_select_summary"
+        android:title="@string/labs_enable_room_version_select" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_EXPANDED_PREVIEW_KEY"
+        android:summary="@string/labs_enable_expanded_preview_summary"
+        android:title="@string/labs_enable_expanded_preview" />
+
 </androidx.preference.PreferenceScreen>

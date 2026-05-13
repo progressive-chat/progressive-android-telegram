@@ -21,6 +21,9 @@
 #include "progressive/chat_features.hpp"
 #include "progressive/invitation_hide.hpp"
 #include "progressive/thread_aggregator.hpp"
+#include "progressive/user_messages.hpp"
+#include "progressive/room_version.hpp"
+#include "progressive/chat_preview.hpp"
 
 // --- Singleton keyword filter ---
 static progressive::KeywordFilter g_keywordFilter;
@@ -1412,6 +1415,65 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeThreadRemoveRoom(
     auto id = std::string(env->GetStringUTFChars(jRoomId, nullptr));
     env->ReleaseStringUTFChars(jRoomId, id.c_str());
     g_threadAgg.removeRoom(id);
+}
+
+// --- User Messages ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatUserMessagePreview(
+    JNIEnv* env, jclass,
+    jstring jRoomName, jstring jBody, jstring jMsgType, jint jMaxLen
+) {
+    UserMessage msg;
+    msg.roomName = jRoomName ? std::string(env->GetStringUTFChars(jRoomName, nullptr)) : "";
+    msg.body     = jBody ? std::string(env->GetStringUTFChars(jBody, nullptr)) : "";
+    msg.msgType  = jMsgType ? std::string(env->GetStringUTFChars(jMsgType, nullptr)) : "";
+
+    if (jRoomName) env->ReleaseStringUTFChars(jRoomName, msg.roomName.c_str());
+    if (jBody)     env->ReleaseStringUTFChars(jBody, msg.body.c_str());
+    if (jMsgType)  env->ReleaseStringUTFChars(jMsgType, msg.msgType.c_str());
+
+    auto preview = progressive::formatUserMessagePreview(msg, jMaxLen);
+    return env->NewStringUTF(preview.c_str());
+}
+
+// --- Room Version ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetRoomVersionsJson(
+    JNIEnv* env, jclass
+) {
+    auto json = progressive::roomVersionsToJson();
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsValidRoomVersion(
+    JNIEnv* env, jclass, jstring jVersion
+) {
+    auto v = jVersion ? std::string(env->GetStringUTFChars(jVersion, nullptr)) : "";
+    if (jVersion) env->ReleaseStringUTFChars(jVersion, v.c_str());
+    return progressive::isValidRoomVersion(v) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Chat Preview ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatShortTime(
+    JNIEnv* env, jclass, jlong jEpochMs
+) {
+    auto s = progressive::formatShortTime(jEpochMs);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeTruncateMessage(
+    JNIEnv* env, jclass, jstring jBody, jint jMaxLen
+) {
+    auto body = jBody ? std::string(env->GetStringUTFChars(jBody, nullptr)) : "";
+    if (jBody) env->ReleaseStringUTFChars(jBody, body.c_str());
+    auto s = progressive::truncateMessage(body, jMaxLen);
+    return env->NewStringUTF(s.c_str());
 }
 
 } // extern "C"

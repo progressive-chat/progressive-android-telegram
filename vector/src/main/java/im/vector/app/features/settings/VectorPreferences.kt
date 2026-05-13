@@ -96,6 +96,9 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_STRIP_EXIF_KEY = "SETTINGS_LABS_STRIP_EXIF_KEY"
         const val SETTINGS_LABS_HIDE_INVITATION_KEY = "SETTINGS_LABS_HIDE_INVITATION_KEY"
         const val SETTINGS_LABS_ALL_THREADS_KEY = "SETTINGS_LABS_ALL_THREADS_KEY"
+        const val SETTINGS_LABS_USER_MESSAGES_KEY = "SETTINGS_LABS_USER_MESSAGES_KEY"
+        const val SETTINGS_LABS_ROOM_VERSION_KEY = "SETTINGS_LABS_ROOM_VERSION_KEY"
+        const val SETTINGS_LABS_EXPANDED_PREVIEW_KEY = "SETTINGS_LABS_EXPANDED_PREVIEW_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1404,6 +1407,18 @@ class VectorPreferences @Inject constructor(
 
     fun isAllThreadsEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_ALL_THREADS_KEY, false)
+    }
+
+    fun isUserMessagesEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_USER_MESSAGES_KEY, false)
+    }
+
+    fun isRoomVersionSelectEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_ROOM_VERSION_KEY, false)
+    }
+
+    fun isExpandedPreviewEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_EXPANDED_PREVIEW_KEY, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

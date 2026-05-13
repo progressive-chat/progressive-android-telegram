@@ -28,6 +28,9 @@ add_library(
     src/chat_features.cpp
     src/invitation_hide.cpp
     src/thread_aggregator.cpp
+    src/user_messages.cpp
+    src/room_version.cpp
+    src/chat_preview.cpp
     src/jni_bridge.cpp
 )
 
