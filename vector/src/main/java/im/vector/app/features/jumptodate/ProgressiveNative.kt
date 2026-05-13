@@ -74,6 +74,38 @@ object ProgressiveNative {
         allowedTypes: String
     ): String
 
+    // --- Export functions ---
+
+    @JvmStatic
+    external fun nativeFormatEventHtml(
+        senderName: String,
+        timestamp: String,
+        body: String,
+        msgType: String,
+        fileName: String,
+        mediaSize: String,
+        relationType: String,
+        isContinuation: Boolean
+    ): String
+
+    @JvmStatic
+    external fun nativeFormatEventPlainText(
+        senderName: String,
+        timestamp: String,
+        body: String,
+        msgType: String,
+        fileName: String,
+        relationType: String
+    ): String
+
+    @JvmStatic
+    external fun nativeBuildHtmlExport(
+        roomName: String,
+        roomTopic: String,
+        exportDate: String,
+        eventHtmls: Array<String>
+    ): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
@@ -203,4 +235,83 @@ object ProgressiveNative {
             return result.put("isRelation", false)
         }
     }
+
+    // --- Export fallback implementations ---
+
+    fun formatEventHtmlFallback(
+        senderName: String, timestamp: String, body: String,
+        msgType: String, fileName: String, mediaSize: String,
+        relationType: String, isContinuation: Boolean
+    ): String = buildString {
+        if (!isContinuation) {
+            appendLine("<div class=\"mx_EventTile\">")
+            appendLine("  <div class=\"mx_EventTile_info\">")
+            append("    <span class=\"mx_EventTile_sender\">").append(escapeHtmlFn(senderName)).appendLine("</span>")
+            if (timestamp.isNotEmpty())
+                append("    <span class=\"mx_MessageTimestamp\">").append(timestamp).appendLine("</span>")
+            appendLine("  </div>")
+        } else {
+            appendLine("<div class=\"mx_EventTile mx_EventTile_continuation\">")
+        }
+        appendLine("  <div class=\"mx_EventTile_body\">")
+        if (msgType in listOf("m.image", "m.video", "m.file", "m.audio")) {
+            appendLine("    <div class=\"mx_EventTile_attachment\">")
+            append("      <span class=\"mx_Attachment_name\">").append(fileName.ifEmpty { msgType.substring(2) }).appendLine("</span>")
+            if (mediaSize.isNotEmpty())
+                append("      <span class=\"mx_Attachment_size\">").append(mediaSize).appendLine(" bytes</span>")
+            appendLine("    </div>")
+        }
+        if (body.isNotEmpty()) {
+            appendLine("    <div class=\"mx_EventTile_content\">")
+            append("      ").appendLine(escapeHtmlFn(body))
+            appendLine("    </div>")
+        }
+        appendLine("  </div>")
+        appendLine("</div>")
+    }
+
+    fun formatEventPlainTextFallback(
+        senderName: String, timestamp: String, body: String,
+        msgType: String, fileName: String, relationType: String
+    ): String = buildString {
+        if (timestamp.isNotEmpty()) append(timestamp).append(" - ")
+        append(senderName).append(": ")
+        if (msgType in listOf("m.image", "m.video", "m.file", "m.audio")) {
+            append("[").append(msgType.substring(2)).append(" attached")
+            if (fileName.isNotEmpty()) append(": ").append(fileName)
+            append("]")
+        }
+        if (body.isNotEmpty()) append(" ").append(body)
+        if (relationType == "m.reference") append(" (in reply)")
+        appendLine()
+    }
+
+    fun buildHtmlExportFallback(
+        roomName: String, roomTopic: String, exportDate: String, eventHtmls: Array<String>
+    ): String = buildString {
+        appendLine("<!DOCTYPE html>")
+        appendLine("<html lang=\"en\">")
+        appendLine("<head>")
+        appendLine("<meta charset=\"UTF-8\">")
+        append("<title>").append(escapeHtmlFn(roomName)).appendLine(" — Chat Export</title>")
+        appendLine("<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:16px;background:#f5f5f5;}.mx_EventTile{background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05);}.mx_EventTile_continuation{margin-top:-4px;border-radius:0 0 8px 8px;}.mx_EventTile_sender{font-weight:600;color:#333;margin-right:8px;}.mx_MessageTimestamp{color:#999;font-size:0.85em;}.mx_EventTile_body{color:#222;line-height:1.5;}.mx_EventTile_attachment{background:#f0f0f0;border-radius:4px;padding:8px;margin-bottom:8px;}.mx_ExportHeader{background:#fff;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}.mx_ExportHeader h1{margin:0 0 8px;font-size:1.5em;}.mx_ExportHeader p{margin:4px 0;color:#666;font-size:0.9em;}.mx_EventTile_content{white-space:pre-wrap;word-wrap:break-word;}.mx_EventTile_reaction{font-style:italic;color:#666;}</style>")
+        appendLine("</head>")
+        appendLine("<body>")
+        appendLine("<div class=\"mx_ExportHeader\">")
+        append("  <h1>").append(escapeHtmlFn(roomName)).appendLine("</h1>")
+        if (roomTopic.isNotEmpty()) append("  <p>").append(escapeHtmlFn(roomTopic)).appendLine("</p>")
+        append("  <p>Exported: ").append(exportDate).appendLine("</p>")
+        append("  <p>Total messages: ").append(eventHtmls.size).appendLine("</p>")
+        appendLine("</div>")
+        for (html in eventHtmls) append(html)
+        appendLine("<hr><p style=\"color:#999;text-align:center;\">Exported with Progressive Chat</p>")
+        appendLine("</body></html>")
+    }
+
+    private fun escapeHtmlFn(s: String): String = s
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;")
+
 }

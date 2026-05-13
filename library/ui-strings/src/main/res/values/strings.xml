@@ -3009,6 +3009,8 @@
      <string name="labs_enable_jump_to_source_reactions">Reactions (m.annotation)</string>
      <string name="labs_enable_jump_to_source_replies">Replies (m.reference)</string>
      <string name="labs_enable_jump_to_source_edits">Edits (m.replace)</string>
+     <string name="labs_enable_chat_export">Chat export</string>
+     <string name="labs_enable_chat_export_summary">Enable chat export to HTML, plain text, and JSON formats. Exports are processed locally using C++ native code.</string>
      <string name="jump_to_source">Jump to source</string>
 
 

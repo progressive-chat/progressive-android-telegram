@@ -10,6 +10,7 @@ add_library(
     src/jumptodate.cpp
     src/json_parser.cpp
     src/relation.cpp
+    src/exporter.cpp
     src/jni_bridge.cpp
 )
 

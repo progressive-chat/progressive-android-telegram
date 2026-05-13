@@ -71,6 +71,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_JUMP_TO_SOURCE_REACTIONS = "SETTINGS_LABS_JUMP_TO_SOURCE_REACTIONS"
         const val SETTINGS_LABS_JUMP_TO_SOURCE_REPLIES = "SETTINGS_LABS_JUMP_TO_SOURCE_REPLIES"
         const val SETTINGS_LABS_JUMP_TO_SOURCE_EDITS = "SETTINGS_LABS_JUMP_TO_SOURCE_EDITS"
+        const val SETTINGS_LABS_CHAT_EXPORT_KEY = "SETTINGS_LABS_CHAT_EXPORT_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1279,6 +1280,10 @@ class VectorPreferences @Inject constructor(
 
     fun isJumpToSourceEditsEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_JUMP_TO_SOURCE_EDITS, false)
+    }
+
+    fun isChatExportEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_CHAT_EXPORT_KEY, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

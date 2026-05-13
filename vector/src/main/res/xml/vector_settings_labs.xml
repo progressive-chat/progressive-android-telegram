@@ -154,4 +154,10 @@
         android:key="SETTINGS_LABS_JUMP_TO_SOURCE_EDITS"
         android:title="@string/labs_enable_jump_to_source_edits" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_CHAT_EXPORT_KEY"
+        android:summary="@string/labs_enable_chat_export_summary"
+        android:title="@string/labs_enable_chat_export" />
+
 </androidx.preference.PreferenceScreen>
