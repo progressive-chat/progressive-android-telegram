@@ -126,6 +126,7 @@ add_library(
     src/message_location.cpp
     src/timeline_utils.cpp
     src/cross_signing.cpp
+    src/edit_history.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )

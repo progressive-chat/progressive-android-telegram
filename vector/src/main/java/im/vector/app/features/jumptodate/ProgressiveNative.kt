@@ -883,6 +883,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeParseCrossSigningStatus(accountDataJson: String, userId: String): String
 
+    // --- Edit History ---
+
+    @JvmStatic external fun nativeGetEditBadgeText(editCount: Int): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

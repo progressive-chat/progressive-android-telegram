@@ -117,6 +117,7 @@
 #include "progressive/message_location.hpp"
 #include "progressive/timeline_utils.hpp"
 #include "progressive/cross_signing.hpp"
+#include "progressive/edit_history.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4747,6 +4748,16 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseCrossSigning
     out << R"(,"isVerified": )" << (status.isVerified ? "true" : "false");
     out << R"(,"needsBootstrap": )" << (status.needsBootstrap ? "true" : "false") << "}";
     return env->NewStringUTF(out.str().c_str());
+}
+
+// --- Edit History ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetEditBadgeText(
+    JNIEnv* env, jclass, jint jEditCount
+) {
+    auto s = progressive::getEditBadgeText(jEditCount);
+    return env->NewStringUTF(s.c_str());
 }
 
 } // extern "C"
