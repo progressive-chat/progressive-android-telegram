@@ -64,6 +64,7 @@ add_library(
     src/e2ee_utils.cpp
     src/thumbnail.cpp
     src/waveform.cpp
+    src/session_timeout.cpp
     src/jni_bridge.cpp
 )
 

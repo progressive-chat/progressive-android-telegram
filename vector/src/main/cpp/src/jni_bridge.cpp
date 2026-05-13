@@ -57,6 +57,7 @@
 #include "progressive/e2ee_utils.hpp"
 #include "progressive/thumbnail.hpp"
 #include "progressive/waveform.hpp"
+#include "progressive/session_timeout.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3536,6 +3537,42 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeRmsVolume(
 ) {
     // This would need to read jintArray samples — placeholder
     return 0.0;
+}
+
+// --- Session Timeout ---
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeShouldLock(
+    JNIEnv*, jclass,
+    jint jLockMethod, jint jIdleTimeoutMin, jint jMaxSessionMin,
+    jint jMaxFailedPin, jboolean jLockOnBg,
+    jlong jLastActivityMs, jlong jSessionStartMs,
+    jint jFailedAttempts, jboolean jIsLocked, jboolean jIsBackground
+) {
+    SessionPolicy policy;
+    policy.lockMethod = static_cast<LockMethod>(jLockMethod);
+    policy.idleTimeoutMinutes = jIdleTimeoutMin;
+    policy.maxSessionMinutes = jMaxSessionMin;
+    policy.maxFailedPinAttempts = jMaxFailedPin;
+    policy.lockOnBackground = jLockOnBg;
+
+    SessionState state;
+    state.lastActivityMs = jLastActivityMs;
+    state.sessionStartMs = jSessionStartMs;
+    state.failedAttempts = jFailedAttempts;
+    state.isLocked = jIsLocked;
+    state.isBackground = jIsBackground;
+
+    return progressive::shouldLock(policy, state) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsValidPin(
+    JNIEnv* env, jclass, jstring jPin, jint jMinLen, jint jMaxLen
+) {
+    auto pin = jPin ? std::string(env->GetStringUTFChars(jPin, nullptr)) : "";
+    if (jPin) env->ReleaseStringUTFChars(jPin, pin.c_str());
+    return progressive::isValidPin(pin, jMinLen, jMaxLen) ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"

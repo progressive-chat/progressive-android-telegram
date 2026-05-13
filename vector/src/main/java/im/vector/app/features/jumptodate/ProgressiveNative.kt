@@ -620,6 +620,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeSuggestBarCount(durationMs: Long): Int
     @JvmStatic external fun nativeComputeRmsVolume(samples: IntArray): Double
 
+    // --- Session Timeout ---
+
+    @JvmStatic external fun nativeShouldLock(lockMethod: Int, idleTimeoutMin: Int, maxSessionMin: Int, maxFailedPin: Int, lockOnBg: Boolean, lastActivityMs: Long, sessionStartMs: Long, failedAttempts: Int, isLocked: Boolean, isBackground: Boolean): Boolean
+    @JvmStatic external fun nativeIsValidPin(pin: String, minLen: Int, maxLen: Int): Boolean
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
