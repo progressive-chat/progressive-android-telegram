@@ -3172,6 +3172,10 @@
      <string name="labs_enable_svg_render_summary">Render SVG images and send drawings. C++ SVG parser produces Android Canvas draw commands. Mobile SVG that web has always had.</string>
      <string name="labs_enable_profile_swiper">Profile swipe navigation</string>
      <string name="labs_enable_profile_swiper_summary">Swipe left/right to browse user profiles in a room following the current sort order. C++ navigation state tracking.</string>
+     <string name="labs_enable_desync_detector">Federation desync detector</string>
+     <string name="labs_enable_desync_detector_summary">Periodically check if a room has diverged across homeservers. Warns when events are missing on one server. User-defined check interval.</string>
+     <string name="desync_warning_title">Room desync detected</string>
+     <string name="desync_check_interval">Desync check interval (minutes)</string>
      <string name="jump_to_source">Jump to source</string>
 
 

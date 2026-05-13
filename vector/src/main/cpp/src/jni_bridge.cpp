@@ -50,6 +50,7 @@
 #include "progressive/url_tools.hpp"
 #include "progressive/notif_priority.hpp"
 #include "progressive/matrix_patterns.hpp"
+#include "progressive/desync_detector.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -132,6 +133,9 @@ static progressive::DrawingCanvas g_drawCanvas;
 
 // --- Singleton profile swiper ---
 static progressive::ProfileSwiper g_profileSwiper;
+
+// --- Singleton desync detector ---
+static progressive::DesyncDetector g_desyncDetector;
 
 #define LOG_TAG "ProgressiveNative"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -3419,6 +3423,34 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsValidEmail(
     auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
     if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
     return progressive::isValidEmail(input) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Desync Detector ---
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDesyncTrackEvent(
+    JNIEnv* env, jclass,
+    jstring jEventId, jstring jServerName, jlong jTimestamp
+) {
+    auto eid = jEventId ? std::string(env->GetStringUTFChars(jEventId, nullptr)) : "";
+    auto srv = jServerName ? std::string(env->GetStringUTFChars(jServerName, nullptr)) : "";
+    if (jEventId)    env->ReleaseStringUTFChars(jEventId, eid.c_str());
+    if (jServerName) env->ReleaseStringUTFChars(jServerName, srv.c_str());
+    g_desyncDetector.trackEvent(eid, srv, jTimestamp);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDesyncCheck(
+    JNIEnv* env, jclass, jstring jRoomId, jstring jCurrentServer
+) {
+    auto rid = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
+    auto cs  = jCurrentServer ? std::string(env->GetStringUTFChars(jCurrentServer, nullptr)) : "";
+    if (jRoomId) env->ReleaseStringUTFChars(jRoomId, rid.c_str());
+    if (jCurrentServer) env->ReleaseStringUTFChars(jCurrentServer, cs.c_str());
+
+    auto report = g_desyncDetector.checkDesync(rid, cs);
+    auto json = progressive::DesyncDetector::reportToJson(report);
+    return env->NewStringUTF(json.c_str());
 }
 
 } // extern "C"

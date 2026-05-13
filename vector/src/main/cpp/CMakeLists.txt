@@ -56,6 +56,7 @@ add_library(
     src/url_tools.cpp
     src/notif_priority.cpp
     src/matrix_patterns.cpp
+    src/desync_detector.cpp
     src/jni_bridge.cpp
 )
 

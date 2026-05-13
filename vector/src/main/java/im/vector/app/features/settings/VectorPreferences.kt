@@ -133,6 +133,8 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_SCHEDULED_EDITS_KEY = "SETTINGS_LABS_SCHEDULED_EDITS_KEY"
         const val SETTINGS_LABS_SVG_DRAW_KEY = "SETTINGS_LABS_SVG_DRAW_KEY"
         const val SETTINGS_LABS_PROFILE_SWIPER_KEY = "SETTINGS_LABS_PROFILE_SWIPER_KEY"
+        const val SETTINGS_LABS_DESYNC_DETECTOR_KEY = "SETTINGS_LABS_DESYNC_DETECTOR_KEY"
+        const val SETTINGS_DESYNC_INTERVAL_MINUTES = "SETTINGS_DESYNC_INTERVAL_MINUTES"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1589,6 +1591,14 @@ class VectorPreferences @Inject constructor(
 
     fun isProfileSwiperEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_PROFILE_SWIPER_KEY, false)
+    }
+
+    fun isDesyncDetectorEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_DESYNC_DETECTOR_KEY, false)
+    }
+
+    fun getDesyncIntervalMinutes(): Int {
+        return defaultPrefs.getInt(SETTINGS_DESYNC_INTERVAL_MINUTES, 30)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

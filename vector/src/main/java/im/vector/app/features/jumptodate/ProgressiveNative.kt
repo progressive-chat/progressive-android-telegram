@@ -575,6 +575,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeParseMatrixToPermalink(url: String): String
     @JvmStatic external fun nativeIsValidEmail(input: String): Boolean
 
+    // --- Desync Detector ---
+
+    @JvmStatic external fun nativeDesyncTrackEvent(eventId: String, serverName: String, timestamp: Long)
+    @JvmStatic external fun nativeDesyncCheck(roomId: String, currentServer: String): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

@@ -536,4 +536,17 @@
         android:summary="@string/labs_enable_profile_swiper_summary"
         android:title="@string/labs_enable_profile_swiper" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_DESYNC_DETECTOR_KEY"
+        android:summary="@string/labs_enable_desync_detector_summary"
+        android:title="@string/labs_enable_desync_detector" />
+
+    <im.vector.app.core.preference.VectorEditTextPreference
+        android:defaultValue="30"
+        android:dependency="SETTINGS_LABS_DESYNC_DETECTOR_KEY"
+        android:inputType="number"
+        android:key="SETTINGS_DESYNC_INTERVAL_MINUTES"
+        android:title="@string/desync_check_interval" />
+
 </androidx.preference.PreferenceScreen>
