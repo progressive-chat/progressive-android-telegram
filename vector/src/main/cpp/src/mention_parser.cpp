@@ -19,7 +19,7 @@ ParsedMentions parseMentions(const std::string& body, const std::string& formatt
 
     // Parse Matrix pills from formattedBody: <a href="https://matrix.to/#/@user:server">Name</a>
     if (!formattedBody.empty()) {
-        std::regex pillRe(R"(<a\s+href="https://matrix\.to/#/(@[^"]+)">([^<]+)</a>)");
+        std::regex pillRe(R"RE(<a\s+href="https://matrix\.to/#/(@[^"]+)">([^<]+)</a>)RE");
         auto begin = std::sregex_iterator(formattedBody.begin(), formattedBody.end(), pillRe);
         for (auto it = begin; it != std::sregex_iterator(); ++it) {
             Mention m;
@@ -92,7 +92,7 @@ bool isMatrixPill(const std::string& html) {
 }
 
 std::string stripPills(const std::string& html) {
-    std::regex pillRe(R"(<a\s+href="https://matrix\.to/#/[^"]+">([^<]+)</a>)");
+    std::regex pillRe(R"RE(<a\s+href="https://matrix\.to/#/[^"]+">([^<]+)</a>)RE");
     return std::regex_replace(html, pillRe, "$1");
 }
 
