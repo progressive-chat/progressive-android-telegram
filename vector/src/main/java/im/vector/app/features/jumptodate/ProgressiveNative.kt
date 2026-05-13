@@ -690,6 +690,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeValidateUsername(username: String): String
 
+    // --- Emoji Analyzer ---
+
+    @JvmStatic external fun nativeCountEmojis(text: String): Int
+    @JvmStatic external fun nativeIsEmojiOnlyMessage(text: String): Boolean
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

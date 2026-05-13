@@ -80,6 +80,7 @@ add_library(
     src/pinned_events.cpp
     src/server_capabilities.cpp
     src/username_validator.cpp
+    src/emoji_analyzer.cpp
     src/jni_bridge.cpp
 )
 

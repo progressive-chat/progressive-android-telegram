@@ -73,6 +73,7 @@
 #include "progressive/pinned_events.hpp"
 #include "progressive/server_capabilities.hpp"
 #include "progressive/username_validator.hpp"
+#include "progressive/emoji_analyzer.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3869,6 +3870,26 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeValidateUsername(
     json << R"(,"errorMessage": ")" << esc(result.errorMessage) << R"(")";
     json << R"(,"length": )" << result.length << "}";
     return env->NewStringUTF(json.str().c_str());
+}
+
+// --- Emoji Analyzer ---
+
+JNIEXPORT jint JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCountEmojis(
+    JNIEnv* env, jclass, jstring jText
+) {
+    auto text = jText ? std::string(env->GetStringUTFChars(jText, nullptr)) : "";
+    if (jText) env->ReleaseStringUTFChars(jText, text.c_str());
+    return progressive::countEmojis(text);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsEmojiOnlyMessage(
+    JNIEnv* env, jclass, jstring jText
+) {
+    auto text = jText ? std::string(env->GetStringUTFChars(jText, nullptr)) : "";
+    if (jText) env->ReleaseStringUTFChars(jText, text.c_str());
+    return progressive::isEmojiOnlyMessage(text) ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"
