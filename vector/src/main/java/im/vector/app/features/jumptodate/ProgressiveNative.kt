@@ -780,6 +780,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeParsePushCondition(conditionJson: String): String
 
+    // --- Space Utils ---
+
+    @JvmStatic external fun nativeBuildSpaceChildContent(suggested: Boolean, order: String, autoJoin: Boolean, canonical: Boolean): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

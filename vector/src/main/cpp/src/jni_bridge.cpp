@@ -93,6 +93,7 @@
 #include "progressive/login_utils.hpp"
 #include "progressive/connection_monitor.hpp"
 #include "progressive/push_rules.hpp"
+#include "progressive/space_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
 #include <chrono>
@@ -4316,6 +4317,18 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParsePushConditio
     out << R"(,"description": ")" << esc(cond.description) << R"(")";
     out << R"(,"isSupported": true})";
     return env->NewStringUTF(out.str().c_str());
+}
+
+// --- Space Utils ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildSpaceChildContent(
+    JNIEnv* env, jclass, jboolean jSuggested, jstring jOrder, jboolean jAutoJoin, jboolean jCanonical
+) {
+    auto order = jOrder ? std::string(env->GetStringUTFChars(jOrder, nullptr)) : "";
+    if (jOrder) env->ReleaseStringUTFChars(jOrder, order.c_str());
+    auto s = progressive::buildSpaceChildContent(jSuggested, order, jAutoJoin, jCanonical);
+    return env->NewStringUTF(s.c_str());
 }
 
 } // extern "C"

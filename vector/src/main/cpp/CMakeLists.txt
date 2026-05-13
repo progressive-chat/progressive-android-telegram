@@ -106,6 +106,7 @@ add_library(
     src/login_utils.cpp
     src/connection_monitor.cpp
     src/push_rules.cpp
+    src/space_utils.cpp
     # src/olm.cpp  # Uncomment when libolm is added to the build
     src/jni_bridge.cpp
 )
