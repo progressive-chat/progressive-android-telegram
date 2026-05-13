@@ -728,6 +728,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeValidateHomeserverUrl(input: String): String
 
+    // --- Backup Utils ---
+
+    @JvmStatic external fun nativeIsValidRecoveryKey(key: String): Boolean
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

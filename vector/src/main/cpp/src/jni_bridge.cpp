@@ -82,6 +82,7 @@
 #include "progressive/room_directory.hpp"
 #include "progressive/widget_utils.hpp"
 #include "progressive/sso_utils.hpp"
+#include "progressive/backup_utils.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -4091,6 +4092,17 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeValidateHomeserve
         json << R"(,"errorMessage": ")" << esc(result.errorMessage) << R"(")";
     json << "}";
     return env->NewStringUTF(json.str().c_str());
+}
+
+// --- Backup Utils ---
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsValidRecoveryKey(
+    JNIEnv* env, jclass, jstring jKey
+) {
+    auto key = jKey ? std::string(env->GetStringUTFChars(jKey, nullptr)) : "";
+    if (jKey) env->ReleaseStringUTFChars(jKey, key.c_str());
+    return progressive::isValidRecoveryKey(key) ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"
