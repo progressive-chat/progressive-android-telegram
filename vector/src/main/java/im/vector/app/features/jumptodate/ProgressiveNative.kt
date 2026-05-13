@@ -737,6 +737,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatDeviceLastSeen(lastSeenMs: Long): String
     @JvmStatic external fun nativeIsDeviceInactive(lastSeenMs: Long): Boolean
 
+    // --- Presence ---
+
+    @JvmStatic external fun nativeFormatPresence(presence: Int): String
+    @JvmStatic external fun nativeFormatPresenceLine(presence: Int, lastActiveAgoMs: Long, statusMsg: String): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

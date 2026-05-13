@@ -84,6 +84,7 @@
 #include "progressive/sso_utils.hpp"
 #include "progressive/backup_utils.hpp"
 #include "progressive/device_manager.hpp"
+#include "progressive/presence_utils.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -4121,6 +4122,29 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsDeviceInactive(
     JNIEnv*, jclass, jlong jLastSeenMs
 ) {
     return progressive::isDeviceInactive(jLastSeenMs) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Presence ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatPresence(
+    JNIEnv* env, jclass, jint jPresence
+) {
+    auto s = progressive::formatPresence(static_cast<Presence>(jPresence));
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatPresenceLine(
+    JNIEnv* env, jclass, jint jPresence, jlong jLastActiveAgoMs, jstring jStatusMsg
+) {
+    PresenceInfo info;
+    info.presence = static_cast<Presence>(jPresence);
+    info.lastActiveAgoMs = jLastActiveAgoMs;
+    info.statusMessage = jStatusMsg ? std::string(env->GetStringUTFChars(jStatusMsg, nullptr)) : "";
+    if (jStatusMsg) env->ReleaseStringUTFChars(jStatusMsg, info.statusMessage.c_str());
+    auto s = progressive::formatPresenceLine(info);
+    return env->NewStringUTF(s.c_str());
 }
 
 } // extern "C"
