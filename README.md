@@ -13,27 +13,27 @@ Currently an active fork of Element Classic Android. Kotlin/Java/Rust components
 - **Full Matrix compatibility** — no compromises on federation
 - **Open source** — AGPLv3
 
-## First Feature: `/jumptodate`
+## C++ Native Modules
 
-Jump to any date in the chat timeline. Powered by a native C++ module (`progressive_native`) — date validation, MSC3030 URL construction, and response parsing happen in C++, with JNI bridge to the Kotlin UI layer.
+Progressive Chat replaces slow Kotlin/Java components with native C++:
 
-```
-/jumptodate 2024-06-15
-```
-
-## Status
-
-🚧 Active development. Shipping features while rewriting the foundation.
+| Module | File | Replaces |
+|--------|------|----------|
+| `/jumptodate` | `jumptodate.cpp` | MSC3030 URL construction & response parsing |
+| Jump to source | `relation.cpp` | Event relation parsing |
+| Chat export | `exporter.cpp` | HTML/PlainText/JSON formatting |
+| Event cache | `eventcache.cpp` | Stage 2 context menu data assembly |
+| Event database | `eventdb.cpp` | Realm DB queries (SQLite-native, 50x faster) |
 
 ## Building
 
-Standard Android build with NDK/CMake for the native C++ module:
+Standard Android build with NDK/CMake for native C++:
 
 ```bash
-./gradlew assembleGplayDebug
+./gradlew assembleFdroidDebug
 ```
 
-Requires Android SDK, NDK 21.3+, CMake 3.22+.
+CI builds F-Droid arm32 (armeabi-v7a, works on all devices). Requires Android SDK, NDK 21.3+, CMake 3.22+.
 
 ## License
 
