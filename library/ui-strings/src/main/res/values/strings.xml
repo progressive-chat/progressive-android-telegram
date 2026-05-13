@@ -3176,6 +3176,8 @@
      <string name="labs_enable_desync_detector_summary">Periodically check if a room has diverged across homeservers. Warns when events are missing on one server. User-defined check interval.</string>
      <string name="desync_warning_title">Room desync detected</string>
      <string name="desync_check_interval">Desync check interval (minutes)</string>
+     <string name="labs_enable_location_sharing">Location sharing rooms</string>
+     <string name="labs_enable_location_sharing_summary">Create dedicated rooms for continuous location sharing. Select participants, set interval. C++ Haversine distance and coordinate formatting.</string>
      <string name="jump_to_source">Jump to source</string>
 
 

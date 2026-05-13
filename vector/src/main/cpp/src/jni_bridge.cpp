@@ -53,6 +53,7 @@
 #include "progressive/desync_detector.hpp"
 #include "progressive/latency_stats.hpp"
 #include "progressive/string_utils.hpp"
+#include "progressive/location_sharing.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -141,6 +142,9 @@ static progressive::DesyncDetector g_desyncDetector;
 
 // --- Singleton latency tracker ---
 static progressive::LatencyTracker g_latencyTracker;
+
+// --- Singleton location sharing manager ---
+static progressive::LocationSharingManager g_locationSharing;
 
 #define LOG_TAG "ProgressiveNative"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -3479,6 +3483,81 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeWordCount(
     auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
     if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
     return progressive::wordCount(input);
+}
+
+// --- Location Sharing ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeLocationStartSession(
+    JNIEnv* env, jclass,
+    jstring jRoomId, jstring jUserId, jint jIntervalSec, jboolean jAutoStop, jint jAutoStopMin
+) {
+    LocationSession session;
+    session.roomId          = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
+    session.userId          = jUserId ? std::string(env->GetStringUTFChars(jUserId, nullptr)) : "";
+    session.intervalSeconds = jIntervalSec;
+    session.autoStop        = jAutoStop;
+    session.autoStopMinutes = jAutoStopMin;
+    if (jRoomId) env->ReleaseStringUTFChars(jRoomId, session.roomId.c_str());
+    if (jUserId) env->ReleaseStringUTFChars(jUserId, session.userId.c_str());
+
+    auto id = g_locationSharing.startSession(session);
+    return env->NewStringUTF(id.c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeLocationStopSession(
+    JNIEnv* env, jclass, jstring jSessionId
+) {
+    auto id = jSessionId ? std::string(env->GetStringUTFChars(jSessionId, nullptr)) : "";
+    if (jSessionId) env->ReleaseStringUTFChars(jSessionId, id.c_str());
+    g_locationSharing.stopSession(id);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeLocationIsDue(
+    JNIEnv* env, jclass, jstring jSessionId
+) {
+    auto id = jSessionId ? std::string(env->GetStringUTFChars(jSessionId, nullptr)) : "";
+    if (jSessionId) env->ReleaseStringUTFChars(jSessionId, id.c_str());
+    return g_locationSharing.isDue(id) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeLocationFormatMessage(
+    JNIEnv* env, jclass,
+    jdouble jLat, jdouble jLon, jdouble jAcc, jstring jLabel
+) {
+    GeoCoord coord;
+    coord.latitude  = jLat;
+    coord.longitude = jLon;
+    coord.accuracy  = jAcc;
+    auto label = jLabel ? std::string(env->GetStringUTFChars(jLabel, nullptr)) : "";
+    if (jLabel) env->ReleaseStringUTFChars(jLabel, label.c_str());
+    auto s = LocationSharingManager::formatLocationMessage(coord, label);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeLocationFormatGeoJson(
+    JNIEnv* env, jclass,
+    jdouble jLat, jdouble jLon, jdouble jAcc
+) {
+    GeoCoord coord;
+    coord.latitude  = jLat;
+    coord.longitude = jLon;
+    coord.accuracy  = jAcc;
+    auto s = LocationSharingManager::formatGeoJson(coord);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jdouble JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeLocationDistance(
+    JNIEnv*, jclass,
+    jdouble jLat1, jdouble jLon1, jdouble jLat2, jdouble jLon2
+) {
+    GeoCoord a{jLat1, jLon1}, b{jLat2, jLon2};
+    return LocationSharingManager::distanceMeters(a, b);
 }
 
 } // extern "C"

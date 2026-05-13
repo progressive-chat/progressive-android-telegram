@@ -549,4 +549,10 @@
         android:key="SETTINGS_DESYNC_INTERVAL_MINUTES"
         android:title="@string/desync_check_interval" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_LOCATION_SHARING_KEY"
+        android:summary="@string/labs_enable_location_sharing_summary"
+        android:title="@string/labs_enable_location_sharing" />
+
 </androidx.preference.PreferenceScreen>

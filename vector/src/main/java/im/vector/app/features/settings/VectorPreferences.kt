@@ -135,6 +135,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_PROFILE_SWIPER_KEY = "SETTINGS_LABS_PROFILE_SWIPER_KEY"
         const val SETTINGS_LABS_DESYNC_DETECTOR_KEY = "SETTINGS_LABS_DESYNC_DETECTOR_KEY"
         const val SETTINGS_DESYNC_INTERVAL_MINUTES = "SETTINGS_DESYNC_INTERVAL_MINUTES"
+        const val SETTINGS_LABS_LOCATION_SHARING_KEY = "SETTINGS_LABS_LOCATION_SHARING_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1599,6 +1600,10 @@ class VectorPreferences @Inject constructor(
 
     fun getDesyncIntervalMinutes(): Int {
         return defaultPrefs.getInt(SETTINGS_DESYNC_INTERVAL_MINUTES, 30)
+    }
+
+    fun isLocationSharingEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_LOCATION_SHARING_KEY, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

@@ -591,6 +591,15 @@ object ProgressiveNative {
     @JvmStatic external fun nativeSanitizeRoomName(input: String): String
     @JvmStatic external fun nativeWordCount(input: String): Int
 
+    // --- Location Sharing ---
+
+    @JvmStatic external fun nativeLocationStartSession(roomId: String, userId: String, intervalSec: Int, autoStop: Boolean, autoStopMin: Int): String
+    @JvmStatic external fun nativeLocationStopSession(sessionId: String)
+    @JvmStatic external fun nativeLocationIsDue(sessionId: String): Boolean
+    @JvmStatic external fun nativeLocationFormatMessage(lat: Double, lon: Double, acc: Double, label: String): String
+    @JvmStatic external fun nativeLocationFormatGeoJson(lat: Double, lon: Double, acc: Double): String
+    @JvmStatic external fun nativeLocationDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
