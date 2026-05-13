@@ -49,6 +49,10 @@
 #include "progressive/text_formats.hpp"
 #include "progressive/url_tools.hpp"
 #include "progressive/notif_priority.hpp"
+#include <sstream>
+#include <chrono>
+
+using namespace progressive;
 
 // --- Singleton keyword filter ---
 static progressive::KeywordFilter g_keywordFilter;
