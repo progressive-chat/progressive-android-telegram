@@ -70,6 +70,7 @@ add_library(
     src/draft_manager.cpp
     src/link_preview.cpp
     src/hash_utils.cpp
+    src/room_stats.cpp
     src/jni_bridge.cpp
 )
 

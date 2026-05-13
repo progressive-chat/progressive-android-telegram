@@ -63,6 +63,7 @@
 #include "progressive/draft_manager.hpp"
 #include "progressive/link_preview.hpp"
 #include "progressive/hash_utils.hpp"
+#include "progressive/room_stats.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3670,6 +3671,15 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGenerateToken(
 ) {
     auto token = progressive::generateToken(jBytes > 0 ? jBytes : 32);
     return env->NewStringUTF(token.c_str());
+}
+
+// --- Room Stats ---
+
+JNIEXPORT jdouble JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeMessagesPerDay(
+    JNIEnv*, jclass, jint jCount, jlong jFirstTs, jlong jLastTs
+) {
+    return progressive::computeMessagesPerDay(jCount, jFirstTs, jLastTs);
 }
 
 } // extern "C"

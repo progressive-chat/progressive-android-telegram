@@ -646,6 +646,10 @@ object ProgressiveNative {
     @JvmStatic external fun nativeSha256Hex(input: String): String
     @JvmStatic external fun nativeGenerateToken(bytes: Int): String
 
+    // --- Room Stats ---
+
+    @JvmStatic external fun nativeComputeMessagesPerDay(count: Int, firstTs: Long, lastTs: Long): Double
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
