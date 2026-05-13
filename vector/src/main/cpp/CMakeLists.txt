@@ -48,6 +48,9 @@ add_library(
     src/avatar_history.cpp
     src/event_link.cpp
     src/lightweight_call.cpp
+    src/scheduled_edit.cpp
+    src/svg_draw.cpp
+    src/profile_swiper.cpp
     src/jni_bridge.cpp
 )
 

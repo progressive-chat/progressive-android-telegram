@@ -130,6 +130,9 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_EVENT_LINK_RESOLVE_KEY = "SETTINGS_LABS_EVENT_LINK_RESOLVE_KEY"
         const val SETTINGS_LABS_SECONDS_TIMESTAMPS_KEY = "SETTINGS_LABS_SECONDS_TIMESTAMPS_KEY"
         const val SETTINGS_LABS_LIGHTWEIGHT_CALL_KEY = "SETTINGS_LABS_LIGHTWEIGHT_CALL_KEY"
+        const val SETTINGS_LABS_SCHEDULED_EDITS_KEY = "SETTINGS_LABS_SCHEDULED_EDITS_KEY"
+        const val SETTINGS_LABS_SVG_DRAW_KEY = "SETTINGS_LABS_SVG_DRAW_KEY"
+        const val SETTINGS_LABS_PROFILE_SWIPER_KEY = "SETTINGS_LABS_PROFILE_SWIPER_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1574,6 +1577,18 @@ class VectorPreferences @Inject constructor(
 
     fun isLightweightCallEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_LIGHTWEIGHT_CALL_KEY, false)
+    }
+
+    fun isScheduledEditsEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_SCHEDULED_EDITS_KEY, false)
+    }
+
+    fun isSvgDrawEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_SVG_DRAW_KEY, false)
+    }
+
+    fun isProfileSwiperEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_PROFILE_SWIPER_KEY, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

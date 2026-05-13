@@ -506,6 +506,37 @@ object ProgressiveNative {
     @JvmStatic external fun nativeLightCallAssessMemory(): String
     @JvmStatic external fun nativeShouldUseLightweightMode(): Boolean
 
+    // --- Scheduled Edits ---
+
+    @JvmStatic external fun nativeSchedEditSchedule(roomId: String, targetEventId: String, newContent: String, contentUrl: String, formattedContent: String, formattedUrl: String, scheduledAtMs: Long, recurring: Boolean): String
+    @JvmStatic external fun nativeSchedEditCancel(editId: String)
+    @JvmStatic external fun nativeSchedEditGetDue(): String
+    @JvmStatic external fun nativeSchedEditMarkApplied(editId: String)
+    @JvmStatic external fun nativeSchedEditMarkFailed(editId: String, error: String)
+    @JvmStatic external fun nativeSchedEditExport(): String
+    @JvmStatic external fun nativeSchedEditStats(): String
+
+    // --- SVG Rendering ---
+
+    @JvmStatic external fun nativeParseSvg(svgData: String): String
+    @JvmStatic external fun nativeIsValidSvg(data: String): Boolean
+
+    // --- Drawing Canvas ---
+
+    @JvmStatic external fun nativeDrawMoveTo(x: Double, y: Double)
+    @JvmStatic external fun nativeDrawLineTo(x: Double, y: Double)
+    @JvmStatic external fun nativeDrawSetColor(argb: Int)
+    @JvmStatic external fun nativeDrawSetWidth(w: Double)
+    @JvmStatic external fun nativeDrawExportJson(): String
+    @JvmStatic external fun nativeDrawToSvgPath(): String
+    @JvmStatic external fun nativeDrawClear()
+
+    // --- Profile Swiper ---
+
+    @JvmStatic external fun nativeProfileSwiperSetProfiles(profilesJson: String)
+    @JvmStatic external fun nativeProfileSwiperNext(): String
+    @JvmStatic external fun nativeProfileSwiperPrev(): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

@@ -42,6 +42,9 @@
 #include "progressive/avatar_history.hpp"
 #include "progressive/event_link.hpp"
 #include "progressive/lightweight_call.hpp"
+#include "progressive/scheduled_edit.hpp"
+#include "progressive/svg_draw.hpp"
+#include "progressive/profile_swiper.hpp"
 
 // --- Singleton keyword filter ---
 static progressive::KeywordFilter g_keywordFilter;
@@ -111,6 +114,15 @@ static progressive::AvatarHistory g_avatarHistory;
 
 // --- Singleton lightweight call manager ---
 static progressive::LightweightCallManager g_lightCall;
+
+// --- Singleton scheduled edit queue ---
+static progressive::ScheduledEditQueue g_schedEdits;
+
+// --- Singleton drawing canvas ---
+static progressive::DrawingCanvas g_drawCanvas;
+
+// --- Singleton profile swiper ---
+static progressive::ProfileSwiper g_profileSwiper;
 
 #define LOG_TAG "ProgressiveNative"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -2882,6 +2894,230 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeShouldUseLightwei
 ) {
     auto state = progressive::LightweightCallManager{}.assessMemory();
     return progressive::LightweightCallManager::shouldUseLightweightMode(state) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Scheduled Edits ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSchedEditSchedule(
+    JNIEnv* env, jclass,
+    jstring jRoomId, jstring jTargetEventId, jstring jNewContent,
+    jstring jContentUrl, jstring jFormattedContent, jstring jFormattedUrl,
+    jlong jScheduledAtMs, jboolean jRecurring
+) {
+    ScheduledEdit edit;
+    edit.roomId        = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
+    edit.targetEventId = jTargetEventId ? std::string(env->GetStringUTFChars(jTargetEventId, nullptr)) : "";
+    edit.newContent    = jNewContent ? std::string(env->GetStringUTFChars(jNewContent, nullptr)) : "";
+    edit.contentUrl    = jContentUrl ? std::string(env->GetStringUTFChars(jContentUrl, nullptr)) : "";
+    edit.formattedContent = jFormattedContent ? std::string(env->GetStringUTFChars(jFormattedContent, nullptr)) : "";
+    edit.formattedUrl  = jFormattedUrl ? std::string(env->GetStringUTFChars(jFormattedUrl, nullptr)) : "";
+    edit.scheduledAtMs = jScheduledAtMs;
+    edit.isRecurring   = jRecurring;
+
+    if (jRoomId)        env->ReleaseStringUTFChars(jRoomId, edit.roomId.c_str());
+    if (jTargetEventId) env->ReleaseStringUTFChars(jTargetEventId, edit.targetEventId.c_str());
+    if (jNewContent)    env->ReleaseStringUTFChars(jNewContent, edit.newContent.c_str());
+    if (jContentUrl)    env->ReleaseStringUTFChars(jContentUrl, edit.contentUrl.c_str());
+    if (jFormattedContent) env->ReleaseStringUTFChars(jFormattedContent, edit.formattedContent.c_str());
+    if (jFormattedUrl)  env->ReleaseStringUTFChars(jFormattedUrl, edit.formattedUrl.c_str());
+
+    auto id = g_schedEdits.schedule(edit);
+    return env->NewStringUTF(id.c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSchedEditCancel(
+    JNIEnv* env, jclass, jstring jEditId
+) {
+    auto id = jEditId ? std::string(env->GetStringUTFChars(jEditId, nullptr)) : "";
+    if (jEditId) env->ReleaseStringUTFChars(jEditId, id.c_str());
+    g_schedEdits.cancel(id);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSchedEditGetDue(
+    JNIEnv* env, jclass
+) {
+    auto due = g_schedEdits.getDueEdits();
+    auto esc = [](const std::string& s) -> std::string {
+        std::string out;
+        for (char c : s) { if (c == '"') out += "\\\""; else out += c; }
+        return out;
+    };
+    std::ostringstream json;
+    json << "[";
+    for (size_t i = 0; i < due.size(); ++i) {
+        if (i > 0) json << ",";
+        json << progressive::ScheduledEditQueue::editToJson(due[i]);
+    }
+    json << "]";
+    return env->NewStringUTF(json.str().c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSchedEditMarkApplied(
+    JNIEnv* env, jclass, jstring jEditId
+) {
+    auto id = jEditId ? std::string(env->GetStringUTFChars(jEditId, nullptr)) : "";
+    if (jEditId) env->ReleaseStringUTFChars(jEditId, id.c_str());
+    g_schedEdits.markApplied(id);
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSchedEditMarkFailed(
+    JNIEnv* env, jclass, jstring jEditId, jstring jError
+) {
+    auto id = jEditId ? std::string(env->GetStringUTFChars(jEditId, nullptr)) : "";
+    auto err = jError ? std::string(env->GetStringUTFChars(jError, nullptr)) : "";
+    if (jEditId) env->ReleaseStringUTFChars(jEditId, id.c_str());
+    if (jError) env->ReleaseStringUTFChars(jError, err.c_str());
+    g_schedEdits.markFailed(id, err);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSchedEditExport(
+    JNIEnv* env, jclass
+) {
+    auto json = g_schedEdits.exportJson();
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSchedEditStats(
+    JNIEnv* env, jclass
+) {
+    auto stats = g_schedEdits.getStats();
+    std::ostringstream json;
+    json << "{";
+    json << R"("totalEdits": )" << stats.totalEdits << ",";
+    json << R"("pendingEdits": )" << stats.pendingEdits << ",";
+    json << R"("appliedEdits": )" << stats.appliedEdits << ",";
+    json << R"("failedEdits": )" << stats.failedEdits << ",";
+    json << R"("nextEditAtMs": )" << stats.nextEditAtMs;
+    json << "}";
+    return env->NewStringUTF(json.str().c_str());
+}
+
+// --- SVG Renderer ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseSvg(
+    JNIEnv* env, jclass, jstring jSvgData
+) {
+    auto svg = jSvgData ? std::string(env->GetStringUTFChars(jSvgData, nullptr)) : "";
+    if (jSvgData) env->ReleaseStringUTFChars(jSvgData, svg.c_str());
+    auto doc = progressive::parseSvg(svg);
+    auto json = progressive::renderSvgToDrawCommands(doc);
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsValidSvg(
+    JNIEnv* env, jclass, jstring jData
+) {
+    auto data = jData ? std::string(env->GetStringUTFChars(jData, nullptr)) : "";
+    if (jData) env->ReleaseStringUTFChars(jData, data.c_str());
+    return progressive::isValidSvg(data) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Drawing Canvas ---
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDrawMoveTo(
+    JNIEnv*, jclass, jdouble jX, jdouble jY
+) { g_drawCanvas.moveTo(jX, jY); }
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDrawLineTo(
+    JNIEnv*, jclass, jdouble jX, jdouble jY
+) { g_drawCanvas.lineTo(jX, jY); }
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDrawSetColor(
+    JNIEnv*, jclass, jint jArgb
+) { g_drawCanvas.setColor(jArgb); }
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDrawSetWidth(
+    JNIEnv*, jclass, jdouble jW
+) { g_drawCanvas.setWidth(jW); }
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDrawExportJson(
+    JNIEnv* env, jclass
+) {
+    auto json = g_drawCanvas.exportCommandsJson();
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDrawToSvgPath(
+    JNIEnv* env, jclass
+) {
+    auto d = g_drawCanvas.toSvgPath();
+    return env->NewStringUTF(d.c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDrawClear(
+    JNIEnv*, jclass
+) { g_drawCanvas.clear(); }
+
+// --- Profile Swiper ---
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeProfileSwiperSetProfiles(
+    JNIEnv* env, jclass, jstring jProfilesJson
+) {
+    auto json = jProfilesJson ? std::string(env->GetStringUTFChars(jProfilesJson, nullptr)) : "[]";
+    if (jProfilesJson) env->ReleaseStringUTFChars(jProfilesJson, json.c_str());
+
+    std::vector<ProfileEntry> profiles;
+    size_t pos = 0;
+    while (true) {
+        pos = json.find("\"userId\"", pos);
+        if (pos == std::string::npos) break;
+        auto objStart = json.rfind('{', pos);
+        if (objStart == std::string::npos) break;
+        int depth = 0; auto objEnd = objStart;
+        while (objEnd < json.size()) { if (json[objEnd] == '{') ++depth; else if (json[objEnd] == '}') --depth; if (depth == 0) break; ++objEnd; }
+        if (objEnd >= json.size()) break;
+
+        std::string obj = json.substr(objStart, objEnd - objStart + 1);
+        ProfileEntry pe;
+        auto extract = [&](const std::string& key) -> std::string {
+            auto s = obj.find('"' + key + "\": \""); if (s == std::string::npos) return {};
+            s += key.size() + 4; auto e = obj.find('"', s); if (e != std::string::npos) return obj.substr(s, e - s);
+            return {};
+        };
+        pe.userId = extract("userId");
+        pe.displayName = extract("displayName");
+        pe.avatarUrl = extract("avatarUrl");
+        pe.serverName = extract("serverName");
+        auto mc = obj.find("\"messageCount\": "); if (mc != std::string::npos) { mc += 16; auto me = mc; while (me < obj.size() && obj[me] >= '0' && obj[me] <= '9') ++me; pe.messageCount = me > mc ? std::stoi(obj.substr(mc, me - mc)) : 0; }
+        if (!pe.userId.empty()) profiles.push_back(pe);
+        pos = objEnd + 1;
+    }
+    g_profileSwiper.setProfiles(profiles);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeProfileSwiperNext(
+    JNIEnv* env, jclass
+) {
+    auto state = g_profileSwiper.swipeNext();
+    auto json = progressive::ProfileSwiper::stateToJson(state);
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeProfileSwiperPrev(
+    JNIEnv* env, jclass
+) {
+    auto state = g_profileSwiper.swipePrev();
+    auto json = progressive::ProfileSwiper::stateToJson(state);
+    return env->NewStringUTF(json.c_str());
 }
 
 } // extern "C"

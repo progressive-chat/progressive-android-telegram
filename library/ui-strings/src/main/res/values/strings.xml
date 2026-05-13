@@ -3166,6 +3166,12 @@
      <string name="labs_enable_seconds_timestamps_summary">Show all timestamps as HH:MM:SS instead of HH:MM. C++ native formatting.</string>
      <string name="labs_enable_lightweight_call">Lightweight call mode</string>
      <string name="labs_enable_lightweight_call_summary">Before 1-on-1 E2EE P2P calls, automatically free RAM by clearing caches and suspending background work. Essential for low-RAM devices.</string>
+     <string name="labs_enable_scheduled_edits">Scheduled message edits</string>
+     <string name="labs_enable_scheduled_edits_summary">Queue message edits to apply at a future time. Set content now, apply tomorrow. Supports URL-based content fetching.</string>
+     <string name="labs_enable_svg_render">SVG rendering + drawing</string>
+     <string name="labs_enable_svg_render_summary">Render SVG images and send drawings. C++ SVG parser produces Android Canvas draw commands. Mobile SVG that web has always had.</string>
+     <string name="labs_enable_profile_swiper">Profile swipe navigation</string>
+     <string name="labs_enable_profile_swiper_summary">Swipe left/right to browse user profiles in a room following the current sort order. C++ navigation state tracking.</string>
      <string name="jump_to_source">Jump to source</string>
 
 

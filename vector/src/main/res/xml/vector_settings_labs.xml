@@ -518,4 +518,22 @@
         android:summary="@string/labs_enable_lightweight_call_summary"
         android:title="@string/labs_enable_lightweight_call" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_SCHEDULED_EDITS_KEY"
+        android:summary="@string/labs_enable_scheduled_edits_summary"
+        android:title="@string/labs_enable_scheduled_edits" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_SVG_DRAW_KEY"
+        android:summary="@string/labs_enable_svg_render_summary"
+        android:title="@string/labs_enable_svg_render" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_PROFILE_SWIPER_KEY"
+        android:summary="@string/labs_enable_profile_swiper_summary"
+        android:title="@string/labs_enable_profile_swiper" />
+
 </androidx.preference.PreferenceScreen>
