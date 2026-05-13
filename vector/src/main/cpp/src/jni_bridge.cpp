@@ -53,6 +53,7 @@
 #include "progressive/latency_stats.hpp"
 #include "progressive/string_utils.hpp"
 #include "progressive/location_sharing.hpp"
+#include "progressive/color_utils.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3443,6 +3444,32 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeLocationDistance(
 ) {
     GeoCoord a{jLat1, jLon1}, b{jLat2, jLon2};
     return LocationSharingManager::distanceMeters(a, b);
+}
+
+// --- Color Utils ---
+
+JNIEXPORT jdouble JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeContrastRatio(
+    JNIEnv*, jclass, jint jFgR, jint jFgG, jint jFgB, jint jBgR, jint jBgG, jint jBgB
+) {
+    RgbaColor fg{jFgR, jFgG, jFgB, 255, true};
+    RgbaColor bg{jBgR, jBgG, jBgB, 255, true};
+    return progressive::contrastRatio(fg, bg);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseColor(
+    JNIEnv* env, jclass, jstring jInput
+) {
+    auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
+    if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
+    auto color = progressive::parseColor(input);
+    std::ostringstream json;
+    json << R"({"valid": )" << (color.valid ? "true" : "false");
+    json << R"(,"r": )" << color.r << R"(,"g": )" << color.g << R"(,"b": )" << color.b;
+    json << R"(,"hex": ")" << color.toHex() << R"(")";
+    json << "}";
+    return env->NewStringUTF(json.str().c_str());
 }
 
 } // extern "C"

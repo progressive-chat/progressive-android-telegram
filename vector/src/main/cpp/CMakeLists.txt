@@ -60,6 +60,7 @@ add_library(
     src/latency_stats.cpp
     src/string_utils.cpp
     src/location_sharing.cpp
+    src/color_utils.cpp
     src/jni_bridge.cpp
 )
 
