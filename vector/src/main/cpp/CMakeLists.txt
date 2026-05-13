@@ -125,6 +125,7 @@ add_library(
     src/displayname_utils.cpp
     src/message_location.cpp
     src/timeline_utils.cpp
+    src/cross_signing.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )

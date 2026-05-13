@@ -879,6 +879,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeShouldAutoScroll(isOwnMessage: Boolean): Boolean
 
+    // --- Cross Signing ---
+
+    @JvmStatic external fun nativeParseCrossSigningStatus(accountDataJson: String, userId: String): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

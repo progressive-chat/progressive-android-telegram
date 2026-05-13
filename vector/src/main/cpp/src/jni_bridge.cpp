@@ -116,6 +116,7 @@
 #include "progressive/displayname_utils.hpp"
 #include "progressive/message_location.hpp"
 #include "progressive/timeline_utils.hpp"
+#include "progressive/cross_signing.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4724,6 +4725,28 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeShouldAutoScroll(
     LiveTimelineState state;
     auto result = progressive::shouldAutoScroll(state, jIsOwnMsg);
     return result ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Cross Signing ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseCrossSigningStatus(
+    JNIEnv* env, jclass, jstring jAccountDataJson, jstring jUserId
+) {
+    auto json = jAccountDataJson ? std::string(env->GetStringUTFChars(jAccountDataJson, nullptr)) : "";
+    auto userId = jUserId ? std::string(env->GetStringUTFChars(jUserId, nullptr)) : "";
+    if (jAccountDataJson) env->ReleaseStringUTFChars(jAccountDataJson, json.c_str());
+    if (jUserId) env->ReleaseStringUTFChars(jUserId, userId.c_str());
+
+    auto status = progressive::parseCrossSigningStatus(json, userId);
+    auto esc = [](const std::string& s) -> std::string {
+        std::string out; for (char c : s) { if (c == '"') out += "\\\""; else out += c; } return out;
+    };
+    std::ostringstream out;
+    out << R"({"isSetup": )" << (status.isSetup ? "true" : "false");
+    out << R"(,"isVerified": )" << (status.isVerified ? "true" : "false");
+    out << R"(,"needsBootstrap": )" << (status.needsBootstrap ? "true" : "false") << "}";
+    return env->NewStringUTF(out.str().c_str());
 }
 
 } // extern "C"
