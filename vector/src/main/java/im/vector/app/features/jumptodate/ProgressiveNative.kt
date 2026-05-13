@@ -742,6 +742,10 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatPresence(presence: Int): String
     @JvmStatic external fun nativeFormatPresenceLine(presence: Int, lastActiveAgoMs: Long, statusMsg: String): String
 
+    // --- Room Permissions ---
+
+    @JvmStatic external fun nativeGetSuggestedRole(plJson: String, userId: String): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
