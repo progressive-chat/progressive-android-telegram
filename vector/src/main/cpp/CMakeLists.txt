@@ -124,6 +124,7 @@ add_library(
     src/keyshare.cpp
     src/displayname_utils.cpp
     src/message_location.cpp
+    src/timeline_utils.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )

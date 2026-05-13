@@ -115,6 +115,7 @@
 #include "progressive/keyshare.hpp"
 #include "progressive/displayname_utils.hpp"
 #include "progressive/message_location.hpp"
+#include "progressive/timeline_utils.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4712,6 +4713,17 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeEstimatePaginatio
     JNIEnv*, jclass, jint jMissing, jint jPageSize
 ) {
     return progressive::estimatePaginationRequests(jMissing, jPageSize);
+}
+
+// --- Timeline Utils ---
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeShouldAutoScroll(
+    JNIEnv*, jclass, jboolean jIsOwnMsg
+) {
+    LiveTimelineState state;
+    auto result = progressive::shouldAutoScroll(state, jIsOwnMsg);
+    return result ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"

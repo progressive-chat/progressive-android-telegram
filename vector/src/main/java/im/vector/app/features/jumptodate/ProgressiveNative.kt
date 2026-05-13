@@ -875,6 +875,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeEstimatePaginationRequests(missingEvents: Int, pageSize: Int): Int
 
+    // --- Timeline Utils ---
+
+    @JvmStatic external fun nativeShouldAutoScroll(isOwnMessage: Boolean): Boolean
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
