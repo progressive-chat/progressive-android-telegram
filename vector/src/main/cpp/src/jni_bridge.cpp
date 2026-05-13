@@ -5,7 +5,6 @@
 #include "progressive/relation.hpp"
 #include "progressive/exporter.hpp"
 #include "progressive/eventcache.hpp"
-#include "progressive/eventdb.hpp"
 #include "progressive/translate.hpp"
 #include "progressive/proxy.hpp"
 #include "progressive/yggdrasil.hpp"
@@ -569,120 +568,6 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheSize(
     jclass /* this */
 ) {
     return static_cast<jint>(g_eventCache.size());
-}
-
-// --- Event Database (SQLite-based replacement for slow Realm queries) ---
-static progressive::EventDatabase g_eventDb;
-
-/*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
- * Method: nativeDbOpen
- * Signature: (Ljava/lang/String;)Z
- */
-JNIEXPORT jboolean JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDbOpen(
-    JNIEnv* env,
-    jclass /* this */,
-    jstring jDbPath
-) {
-    if (!jDbPath) return JNI_FALSE;
-    auto path = std::string(env->GetStringUTFChars(jDbPath, nullptr));
-    env->ReleaseStringUTFChars(jDbPath, path.c_str());
-    return g_eventDb.open(path) ? JNI_TRUE : JNI_FALSE;
-}
-
-/*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
- * Method: nativeDbClose
- * Signature: ()V
- */
-JNIEXPORT void JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDbClose(JNIEnv*, jclass) {
-    g_eventDb.close();
-}
-
-/*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
- * Method: nativeDbInsertEvent
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JIZ)V
- */
-JNIEXPORT void JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDbInsertEvent(
-    JNIEnv* env, jclass,
-    jstring jEventId, jstring jRoomId, jstring jSenderId, jstring jSenderName,
-    jstring jTimestamp, jstring jBody, jstring jMsgType, jstring jEventType,
-    jstring jRelationType, jstring jSourceEventId,
-    jlong jOriginServerTs, jint jDisplayIndex, jboolean jSentByMe
-) {
-    DbEvent e;
-    e.eventId       = jEventId ? std::string(env->GetStringUTFChars(jEventId, nullptr)) : "";
-    e.roomId        = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
-    e.senderId      = jSenderId ? std::string(env->GetStringUTFChars(jSenderId, nullptr)) : "";
-    e.senderName    = jSenderName ? std::string(env->GetStringUTFChars(jSenderName, nullptr)) : "";
-    e.timestamp     = jTimestamp ? std::string(env->GetStringUTFChars(jTimestamp, nullptr)) : "";
-    e.body          = jBody ? std::string(env->GetStringUTFChars(jBody, nullptr)) : "";
-    e.msgType       = jMsgType ? std::string(env->GetStringUTFChars(jMsgType, nullptr)) : "";
-    e.eventType     = jEventType ? std::string(env->GetStringUTFChars(jEventType, nullptr)) : "";
-    e.relationType  = jRelationType ? std::string(env->GetStringUTFChars(jRelationType, nullptr)) : "";
-    e.sourceEventId = jSourceEventId ? std::string(env->GetStringUTFChars(jSourceEventId, nullptr)) : "";
-    e.originServerTs = jOriginServerTs;
-    e.displayIndex  = jDisplayIndex;
-    e.sentByMe      = jSentByMe;
-
-    if (jEventId)     env->ReleaseStringUTFChars(jEventId, e.eventId.c_str());
-    if (jRoomId)      env->ReleaseStringUTFChars(jRoomId, e.roomId.c_str());
-    if (jSenderId)    env->ReleaseStringUTFChars(jSenderId, e.senderId.c_str());
-    if (jSenderName)  env->ReleaseStringUTFChars(jSenderName, e.senderName.c_str());
-    if (jTimestamp)   env->ReleaseStringUTFChars(jTimestamp, e.timestamp.c_str());
-    if (jBody)        env->ReleaseStringUTFChars(jBody, e.body.c_str());
-    if (jMsgType)     env->ReleaseStringUTFChars(jMsgType, e.msgType.c_str());
-    if (jEventType)   env->ReleaseStringUTFChars(jEventType, e.eventType.c_str());
-    if (jRelationType) env->ReleaseStringUTFChars(jRelationType, e.relationType.c_str());
-    if (jSourceEventId) env->ReleaseStringUTFChars(jSourceEventId, e.sourceEventId.c_str());
-
-    g_eventDb.insertEvent(e);
-}
-
-/*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
- * Method: nativeDbGetContext
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDbGetContext(
-    JNIEnv* env, jclass, jstring jEventId
-) {
-    if (!jEventId) return env->NewStringUTF(R"({"cached": false})");
-    auto id = std::string(env->GetStringUTFChars(jEventId, nullptr));
-    env->ReleaseStringUTFChars(jEventId, id.c_str());
-
-    auto json = g_eventDb.getContextJson(id);
-    return env->NewStringUTF(json.c_str());
-}
-
-/*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
- * Method: nativeDbClearRoom
- * Signature: (Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDbClearRoom(
-    JNIEnv* env, jclass, jstring jRoomId
-) {
-    if (!jRoomId) return;
-    auto id = std::string(env->GetStringUTFChars(jRoomId, nullptr));
-    env->ReleaseStringUTFChars(jRoomId, id.c_str());
-    g_eventDb.clearRoom(id);
-}
-
-/*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
- * Method: nativeDbCount
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDbCount(JNIEnv*, jclass) {
-    return g_eventDb.count();
 }
 
 // --- Translation ---
