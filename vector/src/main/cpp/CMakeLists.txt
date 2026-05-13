@@ -39,6 +39,7 @@ add_library(
     src/search_index.cpp
     src/module_loader.cpp
     src/notification.cpp
+    src/room_mirror.cpp
     src/jni_bridge.cpp
 )
 

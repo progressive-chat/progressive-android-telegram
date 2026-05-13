@@ -391,4 +391,10 @@
         android:summary="@string/labs_enable_reaction_preview_summary"
         android:title="@string/labs_enable_reaction_preview" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_ROOM_MIRROR_KEY"
+        android:summary="@string/labs_enable_room_mirror_summary"
+        android:title="@string/labs_enable_room_mirror" />
+
 </androidx.preference.PreferenceScreen>

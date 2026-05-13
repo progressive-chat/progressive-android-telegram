@@ -32,6 +32,7 @@
 #include "progressive/search_index.hpp"
 #include "progressive/module_loader.hpp"
 #include "progressive/notification.hpp"
+#include "progressive/room_mirror.hpp"
 
 // --- Singleton keyword filter ---
 static progressive::KeywordFilter g_keywordFilter;
@@ -68,6 +69,9 @@ static progressive::ModuleLoader g_moduleLoader;
 
 // --- Singleton notification keywords ---
 static progressive::NotificationKeywords g_notifKeywords;
+
+// --- Singleton room mirror manager ---
+static progressive::RoomMirrorManager g_mirrorMgr;
 
 #define LOG_TAG "ProgressiveNative"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -1871,6 +1875,107 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatReactionPre
 
     auto s = progressive::formatReactionPreview(rp);
     return env->NewStringUTF(s.c_str());
+}
+
+// --- Room Mirror ---
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMirrorAdd(
+    JNIEnv* env, jclass,
+    jstring jSrcRoomId, jstring jSrcRoomName,
+    jstring jMirRoomId, jstring jMirRoomName,
+    jboolean jEnabled, jboolean jUseDolls
+) {
+    MirrorConfig cfg;
+    cfg.sourceRoomId   = jSrcRoomId ? std::string(env->GetStringUTFChars(jSrcRoomId, nullptr)) : "";
+    cfg.sourceRoomName = jSrcRoomName ? std::string(env->GetStringUTFChars(jSrcRoomName, nullptr)) : "";
+    cfg.mirrorRoomId   = jMirRoomId ? std::string(env->GetStringUTFChars(jMirRoomId, nullptr)) : "";
+    cfg.mirrorRoomName = jMirRoomName ? std::string(env->GetStringUTFChars(jMirRoomName, nullptr)) : "";
+    cfg.enabled  = jEnabled;
+    cfg.useDolls = jUseDolls;
+
+    if (jSrcRoomId)   env->ReleaseStringUTFChars(jSrcRoomId, cfg.sourceRoomId.c_str());
+    if (jSrcRoomName) env->ReleaseStringUTFChars(jSrcRoomName, cfg.sourceRoomName.c_str());
+    if (jMirRoomId)   env->ReleaseStringUTFChars(jMirRoomId, cfg.mirrorRoomId.c_str());
+    if (jMirRoomName) env->ReleaseStringUTFChars(jMirRoomName, cfg.mirrorRoomName.c_str());
+
+    g_mirrorMgr.addMirror(cfg);
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMirrorRemove(
+    JNIEnv* env, jclass, jstring jSrcRoomId
+) {
+    if (!jSrcRoomId) return;
+    auto id = std::string(env->GetStringUTFChars(jSrcRoomId, nullptr));
+    env->ReleaseStringUTFChars(jSrcRoomId, id.c_str());
+    g_mirrorMgr.removeMirror(id);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMirrorIsActive(
+    JNIEnv* env, jclass, jstring jSrcRoomId
+) {
+    if (!jSrcRoomId) return JNI_FALSE;
+    auto id = std::string(env->GetStringUTFChars(jSrcRoomId, nullptr));
+    env->ReleaseStringUTFChars(jSrcRoomId, id.c_str());
+    return g_mirrorMgr.isMirroring(id) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMirrorFormatMessage(
+    JNIEnv* env, jclass,
+    jstring jSenderName, jstring jSenderMxid, jstring jRoomName,
+    jstring jBody, jstring jMsgType, jlong jTs
+) {
+    MirrorMessage msg;
+    msg.senderName   = jSenderName ? std::string(env->GetStringUTFChars(jSenderName, nullptr)) : "";
+    msg.senderMxid   = jSenderMxid ? std::string(env->GetStringUTFChars(jSenderMxid, nullptr)) : "";
+    msg.sourceRoomName = jRoomName ? std::string(env->GetStringUTFChars(jRoomName, nullptr)) : "";
+    msg.body         = jBody ? std::string(env->GetStringUTFChars(jBody, nullptr)) : "";
+    msg.msgType      = jMsgType ? std::string(env->GetStringUTFChars(jMsgType, nullptr)) : "";
+    msg.timestamp    = jTs;
+
+    if (jSenderName) env->ReleaseStringUTFChars(jSenderName, msg.senderName.c_str());
+    if (jSenderMxid) env->ReleaseStringUTFChars(jSenderMxid, msg.senderMxid.c_str());
+    if (jRoomName)   env->ReleaseStringUTFChars(jRoomName, msg.sourceRoomName.c_str());
+    if (jBody)       env->ReleaseStringUTFChars(jBody, msg.body.c_str());
+    if (jMsgType)    env->ReleaseStringUTFChars(jMsgType, msg.msgType.c_str());
+
+    auto s = progressive::RoomMirrorManager::formatMirrorMessage(msg);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMirrorGenerateDollMxid(
+    JNIEnv* env, jclass,
+    jstring jOriginalMxid, jstring jTargetServer
+) {
+    auto mxid  = jOriginalMxid ? std::string(env->GetStringUTFChars(jOriginalMxid, nullptr)) : "";
+    auto server = jTargetServer ? std::string(env->GetStringUTFChars(jTargetServer, nullptr)) : "";
+    if (jOriginalMxid) env->ReleaseStringUTFChars(jOriginalMxid, mxid.c_str());
+    if (jTargetServer) env->ReleaseStringUTFChars(jTargetServer, server.c_str());
+
+    auto doll = progressive::RoomMirrorManager::generateDollMxid(mxid, server);
+    return env->NewStringUTF(doll.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMirrorIsValidDoll(
+    JNIEnv* env, jclass, jstring jMxid
+) {
+    if (!jMxid) return JNI_FALSE;
+    auto mxid = std::string(env->GetStringUTFChars(jMxid, nullptr));
+    env->ReleaseStringUTFChars(jMxid, mxid.c_str());
+    return progressive::RoomMirrorManager::isValidDollMxid(mxid) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMirrorExportJson(
+    JNIEnv* env, jclass
+) {
+    auto json = g_mirrorMgr.exportJson();
+    return env->NewStringUTF(json.c_str());
 }
 
 } // extern "C"

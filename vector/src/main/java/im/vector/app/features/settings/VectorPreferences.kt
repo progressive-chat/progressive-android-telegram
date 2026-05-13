@@ -109,6 +109,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_MODULE_UPDATES_KEY = "SETTINGS_LABS_MODULE_UPDATES_KEY"
         const val SETTINGS_LABS_NOTIF_KEYWORDS_KEY = "SETTINGS_LABS_NOTIF_KEYWORDS_KEY"
         const val SETTINGS_LABS_REACTION_PREVIEW_KEY = "SETTINGS_LABS_REACTION_PREVIEW_KEY"
+        const val SETTINGS_LABS_ROOM_MIRROR_KEY = "SETTINGS_LABS_ROOM_MIRROR_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1469,6 +1470,10 @@ class VectorPreferences @Inject constructor(
 
     fun isReactionPreviewEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_REACTION_PREVIEW_KEY, false)
+    }
+
+    fun isRoomMirrorEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_ROOM_MIRROR_KEY, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

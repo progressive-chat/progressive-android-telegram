@@ -377,6 +377,16 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeFormatReactionPreview(reactorName: String, emoji: String, sourceBody: String, sourceSender: String): String
 
+    // --- Room Mirror ---
+
+    @JvmStatic external fun nativeMirrorAdd(srcRoomId: String, srcRoomName: String, mirRoomId: String, mirRoomName: String, enabled: Boolean, useDolls: Boolean)
+    @JvmStatic external fun nativeMirrorRemove(srcRoomId: String)
+    @JvmStatic external fun nativeMirrorIsActive(srcRoomId: String): Boolean
+    @JvmStatic external fun nativeMirrorFormatMessage(senderName: String, senderMxid: String, roomName: String, body: String, msgType: String, ts: Long): String
+    @JvmStatic external fun nativeMirrorGenerateDollMxid(originalMxid: String, targetServer: String): String
+    @JvmStatic external fun nativeMirrorIsValidDoll(mxid: String): Boolean
+    @JvmStatic external fun nativeMirrorExportJson(): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

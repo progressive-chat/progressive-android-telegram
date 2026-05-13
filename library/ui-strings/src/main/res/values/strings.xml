@@ -3107,6 +3107,11 @@
      <string name="notif_keywords_add">Add keyword</string>
      <string name="labs_enable_reaction_preview">Reaction preview in chat list</string>
      <string name="labs_enable_reaction_preview_summary">Show \"User reacted: 🚀 to \'message...\'\" in chat previews instead of just the emoji. C++ native formatting.</string>
+     <string name="labs_enable_room_mirror">Room mirroring</string>
+     <string name="labs_enable_room_mirror_summary">Create a mirror room that receives forwarded messages from this room. \"User wrote in room: message\". Supports doll accounts for natural forwarding.</string>
+     <string name="room_mirror_create">Create or connect mirror room</string>
+     <string name="room_mirror_use_dolls">Auto-register doll accounts</string>
+     <string name="room_mirror_doll_desc">Registers unique doll MXIDs (@alicedoll:server) for more natural message forwarding. Requires admin on both homeservers.</string>
      <string name="jump_to_source">Jump to source</string>
 
 
