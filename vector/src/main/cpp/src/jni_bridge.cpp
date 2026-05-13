@@ -10,6 +10,9 @@
 #include "progressive/proxy.hpp"
 #include "progressive/yggdrasil.hpp"
 #include "progressive/markdown.hpp"
+#include "progressive/account_export.hpp"
+#include "progressive/audio_engine.hpp"
+#include "progressive/media_filter.hpp"
 
 #define LOG_TAG "ProgressiveNative"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -729,6 +732,120 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseMarkdownTabl
 
     auto html = progressive::parseMarkdownTable(block, jWithScroll);
     return env->NewStringUTF(html.c_str());
+}
+
+// --- Account Export ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeEncryptAccount(
+    JNIEnv* env, jclass,
+    jstring jUserId, jstring jToken, jstring jRefreshToken,
+    jstring jHomeServer, jstring jDeviceId, jstring jDeviceName,
+    jstring jDisplayName, jstring jAvatarUrl,
+    jboolean jIncludeCache, jstring jPassphrase
+) {
+    AccountData data;
+    data.userId       = jUserId ? std::string(env->GetStringUTFChars(jUserId, nullptr)) : "";
+    data.accessToken  = jToken ? std::string(env->GetStringUTFChars(jToken, nullptr)) : "";
+    data.refreshToken = jRefreshToken ? std::string(env->GetStringUTFChars(jRefreshToken, nullptr)) : "";
+    data.homeServerUrl = jHomeServer ? std::string(env->GetStringUTFChars(jHomeServer, nullptr)) : "";
+    data.deviceId     = jDeviceId ? std::string(env->GetStringUTFChars(jDeviceId, nullptr)) : "";
+    data.deviceName   = jDeviceName ? std::string(env->GetStringUTFChars(jDeviceName, nullptr)) : "";
+    data.displayName  = jDisplayName ? std::string(env->GetStringUTFChars(jDisplayName, nullptr)) : "";
+    data.avatarUrl    = jAvatarUrl ? std::string(env->GetStringUTFChars(jAvatarUrl, nullptr)) : "";
+    data.includeCache = jIncludeCache;
+
+    auto pass = jPassphrase ? std::string(env->GetStringUTFChars(jPassphrase, nullptr)) : "";
+
+    // Release
+    if (jUserId) env->ReleaseStringUTFChars(jUserId, data.userId.c_str());
+    if (jToken) env->ReleaseStringUTFChars(jToken, data.accessToken.c_str());
+    if (jRefreshToken) env->ReleaseStringUTFChars(jRefreshToken, data.refreshToken.c_str());
+    if (jHomeServer) env->ReleaseStringUTFChars(jHomeServer, data.homeServerUrl.c_str());
+    if (jDeviceId) env->ReleaseStringUTFChars(jDeviceId, data.deviceId.c_str());
+    if (jDeviceName) env->ReleaseStringUTFChars(jDeviceName, data.deviceName.c_str());
+    if (jDisplayName) env->ReleaseStringUTFChars(jDisplayName, data.displayName.c_str());
+    if (jAvatarUrl) env->ReleaseStringUTFChars(jAvatarUrl, data.avatarUrl.c_str());
+    if (jPassphrase) env->ReleaseStringUTFChars(jPassphrase, pass.c_str());
+
+    auto result = progressive::encryptAccountData(data, pass);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeDecryptAccount(
+    JNIEnv* env, jclass, jstring jEncrypted, jstring jPassphrase
+) {
+    if (!jEncrypted || !jPassphrase) return env->NewStringUTF("");
+    auto enc = std::string(env->GetStringUTFChars(jEncrypted, nullptr));
+    auto pass = std::string(env->GetStringUTFChars(jPassphrase, nullptr));
+    env->ReleaseStringUTFChars(jEncrypted, enc.c_str());
+    env->ReleaseStringUTFChars(jPassphrase, pass.c_str());
+
+    auto data = progressive::decryptAccountData(enc, pass);
+    if (data.userId.empty()) return env->NewStringUTF(R"({"error": "Decryption failed"})");
+
+    auto json = progressive::accountToJson(data);
+    return env->NewStringUTF(json.c_str());
+}
+
+// --- Audio ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatDuration(
+    JNIEnv* env, jclass, jlong jMs
+) {
+    auto s = progressive::formatDuration(jMs);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatPositionInfo(
+    JNIEnv* env, jclass, jlong jPos, jlong jDur
+) {
+    auto s = progressive::formatPositionInfo(jPos, jDur);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jfloat JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeProgress(
+    JNIEnv*, jclass, jlong jPos, jlong jDur
+) {
+    return progressive::computeProgress(jPos, jDur);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsSupportedAudio(
+    JNIEnv* env, jclass, jstring jMime
+) {
+    if (!jMime) return JNI_FALSE;
+    auto mime = std::string(env->GetStringUTFChars(jMime, nullptr));
+    env->ReleaseStringUTFChars(jMime, mime.c_str());
+    return progressive::isSupportedAudioType(mime) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Media Filter ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetFileExtension(
+    JNIEnv* env, jclass, jstring jFileName, jstring jMimeType
+) {
+    auto fn = jFileName ? std::string(env->GetStringUTFChars(jFileName, nullptr)) : "";
+    auto mt = jMimeType ? std::string(env->GetStringUTFChars(jMimeType, nullptr)) : "";
+    if (jFileName) env->ReleaseStringUTFChars(jFileName, fn.c_str());
+    if (jMimeType) env->ReleaseStringUTFChars(jMimeType, mt.c_str());
+    auto ext = progressive::getFileExtension(fn, mt);
+    return env->NewStringUTF(ext.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsValidMxcUri(
+    JNIEnv* env, jclass, jstring jUri
+) {
+    if (!jUri) return JNI_FALSE;
+    auto uri = std::string(env->GetStringUTFChars(jUri, nullptr));
+    env->ReleaseStringUTFChars(jUri, uri.c_str());
+    return progressive::isValidMxcUri(uri) ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"

@@ -80,6 +80,10 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_TOR_KEY = "SETTINGS_LABS_TOR_KEY"
         const val SETTINGS_LABS_I2P_KEY = "SETTINGS_LABS_I2P_KEY"
         const val SETTINGS_LABS_YGGDRASIL_KEY = "SETTINGS_LABS_YGGDRASIL_KEY"
+        const val SETTINGS_LABS_ACCOUNT_EXPORT_KEY = "SETTINGS_LABS_ACCOUNT_EXPORT_KEY"
+        const val SETTINGS_LABS_AUDIO_STATUSBAR_KEY = "SETTINGS_LABS_AUDIO_STATUSBAR_KEY"
+        const val SETTINGS_LABS_MEDIA_FILTER_KEY = "SETTINGS_LABS_MEDIA_FILTER_KEY"
+        const val SETTINGS_LABS_EXPIRED_FILES_KEY = "SETTINGS_LABS_EXPIRED_FILES_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1324,6 +1328,22 @@ class VectorPreferences @Inject constructor(
 
     fun isYggdrasilEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_YGGDRASIL_KEY, false)
+    }
+
+    fun isAccountExportEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_ACCOUNT_EXPORT_KEY, false)
+    }
+
+    fun isAudioStatusbarEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_AUDIO_STATUSBAR_KEY, false)
+    }
+
+    fun isMediaFilterEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_MEDIA_FILTER_KEY, false)
+    }
+
+    fun isExpiredFilesEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_EXPIRED_FILES_KEY, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

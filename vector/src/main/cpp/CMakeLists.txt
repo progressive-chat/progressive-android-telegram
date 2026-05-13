@@ -17,6 +17,9 @@ add_library(
     src/proxy.cpp
     src/yggdrasil.cpp
     src/markdown.cpp
+    src/account_export.cpp
+    src/audio_engine.cpp
+    src/media_filter.cpp
     src/jni_bridge.cpp
 )
 

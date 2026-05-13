@@ -217,4 +217,28 @@
         android:summary="@string/labs_enable_yggdrasil_summary"
         android:title="@string/labs_enable_yggdrasil" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_ACCOUNT_EXPORT_KEY"
+        android:summary="@string/labs_enable_account_export_summary"
+        android:title="@string/labs_enable_account_export" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_AUDIO_STATUSBAR_KEY"
+        android:summary="@string/labs_enable_audio_statusbar_summary"
+        android:title="@string/labs_enable_audio_statusbar" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_MEDIA_FILTER_KEY"
+        android:summary="@string/labs_enable_media_filter_summary"
+        android:title="@string/labs_enable_media_filter" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_EXPIRED_FILES_KEY"
+        android:summary="@string/labs_enable_expired_files_summary"
+        android:title="@string/labs_enable_expired_files" />
+
 </androidx.preference.PreferenceScreen>

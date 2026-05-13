@@ -3028,6 +3028,14 @@
      <string name="labs_enable_i2p_summary">Route all Matrix traffic through I2P network.</string>
      <string name="labs_enable_yggdrasil">Yggdrasil mesh</string>
      <string name="labs_enable_yggdrasil_summary">Resolve .ygg homeservers and rewrite URLs to Yggdrasil IPv6. Rewriting is handled by C++ native code.</string>
+     <string name="labs_enable_account_export">Account export/import</string>
+     <string name="labs_enable_account_export_summary">Export account credentials to an encrypted file. Import via login or settings.</string>
+     <string name="labs_enable_audio_statusbar">Audio playback statusbar</string>
+     <string name="labs_enable_audio_statusbar_summary">Show an app-wide mini statusbar during background audio playback. Tap to return to source chat.</string>
+     <string name="labs_enable_media_filter">Media file filter</string>
+     <string name="labs_enable_media_filter_summary">Filter media/files by extension in chat media browser. C++ native filtering.</string>
+     <string name="labs_enable_expired_files">Expired files</string>
+     <string name="labs_enable_expired_files_summary">Show list of cached events referencing files no longer available on the server.</string>
      <string name="jump_to_source">Jump to source</string>
 
 

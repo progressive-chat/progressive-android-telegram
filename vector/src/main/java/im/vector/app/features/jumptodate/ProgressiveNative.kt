@@ -198,6 +198,29 @@ object ProgressiveNative {
     @JvmStatic external fun nativeMarkdownToHtml(markdown: String, enableTables: Boolean): String
     @JvmStatic external fun nativeParseMarkdownTable(tableBlock: String, withScroll: Boolean): String
 
+    // --- Account Export ---
+
+    @JvmStatic external fun nativeEncryptAccount(
+        userId: String, token: String, refreshToken: String,
+        homeServer: String, deviceId: String, deviceName: String,
+        displayName: String, avatarUrl: String,
+        includeCache: Boolean, passphrase: String
+    ): String
+
+    @JvmStatic external fun nativeDecryptAccount(encrypted: String, passphrase: String): String
+
+    // --- Audio ---
+
+    @JvmStatic external fun nativeFormatDuration(ms: Long): String
+    @JvmStatic external fun nativeFormatPositionInfo(posMs: Long, durMs: Long): String
+    @JvmStatic external fun nativeComputeProgress(posMs: Long, durMs: Long): Float
+    @JvmStatic external fun nativeIsSupportedAudio(mimeType: String): Boolean
+
+    // --- Media Filter ---
+
+    @JvmStatic external fun nativeGetFileExtension(fileName: String, mimeType: String): String
+    @JvmStatic external fun nativeIsValidMxcUri(uri: String): Boolean
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
