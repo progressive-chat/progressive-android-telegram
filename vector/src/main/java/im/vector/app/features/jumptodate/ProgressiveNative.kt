@@ -131,6 +131,31 @@ object ProgressiveNative {
     @JvmStatic
     external fun nativeCacheSize(): Int
 
+    // --- SQLite Event Database ---
+
+    @JvmStatic
+    external fun nativeDbOpen(dbPath: String): Boolean
+
+    @JvmStatic
+    external fun nativeDbClose()
+
+    @JvmStatic
+    external fun nativeDbInsertEvent(
+        eventId: String, roomId: String, senderId: String, senderName: String,
+        timestamp: String, body: String, msgType: String, eventType: String,
+        relationType: String, sourceEventId: String,
+        originServerTs: Long, displayIndex: Int, sentByMe: Boolean
+    )
+
+    @JvmStatic
+    external fun nativeDbGetContext(eventId: String): String
+
+    @JvmStatic
+    external fun nativeDbClearRoom(roomId: String)
+
+    @JvmStatic
+    external fun nativeDbCount(): Int
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

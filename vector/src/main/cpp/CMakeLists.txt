@@ -12,6 +12,7 @@ add_library(
     src/relation.cpp
     src/exporter.cpp
     src/eventcache.cpp
+    src/eventdb.cpp
     src/jni_bridge.cpp
 )
 
@@ -26,4 +27,5 @@ find_library(log_lib log)
 target_link_libraries(
     progressive_native
     ${log_lib}
+    sqlite3
 )
