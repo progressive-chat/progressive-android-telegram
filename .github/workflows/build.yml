@@ -52,6 +52,8 @@ jobs:
   release:
     name: Build unsigned GPlay APKs
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     concurrency:
       group: ${{ github.ref == 'refs/heads/main' && format('build-release-apk-main-{0}', github.sha) || github.ref == 'refs/heads/develop' && format('build-release-apk-develop-{0}', github.sha) || format('build-debug-{0}', github.ref)  }}
       cancel-in-progress: false
