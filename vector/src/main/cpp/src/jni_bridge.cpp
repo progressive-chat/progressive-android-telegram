@@ -11,10 +11,10 @@ extern "C" {
 
 /*
  * Class: im.vector.app.features.jumptodate.ProgressiveNative
- * Method: nativeJumpToDate
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ * Method: nativeValidateAndBuild
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;
  *
- * Returns JSON string: {"eventId": "..."} or {"error": "..."}
+ * Returns JSON string: {"url": "...", ...} or {"error": "..."}
  */
 JNIEXPORT jstring JNICALL
 Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeValidateAndBuild(
@@ -23,8 +23,14 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeValidateAndBuild(
     jstring jRoomId,
     jstring jDateString,
     jstring jServerUrl,
-    jstring jAccessToken
+    jstring jAccessToken,
+    jboolean jIsEnabled
 ) {
+    // Feature flag check — C++ gates the feature
+    if (!jIsEnabled) {
+        const char* err = R"({"error":"/jumptodate is disabled. Enable it in Settings → Labs."})";
+        return env->NewStringUTF(err);
+    }
     if (!jRoomId || !jDateString || !jServerUrl || !jAccessToken) {
         jclass exClass = env->FindClass("java/lang/IllegalArgumentException");
         env->ThrowNew(exClass, "All parameters must be non-null");

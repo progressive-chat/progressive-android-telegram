@@ -399,9 +399,10 @@ class CommandParser @Inject constructor(
                     }
                 }
                 Command.JUMP_TO_DATE.matches(slashCommand) -> {
-                    if (messageParts.size == 2) {
+                    if (!vectorPreferences.isJumpToDateEnabled()) {
+                        ParsedCommand.ErrorUnknownSlashCommand(slashCommand)
+                    } else if (messageParts.size == 2) {
                         val dateString = messageParts[1]
-                        // Basic format check — C++ validates thoroughly
                         if (dateString.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$"))) {
                             ParsedCommand.JumpToDate(dateString)
                         } else {

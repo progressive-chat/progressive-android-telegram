@@ -3002,6 +3002,8 @@
     <string name="command_description_leave_room">Leave room with given id (or current room if null)</string>
      <string name="command_description_upgrade_room">Upgrades a room to a new version</string>
      <string name="command_description_jump_to_date">Jump to the given date in the timeline (YYYY-MM-DD)</string>
+     <string name="labs_enable_jump_to_date">Jump to date (/jumptodate)</string>
+     <string name="labs_enable_jump_to_date_summary">Enable /jumptodate slash command and date separator jump menu. Requires server support for MSC3030.</string>
 
 
     <string name="event_status_a11y_sending">Sending</string>

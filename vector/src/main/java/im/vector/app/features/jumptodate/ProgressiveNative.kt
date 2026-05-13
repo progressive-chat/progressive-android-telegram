@@ -26,11 +26,13 @@ object ProgressiveNative {
 
     /**
      * Validates the date string (YYYY-MM-DD) and builds the MSC3030 URL.
+     * Gates on the feature flag from C++ side.
      *
      * @param roomId Target room ID
      * @param dateString Date in YYYY-MM-DD format
-     * @param serverUrl Base URL of the homeserver (e.g. "https://matrix.example.com")
+     * @param serverUrl Base URL of the homeserver
      * @param accessToken User's access token
+     * @param isEnabled Whether jumptodate labs setting is enabled
      *
      * @return JSON string with url, accessToken, timestamp — or {"error":"..."} on failure
      */
@@ -39,7 +41,8 @@ object ProgressiveNative {
         roomId: String,
         dateString: String,
         serverUrl: String,
-        accessToken: String
+        accessToken: String,
+        isEnabled: Boolean
     ): String
 
     /**
@@ -62,9 +65,14 @@ object ProgressiveNative {
         roomId: String,
         dateString: String,
         serverUrl: String,
-        accessToken: String
+        accessToken: String,
+        isEnabled: Boolean
     ): JSONObject {
         val result = JSONObject()
+
+        if (!isEnabled) {
+            return result.put("error", "/jumptodate is disabled. Enable it in Settings → Labs.")
+        }
 
         // Validate date format
         val dateRegex = Regex("^(\\d{4})-(\\d{2})-(\\d{2})$")

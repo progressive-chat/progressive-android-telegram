@@ -1062,12 +1062,14 @@ class MessageComposerViewModel @AssistedInject constructor(
                 val accessToken = sessionParams.credentials.accessToken
 
                 // Native C++ validation + URL construction, with Kotlin fallback
+                val isEnabled = vectorPreferences.isJumpToDateEnabled()
                 val resultJson = try {
                     val raw = ProgressiveNative.nativeValidateAndBuild(
                         room.roomId,
                         command.dateString,
                         serverUrl,
-                        accessToken
+                        accessToken,
+                        isEnabled
                     )
                     JSONObject(raw)
                 } catch (e: UnsatisfiedLinkError) {
@@ -1076,7 +1078,8 @@ class MessageComposerViewModel @AssistedInject constructor(
                         room.roomId,
                         command.dateString,
                         serverUrl,
-                        accessToken
+                        accessToken,
+                        isEnabled
                     )
                 }
 
