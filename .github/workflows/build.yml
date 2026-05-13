@@ -9,8 +9,8 @@ permissions: {}
 
 # Enrich gradle.properties for CI/CD
 env:
-  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4096m -Dfile.encoding=UTF-8" -Dkotlin.incremental=false
-  CI_GRADLE_ARG_PROPERTIES: --stacktrace -PpreDexEnable=false --max-workers 1 --no-daemon -PciArch=armeabi-v7a
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx3072m -Dfile.encoding=UTF-8" -Dkotlin.incremental=false
+  CI_GRADLE_ARG_PROPERTIES: --stacktrace -PpreDexEnable=false --max-workers 1 --no-daemon -PciArch=armeabi-v7a -PminifyEnabled=false
 
 jobs:
   debug:
@@ -109,7 +109,7 @@ jobs:
         uses: docker://exodusprivacy/exodus-standalone:latest
         with:
           # Don't fail when finding trackers so they can be reported later
-          args: /github/workspace/gplay/release/vector-gplay-universal-release-unsigned.apk -j -o /github/workspace/exodus.json -e 0
+          args: /github/workspace/fdroid/release/vector-fdroid-armeabi-v7a-release-unsigned.apk -j -o /github/workspace/exodus.json -e 0
       - name: Upload exodus json report
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:

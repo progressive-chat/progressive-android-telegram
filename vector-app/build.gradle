@@ -266,7 +266,8 @@ android {
                 removeUnusedResources true
                 // We do not activate obfuscation as it makes it hard then to read crash reports, and it's a bit useless on an open source project :)
                 obfuscate false
-                optimizeCode true
+                def ciMinifyOff = project.findProperty("minifyEnabled")
+                optimizeCode ciMinifyOff == null || ciMinifyOff.toBoolean()
                 proguardFiles 'proguard-rules.pro'
             }
             // signingConfig signingConfigs.release
