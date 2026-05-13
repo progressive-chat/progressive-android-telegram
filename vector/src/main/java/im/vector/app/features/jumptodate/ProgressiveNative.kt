@@ -817,6 +817,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeFormatSessionBadge(unread: Int, highlights: Int): String
 
+    // --- Auth Utils ---
+
+    @JvmStatic external fun nativeFormatRateLimitMessage(responseJson: String, httpStatus: Int): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

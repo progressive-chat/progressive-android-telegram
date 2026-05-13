@@ -101,6 +101,7 @@
 #include "progressive/notif_settings.hpp"
 #include "progressive/invite_utils.hpp"
 #include "progressive/session_manager.hpp"
+#include "progressive/auth_utils.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4479,6 +4480,19 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatSessionBadg
     s.highlightCount = jHighlights;
     auto badge = progressive::formatSessionBadge(s);
     return env->NewStringUTF(badge.c_str());
+}
+
+// --- Auth Utils ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatRateLimitMessage(
+    JNIEnv* env, jclass, jstring jResponseJson, jint jHttpStatus
+) {
+    auto json = jResponseJson ? std::string(env->GetStringUTFChars(jResponseJson, nullptr)) : "";
+    if (jResponseJson) env->ReleaseStringUTFChars(jResponseJson, json.c_str());
+    auto limit = progressive::parseRateLimit(json, jHttpStatus);
+    auto s = progressive::formatRateLimitMessage(limit);
+    return env->NewStringUTF(s.c_str());
 }
 
 } // extern "C"

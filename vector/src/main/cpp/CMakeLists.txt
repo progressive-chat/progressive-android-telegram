@@ -110,6 +110,7 @@ add_library(
     src/invite_utils.cpp
     src/verification_utils.cpp
     src/session_manager.cpp
+    src/auth_utils.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )
