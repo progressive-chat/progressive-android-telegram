@@ -33,7 +33,7 @@ struct ResolveState {
 std::vector<EventLink> extractEventLinks(const std::string& body);
 
 // Check if a string looks like an event ID: $xxx or $xxx:server
-bool isEventId(const std::string& text);
+// bool isEventId(const std::string& text);  // now in matrix_patterns.hpp
 
 // Parse a Matrix.to URL to extract eventId and roomId.
 // e.g. "https://matrix.to/#/!room:server/$event:server" → {eventId, roomId}

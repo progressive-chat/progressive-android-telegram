@@ -166,9 +166,6 @@ std::string formatJumpTarget(const JumpToDateTarget& target) {
 
 // ---- Room Matching ----
 
-bool isRoomId(const std::string& input) {
-    return input.size() > 1 && input[0] == '!' && input.find(':') != std::string::npos;
-}
 
 bool isRoomAlias(const std::string& input) {
     return input.size() > 1 && input[0] == '#' && input.find(':') != std::string::npos;

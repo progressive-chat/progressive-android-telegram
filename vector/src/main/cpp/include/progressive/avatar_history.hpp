@@ -81,10 +81,6 @@ std::vector<RoomMatch> matchRooms(
 );
 
 // Check if a string is a valid room ID: !xxx:server
-bool isRoomId(const std::string& input);
-
-// Check if a string is a valid room alias: #xxx:server
-bool isRoomAlias(const std::string& input);
 
 // Compute a fuzzy match score between query and candidate string.
 double fuzzyScore(const std::string& query, const std::string& candidate);

@@ -7,17 +7,6 @@ namespace progressive {
 
 // ---- Event Link Extraction ----
 
-bool isEventId(const std::string& text) {
-    // $eventId or $eventId:server
-    if (text.size() < 2 || text[0] != '$') return false;
-    // Check valid event ID characters after $
-    for (size_t i = 1; i < text.size(); ++i) {
-        char c = text[i];
-        if (!(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z') &&
-            !(c >= '0' && c <= '9') && c != '/' && c != '+' &&
-            c != '=' && c != '-' && c != '_' && c != ':') {
-            return false;
-        }
     }
     return text.size() >= 3;
 }
