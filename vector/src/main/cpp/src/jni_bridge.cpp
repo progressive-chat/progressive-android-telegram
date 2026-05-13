@@ -111,6 +111,7 @@
 #include "progressive/event_display.hpp"
 #include "progressive/permalink.hpp"
 #include "progressive/network_monitor.hpp"
+#include "progressive/client_info.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4638,6 +4639,19 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetRecommendedMed
     );
     auto s = progressive::getRecommendedMediaQuality(quality);
     return env->NewStringUTF(s.c_str());
+}
+
+// --- Client Info ---
+
+JNIEXPORT jint JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCompareSemver(
+    JNIEnv* env, jclass, jstring jA, jstring jB
+) {
+    auto a = jA ? std::string(env->GetStringUTFChars(jA, nullptr)) : "";
+    auto b = jB ? std::string(env->GetStringUTFChars(jB, nullptr)) : "";
+    if (jA) env->ReleaseStringUTFChars(jA, a.c_str());
+    if (jB) env->ReleaseStringUTFChars(jB, b.c_str());
+    return progressive::compareSemver(a, b);
 }
 
 } // extern "C"

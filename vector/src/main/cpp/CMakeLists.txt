@@ -120,6 +120,7 @@ add_library(
     src/event_display.cpp
     src/permalink.cpp
     src/network_monitor.cpp
+    src/client_info.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )
