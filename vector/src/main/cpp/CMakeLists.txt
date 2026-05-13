@@ -71,6 +71,7 @@ add_library(
     src/link_preview.cpp
     src/hash_utils.cpp
     src/room_stats.cpp
+    src/mention_parser.cpp
     src/jni_bridge.cpp
 )
 

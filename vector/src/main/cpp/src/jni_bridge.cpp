@@ -64,6 +64,7 @@
 #include "progressive/link_preview.hpp"
 #include "progressive/hash_utils.hpp"
 #include "progressive/room_stats.hpp"
+#include "progressive/mention_parser.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3680,6 +3681,30 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeMessagesPe
     JNIEnv*, jclass, jint jCount, jlong jFirstTs, jlong jLastTs
 ) {
     return progressive::computeMessagesPerDay(jCount, jFirstTs, jLastTs);
+}
+
+// --- Mention Parser ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildUserPill(
+    JNIEnv* env, jclass, jstring jUserId, jstring jDisplayName
+) {
+    auto userId = jUserId ? std::string(env->GetStringUTFChars(jUserId, nullptr)) : "";
+    auto name   = jDisplayName ? std::string(env->GetStringUTFChars(jDisplayName, nullptr)) : "";
+    if (jUserId) env->ReleaseStringUTFChars(jUserId, userId.c_str());
+    if (jDisplayName) env->ReleaseStringUTFChars(jDisplayName, name.c_str());
+    auto s = progressive::buildUserPill(userId, name);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeStripPills(
+    JNIEnv* env, jclass, jstring jHtml
+) {
+    auto html = jHtml ? std::string(env->GetStringUTFChars(jHtml, nullptr)) : "";
+    if (jHtml) env->ReleaseStringUTFChars(jHtml, html.c_str());
+    auto s = progressive::stripPills(html);
+    return env->NewStringUTF(s.c_str());
 }
 
 } // extern "C"

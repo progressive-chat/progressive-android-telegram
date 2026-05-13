@@ -650,6 +650,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeComputeMessagesPerDay(count: Int, firstTs: Long, lastTs: Long): Double
 
+    // --- Mention Parser ---
+
+    @JvmStatic external fun nativeBuildUserPill(userId: String, displayName: String): String
+    @JvmStatic external fun nativeStripPills(html: String): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
