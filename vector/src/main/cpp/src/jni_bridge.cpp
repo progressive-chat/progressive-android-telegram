@@ -105,6 +105,7 @@
 #include "progressive/content_scanner.hpp"
 #include "progressive/event_encryption.hpp"
 #include "progressive/report_utils.hpp"
+#include "progressive/webrtc_utils.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4541,6 +4542,25 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetReasonDescript
     if (jCode) env->ReleaseStringUTFChars(jCode, code.c_str());
     auto s = progressive::getReasonDescription(code);
     return env->NewStringUTF(s.c_str());
+}
+
+// --- WebRTC Utils ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatCallDuration(
+    JNIEnv* env, jclass, jint jSeconds
+) {
+    auto s = progressive::formatCallDuration(jSeconds);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsCallEvent(
+    JNIEnv* env, jclass, jstring jEventType
+) {
+    auto et = jEventType ? std::string(env->GetStringUTFChars(jEventType, nullptr)) : "";
+    if (jEventType) env->ReleaseStringUTFChars(jEventType, et.c_str());
+    return progressive::isCallEvent(et) ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"

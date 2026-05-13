@@ -833,6 +833,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeGetReasonDescription(code: String): String
 
+    // --- WebRTC Utils ---
+
+    @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
+    @JvmStatic external fun nativeIsCallEvent(eventType: String): Boolean
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

@@ -114,6 +114,7 @@ add_library(
     src/content_scanner.cpp
     src/event_encryption.cpp
     src/report_utils.cpp
+    src/webrtc_utils.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )
