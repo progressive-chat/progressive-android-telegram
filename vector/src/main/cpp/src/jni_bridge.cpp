@@ -91,6 +91,7 @@
 #include "progressive/event_validator.hpp"
 #include "progressive/room_encryption.hpp"
 #include "progressive/login_utils.hpp"
+#include "progressive/account_utils.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -4266,6 +4267,34 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildLoginBody(
 
     auto s = progressive::buildLoginBody(params);
     return env->NewStringUTF(s.c_str());
+}
+
+// --- Account Utils ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeValidatePassword(
+    JNIEnv* env, jclass, jstring jPassword, jstring jUsername
+) {
+    auto pass = jPassword ? std::string(env->GetStringUTFChars(jPassword, nullptr)) : "";
+    auto user = jUsername ? std::string(env->GetStringUTFChars(jUsername, nullptr)) : "";
+    if (jPassword) env->ReleaseStringUTFChars(jPassword, pass.c_str());
+    if (jUsername) env->ReleaseStringUTFChars(jUsername, user.c_str());
+
+    auto result = progressive::validatePassword(pass, user);
+    auto esc = [](const std::string& s) -> std::string {
+        std::string out; for (char c : s) { if (c == '"') out += "\\\""; else out += c; } return out;
+    };
+    std::ostringstream json;
+    json << R"({"valid": )" << (result.valid ? "true" : "false");
+    if (!result.errorMessage.empty())
+        json << R"(,"errorMessage": ")" << esc(result.errorMessage) << R"(")";
+    json << R"(,"tooShort": )" << (result.tooShort ? "true" : "false");
+    json << R"(,"requiresUppercase": )" << (result.noUpperCase ? "true" : "false");
+    json << R"(,"requiresLowercase": )" << (result.noLowerCase ? "true" : "false");
+    json << R"(,"requiresDigit": )" << (result.noDigit ? "true" : "false");
+    json << R"(,"requiresSpecial": )" << (result.noSpecialChar ? "true" : "false");
+    json << "}";
+    return env->NewStringUTF(json.str().c_str());
 }
 
 } // extern "C"

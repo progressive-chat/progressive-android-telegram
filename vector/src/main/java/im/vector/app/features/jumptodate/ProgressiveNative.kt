@@ -766,6 +766,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeBuildLoginBody(userId: String, password: String, deviceName: String, deviceId: String): String
 
+    // --- Account Utils ---
+
+    @JvmStatic external fun nativeValidatePassword(password: String, username: String): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(
