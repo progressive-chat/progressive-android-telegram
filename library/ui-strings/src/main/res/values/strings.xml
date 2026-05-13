@@ -3079,6 +3079,15 @@
      <string name="room_version_label">Room version</string>
      <string name="labs_enable_expanded_preview">Expanded chat previews</string>
      <string name="labs_enable_expanded_preview_summary">Show 2-3x larger chat preview blocks with compact last messages. C++ native rendering.</string>
+     <string name="labs_enable_ram_statusbar">RAM usage statusbar</string>
+     <string name="labs_enable_ram_statusbar_summary">Show an app-wide statusbar displaying current RAM usage in MB. Lower overlay priority than audio statusbar.</string>
+     <string name="labs_enable_cache_manager">Cache management</string>
+     <string name="labs_enable_cache_manager_summary">Selectively delete cached messages by room or date. C++ native tracking and filtering.</string>
+     <string name="cache_delete_by_room">Delete by room</string>
+     <string name="cache_delete_older_than">Delete older than...</string>
+     <string name="labs_enable_all_messages">All Messages pseudoroom</string>
+     <string name="labs_enable_all_messages_summary">Show an \"All Messages\" button next to \"All Threads\". Merges all messages from all rooms into one timeline with subtle room labels.</string>
+     <string name="all_messages_title">All Messages</string>
      <string name="jump_to_source">Jump to source</string>
 
 

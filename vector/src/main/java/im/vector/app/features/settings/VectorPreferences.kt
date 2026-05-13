@@ -99,6 +99,9 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_USER_MESSAGES_KEY = "SETTINGS_LABS_USER_MESSAGES_KEY"
         const val SETTINGS_LABS_ROOM_VERSION_KEY = "SETTINGS_LABS_ROOM_VERSION_KEY"
         const val SETTINGS_LABS_EXPANDED_PREVIEW_KEY = "SETTINGS_LABS_EXPANDED_PREVIEW_KEY"
+        const val SETTINGS_LABS_RAM_STATUSBAR_KEY = "SETTINGS_LABS_RAM_STATUSBAR_KEY"
+        const val SETTINGS_LABS_CACHE_MANAGER_KEY = "SETTINGS_LABS_CACHE_MANAGER_KEY"
+        const val SETTINGS_LABS_ALL_MESSAGES_KEY = "SETTINGS_LABS_ALL_MESSAGES_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1419,6 +1422,18 @@ class VectorPreferences @Inject constructor(
 
     fun isExpandedPreviewEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_EXPANDED_PREVIEW_KEY, false)
+    }
+
+    fun isRamStatusbarEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_RAM_STATUSBAR_KEY, false)
+    }
+
+    fun isCacheManagerEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_CACHE_MANAGER_KEY, false)
+    }
+
+    fun isAllMessagesEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_ALL_MESSAGES_KEY, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

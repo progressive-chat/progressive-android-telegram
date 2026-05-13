@@ -31,6 +31,9 @@ add_library(
     src/user_messages.cpp
     src/room_version.cpp
     src/chat_preview.cpp
+    src/ram_monitor.cpp
+    src/cache_manager.cpp
+    src/message_aggregator.cpp
     src/jni_bridge.cpp
 )
 

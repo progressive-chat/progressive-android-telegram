@@ -319,6 +319,26 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatShortTime(epochMs: Long): String
     @JvmStatic external fun nativeTruncateMessage(body: String, maxLen: Int): String
 
+    // --- RAM Monitor ---
+
+    @JvmStatic external fun nativeGetMemoryInfo(): String
+    @JvmStatic external fun nativeFormatMemoryLabel(rssKb: Long): String
+
+    // --- Cache Manager ---
+
+    @JvmStatic external fun nativeCacheTrack(eventId: String, roomId: String, roomName: String, timestamp: Long, sizeBytes: Long, msgType: String, body: String)
+    @JvmStatic external fun nativeCacheStatsJson(): String
+    @JvmStatic external fun nativeCacheGetByRoom(roomId: String): String
+    @JvmStatic external fun nativeCacheGetOlderThan(beforeTs: Long): String
+    @JvmStatic external fun nativeCacheClear()
+
+    // --- Message Aggregator (All Messages) ---
+
+    @JvmStatic external fun nativeMsgAggAdd(eventId: String, roomId: String, roomName: String, accountId: String, accountIndex: String, senderName: String, body: String, msgType: String, originServerTs: Long)
+    @JvmStatic external fun nativeMsgAggGetAllJson(): String
+    @JvmStatic external fun nativeMsgAggClear()
+    @JvmStatic external fun nativeMsgAggCount(): Int
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

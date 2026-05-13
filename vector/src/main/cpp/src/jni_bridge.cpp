@@ -24,6 +24,9 @@
 #include "progressive/user_messages.hpp"
 #include "progressive/room_version.hpp"
 #include "progressive/chat_preview.hpp"
+#include "progressive/ram_monitor.hpp"
+#include "progressive/cache_manager.hpp"
+#include "progressive/message_aggregator.hpp"
 
 // --- Singleton keyword filter ---
 static progressive::KeywordFilter g_keywordFilter;
@@ -42,6 +45,12 @@ static progressive::InvitationHideList g_inviteHide;
 
 // --- Singleton thread aggregator ---
 static progressive::ThreadAggregator g_threadAgg;
+
+// --- Singleton cache manager ---
+static progressive::CacheManager g_cacheMgr;
+
+// --- Singleton message aggregator ---
+static progressive::MessageAggregator g_msgAgg;
 
 #define LOG_TAG "ProgressiveNative"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -1474,6 +1483,138 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeTruncateMessage(
     if (jBody) env->ReleaseStringUTFChars(jBody, body.c_str());
     auto s = progressive::truncateMessage(body, jMaxLen);
     return env->NewStringUTF(s.c_str());
+}
+
+// --- RAM Monitor ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetMemoryInfo(
+    JNIEnv* env, jclass
+) {
+    auto info = progressive::getMemoryInfo();
+    auto json = progressive::memoryInfoToJson(info);
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatMemoryLabel(
+    JNIEnv* env, jclass, jlong jRssKb
+) {
+    auto label = progressive::formatMemoryLabel(jRssKb);
+    return env->NewStringUTF(label.c_str());
+}
+
+// --- Cache Manager ---
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheTrack(
+    JNIEnv* env, jclass,
+    jstring jEventId, jstring jRoomId, jstring jRoomName,
+    jlong jTimestamp, jlong jSizeBytes, jstring jMsgType, jstring jBody
+) {
+    auto eventId  = jEventId ? std::string(env->GetStringUTFChars(jEventId, nullptr)) : "";
+    auto roomId   = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
+    auto roomName = jRoomName ? std::string(env->GetStringUTFChars(jRoomName, nullptr)) : "";
+    auto msgType  = jMsgType ? std::string(env->GetStringUTFChars(jMsgType, nullptr)) : "";
+    auto body     = jBody ? std::string(env->GetStringUTFChars(jBody, nullptr)) : "";
+
+    if (jEventId)  env->ReleaseStringUTFChars(jEventId, eventId.c_str());
+    if (jRoomId)   env->ReleaseStringUTFChars(jRoomId, roomId.c_str());
+    if (jRoomName) env->ReleaseStringUTFChars(jRoomName, roomName.c_str());
+    if (jMsgType)  env->ReleaseStringUTFChars(jMsgType, msgType.c_str());
+    if (jBody)     env->ReleaseStringUTFChars(jBody, body.c_str());
+
+    g_cacheMgr.track(eventId, roomId, roomName, jTimestamp, jSizeBytes, msgType, body);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheStatsJson(
+    JNIEnv* env, jclass
+) {
+    auto json = g_cacheMgr.statsToJson();
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheGetByRoom(
+    JNIEnv* env, jclass, jstring jRoomId
+) {
+    auto roomId = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
+    if (jRoomId) env->ReleaseStringUTFChars(jRoomId, roomId.c_str());
+    auto entries = g_cacheMgr.getByRoom(roomId);
+    auto json = progressive::CacheManager::entriesToJson(entries);
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheGetOlderThan(
+    JNIEnv* env, jclass, jlong jBeforeTs
+) {
+    auto entries = g_cacheMgr.getOlderThan(jBeforeTs);
+    auto json = progressive::CacheManager::entriesToJson(entries);
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheClear(
+    JNIEnv*, jclass
+) {
+    g_cacheMgr.clear();
+}
+
+// --- Message Aggregator ---
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMsgAggAdd(
+    JNIEnv* env, jclass,
+    jstring jEventId, jstring jRoomId, jstring jRoomName,
+    jstring jAccountId, jstring jAccountIndex,
+    jstring jSenderName, jstring jBody, jstring jMsgType,
+    jlong jTs
+) {
+    AggregatedMessage m;
+    m.eventId      = jEventId ? std::string(env->GetStringUTFChars(jEventId, nullptr)) : "";
+    m.roomId       = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
+    m.roomName     = jRoomName ? std::string(env->GetStringUTFChars(jRoomName, nullptr)) : "";
+    m.accountId    = jAccountId ? std::string(env->GetStringUTFChars(jAccountId, nullptr)) : "";
+    m.accountIndex = jAccountIndex ? std::string(env->GetStringUTFChars(jAccountIndex, nullptr)) : "";
+    m.senderName   = jSenderName ? std::string(env->GetStringUTFChars(jSenderName, nullptr)) : "";
+    m.body         = jBody ? std::string(env->GetStringUTFChars(jBody, nullptr)) : "";
+    m.msgType      = jMsgType ? std::string(env->GetStringUTFChars(jMsgType, nullptr)) : "";
+    m.originServerTs = jTs;
+
+    if (jEventId)  env->ReleaseStringUTFChars(jEventId, m.eventId.c_str());
+    if (jRoomId)   env->ReleaseStringUTFChars(jRoomId, m.roomId.c_str());
+    if (jRoomName) env->ReleaseStringUTFChars(jRoomName, m.roomName.c_str());
+    if (jAccountId) env->ReleaseStringUTFChars(jAccountId, m.accountId.c_str());
+    if (jAccountIndex) env->ReleaseStringUTFChars(jAccountIndex, m.accountIndex.c_str());
+    if (jSenderName) env->ReleaseStringUTFChars(jSenderName, m.senderName.c_str());
+    if (jBody)     env->ReleaseStringUTFChars(jBody, m.body.c_str());
+    if (jMsgType)  env->ReleaseStringUTFChars(jMsgType, m.msgType.c_str());
+
+    g_msgAgg.addMessage(m);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMsgAggGetAllJson(
+    JNIEnv* env, jclass
+) {
+    auto json = g_msgAgg.exportJson();
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMsgAggClear(
+    JNIEnv*, jclass
+) {
+    g_msgAgg.clear();
+}
+
+JNIEXPORT jint JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeMsgAggCount(
+    JNIEnv*, jclass
+) {
+    return static_cast<jint>(g_msgAgg.count());
 }
 
 } // extern "C"

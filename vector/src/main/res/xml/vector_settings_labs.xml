@@ -331,4 +331,22 @@
         android:summary="@string/labs_enable_expanded_preview_summary"
         android:title="@string/labs_enable_expanded_preview" />
 
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_RAM_STATUSBAR_KEY"
+        android:summary="@string/labs_enable_ram_statusbar_summary"
+        android:title="@string/labs_enable_ram_statusbar" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_CACHE_MANAGER_KEY"
+        android:summary="@string/labs_enable_cache_manager_summary"
+        android:title="@string/labs_enable_cache_manager" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_ALL_MESSAGES_KEY"
+        android:summary="@string/labs_enable_all_messages_summary"
+        android:title="@string/labs_enable_all_messages" />
+
 </androidx.preference.PreferenceScreen>
