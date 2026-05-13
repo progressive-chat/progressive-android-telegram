@@ -106,6 +106,7 @@
 #include "progressive/event_encryption.hpp"
 #include "progressive/report_utils.hpp"
 #include "progressive/webrtc_utils.hpp"
+#include "progressive/message_retry.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4561,6 +4562,21 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsCallEvent(
     auto et = jEventType ? std::string(env->GetStringUTFChars(jEventType, nullptr)) : "";
     if (jEventType) env->ReleaseStringUTFChars(jEventType, et.c_str());
     return progressive::isCallEvent(et) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Message Retry ---
+
+JNIEXPORT jint JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeRetryDelay(
+    JNIEnv*, jclass, jint jMaxRetries, jint jBaseMs, jint jMaxMs, jdouble jBackoff, jboolean jJitter, jint jAttempt
+) {
+    RetryPolicy policy;
+    policy.maxRetries = jMaxRetries;
+    policy.baseDelayMs = jBaseMs;
+    policy.maxDelayMs = jMaxMs;
+    policy.backoffMultiplier = jBackoff;
+    policy.useJitter = jJitter;
+    return progressive::computeRetryDelay(policy, jAttempt);
 }
 
 } // extern "C"

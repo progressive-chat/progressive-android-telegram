@@ -838,6 +838,10 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
     @JvmStatic external fun nativeIsCallEvent(eventType: String): Boolean
 
+    // --- Message Retry ---
+
+    @JvmStatic external fun nativeComputeRetryDelay(maxRetries: Int, baseMs: Int, maxMs: Int, backoff: Double, jitter: Boolean, attempt: Int): Int
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

@@ -115,6 +115,7 @@ add_library(
     src/event_encryption.cpp
     src/report_utils.cpp
     src/webrtc_utils.cpp
+    src/message_retry.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )
