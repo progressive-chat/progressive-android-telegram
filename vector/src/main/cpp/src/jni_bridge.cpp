@@ -62,6 +62,7 @@
 #include "progressive/spellcheck.hpp"
 #include "progressive/draft_manager.hpp"
 #include "progressive/link_preview.hpp"
+#include "progressive/hash_utils.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3649,6 +3650,26 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsImageUrl(
     auto url = jUrl ? std::string(env->GetStringUTFChars(jUrl, nullptr)) : "";
     if (jUrl) env->ReleaseStringUTFChars(jUrl, url.c_str());
     return progressive::isImageUrl(url) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Hash Utils ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeSha256Hex(
+    JNIEnv* env, jclass, jstring jInput
+) {
+    auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
+    if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
+    auto hash = progressive::sha256Hex(input);
+    return env->NewStringUTF(hash.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGenerateToken(
+    JNIEnv* env, jclass, jint jBytes
+) {
+    auto token = progressive::generateToken(jBytes > 0 ? jBytes : 32);
+    return env->NewStringUTF(token.c_str());
 }
 
 } // extern "C"

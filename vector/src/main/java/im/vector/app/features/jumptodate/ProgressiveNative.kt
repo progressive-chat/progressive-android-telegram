@@ -641,6 +641,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeIsImageUrl(url: String): Boolean
 
+    // --- Hash Utils ---
+
+    @JvmStatic external fun nativeSha256Hex(input: String): String
+    @JvmStatic external fun nativeGenerateToken(bytes: Int): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

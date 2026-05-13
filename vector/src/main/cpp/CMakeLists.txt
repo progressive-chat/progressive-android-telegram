@@ -69,6 +69,7 @@ add_library(
     src/spellcheck.cpp
     src/draft_manager.cpp
     src/link_preview.cpp
+    src/hash_utils.cpp
     src/jni_bridge.cpp
 )
 
