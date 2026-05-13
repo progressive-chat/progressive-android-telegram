@@ -76,6 +76,7 @@ add_library(
     src/reaction_utils.cpp
     src/file_validator.cpp
     src/date_utils.cpp
+    src/message_queue.cpp
     src/jni_bridge.cpp
 )
 

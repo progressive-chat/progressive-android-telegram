@@ -673,6 +673,10 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatChatTimestamp(epochMs: Long, includeSeconds: Boolean): String
     @JvmStatic external fun nativeFormatRelativeTime(epochMs: Long): String
 
+    // --- Message Queue ---
+
+    @JvmStatic external fun nativeTextSimilarity(a: String, b: String): Double
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

@@ -69,6 +69,7 @@
 #include "progressive/reaction_utils.hpp"
 #include "progressive/file_validator.hpp"
 #include "progressive/date_utils.hpp"
+#include "progressive/message_queue.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3775,6 +3776,19 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatRelativeTim
 ) {
     auto s = progressive::formatRelativeTime(jEpochMs);
     return env->NewStringUTF(s.c_str());
+}
+
+// --- Message Queue ---
+
+JNIEXPORT jdouble JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeTextSimilarity(
+    JNIEnv* env, jclass, jstring jA, jstring jB
+) {
+    auto a = jA ? std::string(env->GetStringUTFChars(jA, nullptr)) : "";
+    auto b = jB ? std::string(env->GetStringUTFChars(jB, nullptr)) : "";
+    if (jA) env->ReleaseStringUTFChars(jA, a.c_str());
+    if (jB) env->ReleaseStringUTFChars(jB, b.c_str());
+    return progressive::textSimilarity(a, b);
 }
 
 } // extern "C"
