@@ -605,6 +605,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeContrastRatio(fgR: Int, fgG: Int, fgB: Int, bgR: Int, bgG: Int, bgB: Int): Double
     @JvmStatic external fun nativeParseColor(input: String): String
 
+    // --- E2EE Utils ---
+
+    @JvmStatic external fun nativeGetTrustLabel(level: Int): String
+    @JvmStatic external fun nativeGetTrustBadge(level: Int): String
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

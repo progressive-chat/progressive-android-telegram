@@ -54,6 +54,7 @@
 #include "progressive/string_utils.hpp"
 #include "progressive/location_sharing.hpp"
 #include "progressive/color_utils.hpp"
+#include "progressive/e2ee_utils.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3470,6 +3471,24 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseColor(
     json << R"(,"hex": ")" << color.toHex() << R"(")";
     json << "}";
     return env->NewStringUTF(json.str().c_str());
+}
+
+// --- E2EE Utils ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetTrustLabel(
+    JNIEnv* env, jclass, jint jLevel
+) {
+    auto s = progressive::getTrustLabel(static_cast<TrustLevel>(jLevel));
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetTrustBadge(
+    JNIEnv* env, jclass, jint jLevel
+) {
+    auto s = progressive::getTrustBadge(static_cast<TrustLevel>(jLevel));
+    return env->NewStringUTF(s.c_str());
 }
 
 } // extern "C"
