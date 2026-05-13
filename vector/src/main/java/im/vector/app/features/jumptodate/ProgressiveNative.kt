@@ -567,6 +567,14 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatNotifBody(body: String, senderName: String, isDM: Boolean, showSender: Boolean): String
     @JvmStatic external fun nativeIsRoomMention(body: String): Boolean
 
+    // --- Matrix Patterns ---
+
+    @JvmStatic external fun nativeIsUserId(input: String): Boolean
+    @JvmStatic external fun nativeIsRoomAlias(input: String): Boolean
+    @JvmStatic external fun nativeIsEventId(input: String): Boolean
+    @JvmStatic external fun nativeParseMatrixToPermalink(url: String): String
+    @JvmStatic external fun nativeIsValidEmail(input: String): Boolean
+
     // --- Pure Kotlin fallback implementations ---
 
     fun validateAndBuildFallback(

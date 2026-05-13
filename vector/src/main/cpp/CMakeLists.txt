@@ -55,6 +55,7 @@ add_library(
     src/text_formats.cpp
     src/url_tools.cpp
     src/notif_priority.cpp
+    src/matrix_patterns.cpp
     src/jni_bridge.cpp
 )
 

@@ -49,6 +49,7 @@
 #include "progressive/text_formats.hpp"
 #include "progressive/url_tools.hpp"
 #include "progressive/notif_priority.hpp"
+#include "progressive/matrix_patterns.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -3359,6 +3360,65 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsRoomMention(
     auto body = jBody ? std::string(env->GetStringUTFChars(jBody, nullptr)) : "";
     if (jBody) env->ReleaseStringUTFChars(jBody, body.c_str());
     return progressive::isRoomMention(body) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Matrix Patterns ---
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsUserId(
+    JNIEnv* env, jclass, jstring jInput
+) {
+    auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
+    if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
+    return progressive::isUserId(input) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsRoomAlias(
+    JNIEnv* env, jclass, jstring jInput
+) {
+    auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
+    if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
+    return progressive::isRoomAlias(input) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsEventId(
+    JNIEnv* env, jclass, jstring jInput
+) {
+    auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
+    if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
+    return progressive::isEventId(input) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseMatrixToPermalink(
+    JNIEnv* env, jclass, jstring jUrl
+) {
+    auto url = jUrl ? std::string(env->GetStringUTFChars(jUrl, nullptr)) : "";
+    if (jUrl) env->ReleaseStringUTFChars(jUrl, url.c_str());
+
+    auto info = progressive::parseMatrixToPermalink(url);
+    auto esc = [](const std::string& s) -> std::string {
+        std::string out; for (char c : s) { if (c == '"') out += "\\\""; else out += c; } return out;
+    };
+    std::ostringstream json;
+    json << R"({"valid": )" << (info.valid ? "true" : "false");
+    json << R"(,"type": ")" << esc(info.type) << R"(")";
+    json << R"(,"roomId": ")" << esc(info.roomId) << R"(")";
+    json << R"(,"userId": ")" << esc(info.userId) << R"(")";
+    json << R"(,"eventId": ")" << esc(info.eventId) << R"(")";
+    json << "}";
+    return env->NewStringUTF(json.str().c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsValidEmail(
+    JNIEnv* env, jclass, jstring jInput
+) {
+    auto input = jInput ? std::string(env->GetStringUTFChars(jInput, nullptr)) : "";
+    if (jInput) env->ReleaseStringUTFChars(jInput, input.c_str());
+    return progressive::isValidEmail(input) ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"
