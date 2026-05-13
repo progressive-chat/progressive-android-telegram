@@ -204,7 +204,7 @@ OlmAccountResult OlmAccount::generateOneTimeKeys(int count) {
 OlmAccountResult OlmAccount::sign(const std::string& message) {
     OlmAccountResult result;
     auto* acc = static_cast<OlmAccountC*>(account_);
-    size_t sigLen = olm_account_sign_random_length(acc);
+    size_t sigLen = olm_account_signature_length(acc);
     std::string sig(sigLen, 0);
     size_t written = olm_account_sign(acc, message.data(), message.size(), &sig[0], sigLen);
     if (written == static_cast<size_t>(-1)) {
@@ -322,11 +322,8 @@ OlmSessionResult OlmSession::createInbound(OlmAccount& account, const std::strin
     OlmSessionResult result;
     auto* sess = static_cast<OlmSessionC*>(session_);
     auto* acc = static_cast<OlmAccountC*>(account.account_);
-    size_t randLen = olm_create_inbound_session_random_length(sess);
-    auto random = generateRandomBytes(randLen);
-    int rc = olm_create_inbound_session(sess, acc, preKeyMessage.data(), preKeyMessage.size(),
-        random.data(), random.size());
-    if (rc == -1) {
+    int rc = olm_create_inbound_session(sess, acc, preKeyMessage.data(), preKeyMessage.size());
+    if (rc == static_cast<size_t>(-1)) {
         const char* err;
         olm_session_last_error(sess, &err);
         result.error = OlmError::BadMessageFormat;
