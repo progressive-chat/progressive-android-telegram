@@ -425,6 +425,129 @@ struct ReactionAggregatedSummary {
     std::vector<std::string> localEchoEvents;
 };
 
+// ==== Edit Aggregated Summary ====
+//
+// Original Kotlin (EditAggregatedSummary.kt:21-25):
+//   data class EditAggregatedSummary(latestEdit: Event?, sourceEvents, localEchos, lastEditTs)
+
+struct EditAggregatedSummary {
+    Event latestEdit;                        // latest edit event
+    std::vector<std::string> sourceEvents;   // event IDs used to build summary
+    std::vector<std::string> localEchos;
+    int64_t lastEditTs = 0;
+};
+
+// ==== Poll Aggregated Summary ====
+//
+// Original Kotlin (PollSummaryContent.kt:29-47):
+//   data class PollSummaryContent(myVote, votes: List<VoteInfo>, votesSummary, totalVotes, winnerVoteCount)
+
+struct VoteInfo {
+    std::string userId;
+    std::string option;                      // answer ID
+    int64_t voteTimestamp = 0;
+};
+
+struct VoteSummary {
+    int total = 0;
+    double percentage = 0.0;
+};
+
+struct PollSummaryContent {
+    std::string myVote;                      // my answer ID or null
+    std::vector<VoteInfo> votes;
+    int totalVotes = 0;
+    int winnerVoteCount = 0;
+};
+
+// Original Kotlin (PollResponseAggregatedSummary.kt:21-29):
+//   data class PollResponseAggregatedSummary(aggregatedContent, closedTime, nbOptions, sourceEvents, localEchos, encryptedRelatedEventIds)
+
+struct PollResponseAggregatedSummary {
+    PollSummaryContent aggregatedContent;
+    int64_t closedTime = 0;                  // 0 = poll is still open
+    int nbOptions = 0;
+    std::vector<std::string> sourceEvents;
+    std::vector<std::string> localEchos;
+    std::vector<std::string> encryptedRelatedEventIds;
+};
+
+// Original Kotlin (ReferencesAggregatedSummary.kt:25-28):
+//   data class ReferencesAggregatedSummary(content: Content?, sourceEvents, localEchos)
+
+struct ReferencesAggregatedSummary {
+    std::string contentJson;                 // raw JSON content
+    std::vector<std::string> sourceEvents;
+    std::vector<std::string> localEchos;
+};
+
+// ==== Sender Info ====
+//
+// Original Kotlin (SenderInfo.kt:25-37):
+//   data class SenderInfo(userId, displayName, isUniqueDisplayName, avatarUrl)
+
+struct SenderInfo {
+    std::string userId;
+    std::string displayName;
+    bool isUniqueDisplayName = false;
+    std::string avatarUrl;
+
+    // Original Kotlin: val disambiguatedDisplayName
+    std::string getDisambiguatedDisplayName() const {
+        if (displayName.empty()) return userId;
+        if (isUniqueDisplayName) return displayName;
+        return displayName + " (" + userId + ")";
+    }
+};
+
+// ==== User ====
+//
+// Original Kotlin (User.kt:25-41):
+//   data class User(userId, displayName, avatarUrl)
+
+struct MatrixUser {
+    std::string userId;
+    std::string displayName;
+    std::string avatarUrl;
+};
+
+// ==== User Power Level ====
+//
+// Original Kotlin (UserPowerLevel.kt:28-45), (Role.kt:26-38):
+//   sealed interface UserPowerLevel { data object Infinite; value class Value(val value: Int) }
+
+struct UserPowerLevel {
+    enum Type { NORMAL = 0, INFINITE = 1 };
+    Type type = Type::NORMAL;
+    int value = 0;                           // power level value (0=User, 50=Moderator, 100=Admin)
+
+    static UserPowerLevel infinite() { return {Type::INFINITE, 0}; }
+    static UserPowerLevel normal(int v) { return {Type::NORMAL, v}; }
+
+    bool operator>=(const UserPowerLevel& other) const {
+        if (type == Type::INFINITE) return true;
+        if (other.type == Type::INFINITE) return false;
+        return value >= other.value;
+    }
+    bool operator<(const UserPowerLevel& other) const { return !(*this >= other); }
+
+    static UserPowerLevel User() { return {Type::NORMAL, 0}; }
+    static UserPowerLevel Moderator() { return {Type::NORMAL, 50}; }
+    static UserPowerLevel Admin() { return {Type::NORMAL, 100}; }
+    static UserPowerLevel SuperAdmin() { return {Type::NORMAL, 150}; }
+};
+
+// Original Kotlin: enum class Role { Creator, SuperAdmin, Admin, Moderator, User }
+enum class RoleType { CREATOR = 0, SUPER_ADMIN = 1, ADMIN = 2, MODERATOR = 3, USER = 4 };
+
+inline RoleType getSuggestedRole(const UserPowerLevel& pl) {
+    if (pl.type == UserPowerLevel::Type::INFINITE) return RoleType::CREATOR;
+    if (pl.value >= 150) return RoleType::SUPER_ADMIN;
+    if (pl.value >= 100) return RoleType::ADMIN;
+    if (pl.value >= 50) return RoleType::MODERATOR;
+    return RoleType::USER;
+}
+
 // ==== References Aggregated Content ====
 //
 // Original Kotlin (ReferencesAggregatedContent.kt:28-32):
