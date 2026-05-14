@@ -69,6 +69,12 @@
     <im.vector.app.core.preference.VectorPreferenceCategory android:title="@string/settings_notifications">
 
         <im.vector.app.core.preference.VectorPreference
+            android:key="SETTINGS_PUSH_GATEWAY_INFO"
+            android:summary="@string/settings_push_gateway_info_summary"
+            android:title="@string/settings_push_gateway_info_title"
+            android:selectable="false" />
+
+        <im.vector.app.core.preference.VectorPreference
             android:persistent="false"
             android:title="@string/settings_notifications_targets"
             app:fragment="im.vector.app.features.settings.push.PushGatewaysFragment" />
