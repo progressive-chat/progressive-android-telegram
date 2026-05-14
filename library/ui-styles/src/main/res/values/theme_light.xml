@@ -133,6 +133,46 @@
         <item name="lockscreen_fingerprint_button_theme">@style/PinCodeFingerprintButtonStyle</item>
         <item name="lockscreen_next_theme">@style/PinCodeNextButtonStyle</item>
 
+        <!-- SC additions -->
+        <item name="sc_message_bg_incoming">#FFEEEEEE</item>
+        <item name="sc_message_bg_outgoing">#FFDDDDDD</item>
+        <item name="sc_notice_bg_incoming">@android:color/transparent</item>
+        <item name="sc_notice_bg_outgoing">@android:color/transparent</item>
+        <item name="riotx_unread_unimportant_room_badge">?vctr_content_secondary</item>
+        <item name="timestamp_overlay_fg">@color/timestamp_overlay_fg</item>
+        <item name="timestamp_overlay_bg">@color/timestamp_overlay_bg</item>
+        <item name="colorAccent">?colorPrimary</item>
+        <item name="colorAccentPale">@color/element_accent_pale</item>
+        <item name="dense_dropdown_text_input">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu</item>
+        <item name="message_highlight_bg_color">?vctr_header_background</item>
+        <item name="code_block_bg_color">#19000000</item>
+        <item name="quote_bar_color">?code_block_bg_color</item>
+        <item name="user_color_pl_0">@color/user_color_element_pl_0</item>
+        <item name="user_color_pl_1">@color/user_color_element_pl_1</item>
+        <item name="user_color_pl_50">@color/user_color_element_pl_50</item>
+        <item name="user_color_pl_51">@color/user_color_element_pl_51</item>
+        <item name="user_color_pl_95">@color/user_color_element_pl_95</item>
+        <item name="user_color_pl_100">@color/user_color_element_pl_100</item>
+        <item name="voice_message_playback_background_color">?vctr_content_quinary</item>
+        <item name="verification_request_background">?vctr_notice_secondary</item>
+        <item name="backgroundColorLight">@color/element_background_light</item>
+        <item name="conference_animation_from">@color/palette_element_green</item>
+        <item name="conference_animation_to">@color/join_conference_animated_color</item>
+        <item name="user_color_hash_01">@color/element_name_01</item>
+        <item name="user_color_hash_02">@color/element_name_02</item>
+        <item name="user_color_hash_03">@color/element_name_03</item>
+        <item name="user_color_hash_04">@color/element_name_04</item>
+        <item name="user_color_hash_05">@color/element_name_05</item>
+        <item name="user_color_hash_06">@color/element_name_06</item>
+        <item name="user_color_hash_07">@color/element_name_07</item>
+        <item name="user_color_hash_08">@color/element_name_08</item>
+        <item name="room_color_hash_01">@color/element_room_01</item>
+        <item name="room_color_hash_02">@color/element_room_02</item>
+        <item name="room_color_hash_03">@color/element_room_03</item>
+        <item name="unread_line_unimportant">?vctr_content_secondary</item>
+        <item name="color_warning">#FF4B55</item>
+        <item name="shield_color_warning">@color/shield_color_warning</item>
+
         <!-- Use dark color, to have enough contrast with icons color. windowLightStatusBar is only available in API 23+ -->
         <item name="android:statusBarColor">@color/android_status_bar_background_dark</item>
         <!-- Use dark color, to have enough contrast with icons color. windowLightNavigationBar is only available in API 27+ -->
