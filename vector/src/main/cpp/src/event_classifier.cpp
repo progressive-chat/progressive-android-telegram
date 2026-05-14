@@ -162,4 +162,44 @@ std::string routeEventForProcessing(const std::string& eventType, const std::str
     return "unknown";
 }
 
+// ==== Message Type Detection (from Event.kt:383-450) ====
+// Original: fun Event.isTextMessage(): Boolean { return when (getMsgType()) { ... } }
+
+bool isTextMessage(const std::string& msgType) {
+    // Original: MSGTYPE_TEXT, MSGTYPE_EMOTE, MSGTYPE_NOTICE → true
+    return msgType == MessageTypeStr::TEXT ||
+           msgType == MessageTypeStr::EMOTE ||
+           msgType == MessageTypeStr::NOTICE;
+}
+
+bool isImageMessage(const std::string& msgType) { return msgType == MessageTypeStr::IMAGE; }
+bool isVideoMessage(const std::string& msgType) { return msgType == MessageTypeStr::VIDEO; }
+bool isAudioMessage(const std::string& msgType) { return msgType == MessageTypeStr::AUDIO; }
+bool isFileMessage(const std::string& msgType) { return msgType == MessageTypeStr::FILE; }
+bool isLocationMessage(const std::string& msgType) { return msgType == MessageTypeStr::LOCATION; }
+
+bool isAttachmentMessage(const std::string& msgType) {
+    // Original: MSGTYPE_IMAGE, AUDIO, VIDEO, FILE → true
+    return isImageMessage(msgType) || isAudioMessage(msgType) ||
+           isVideoMessage(msgType) || isFileMessage(msgType);
+}
+
+bool supportsNotification(const std::string& eventType) {
+    // Original: getClearType() in MESSAGE + POLL_START + POLL_END + BEACON_INFO + CALL_NOTIFY
+    return eventType == EventTypeStr::MESSAGE ||
+           isPollEvent(eventType) ||
+           eventType == EventTypeStr::CALL_INVITE;
+}
+
+bool isContentReportable(const std::string& eventType) {
+    return eventType == EventTypeStr::MESSAGE;
+}
+
+bool isInvitationEvent(const std::string& eventType, const std::string& contentJson) {
+    // Original: type == STATE_ROOM_MEMBER && membership == INVITE
+    if (eventType != EventTypeStr::STATE_ROOM_MEMBER) return false;
+    return contentJson.find("\"membership\":\"invite\"") != std::string::npos ||
+           contentJson.find("\"membership\": \"invite\"") != std::string::npos;
+}
+
 } // namespace progressive

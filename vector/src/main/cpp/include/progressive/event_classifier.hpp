@@ -158,6 +158,28 @@ std::string getMessageTypeLabel(const std::string& msgType);
 // Determine the processing category for an event (routing to C++ modules).
 std::string routeEventForProcessing(const std::string& eventType, const std::string& msgType = "");
 
+// ---- Message Type Detection (from Event.kt:378-509) ----
+// Original: fun Event.isTextMessage(): Boolean = when (getMsgType()) { MSGTYPE_TEXT, EMOTE, NOTICE → true }
+
+bool isTextMessage(const std::string& msgType);
+bool isImageMessage(const std::string& msgType);
+bool isVideoMessage(const std::string& msgType);
+bool isAudioMessage(const std::string& msgType);
+bool isFileMessage(const std::string& msgType);
+bool isLocationMessage(const std::string& msgType);
+bool isAttachmentMessage(const std::string& msgType);     // image|audio|video|file
+bool isPollEvent(const std::string& eventType);            // already declared
+bool isStickerEvent(const std::string& t);                 // already declared
+
+// Check if event supports notifications.
+bool supportsNotification(const std::string& eventType);
+
+// Check if event content is reportable.
+bool isContentReportable(const std::string& eventType);
+
+// Check if event is an invitation.
+bool isInvitationEvent(const std::string& eventType, const std::string& contentJson);
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_EVENT_CLASSIFIER_HPP
