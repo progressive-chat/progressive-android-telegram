@@ -7,6 +7,9 @@
 
 namespace progressive {
 
+// Initial sync reason — from InitialSyncRequestReason.kt (27L)
+enum class InitialSyncReason { IgnoredUsersListChange, Unknown };
+
 // ---- Sync Filter Builder ----
 
 struct SyncFilter {
