@@ -1074,6 +1074,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeParseRoomNameContent(contentJson: String): String
     @JvmStatic external fun nativeNormalizeRoomName(name: String): String
 
+    // --- Notification Count Formatter ---
+    // Ported from: RoomSummaryFormatter.kt
+
+    @JvmStatic external fun nativeFormatUnreadCounter(count: Int): String
+    @JvmStatic external fun nativeFormatBadgeText(totalCount: Int): String
+
     // --- Kotlin fallbacks for Slash Commands ---
 
     fun parseSlashCommandFallback(text: String): JSONObject {

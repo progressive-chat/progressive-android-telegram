@@ -132,6 +132,7 @@
 #include "progressive/device_naming.hpp"
 #include "progressive/sync_filter.hpp"
 #include "progressive/room_name.hpp"
+#include "progressive/notif_format.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -5077,6 +5078,25 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeNormalizeRoomName
     if (jName) env->ReleaseStringUTFChars(jName, name.c_str());
     auto n = progressive::normalizeRoomName(name);
     return env->NewStringUTF(n.c_str());
+}
+
+// --- Notification Count Formatter ---
+// Ported from: RoomSummaryFormatter.kt (25L)
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatUnreadCounter(
+    JNIEnv* env, jclass, jint jCount
+) {
+    auto s = progressive::formatUnreadCounter(jCount);
+    return env->NewStringUTF(s.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatBadgeText(
+    JNIEnv* env, jclass, jint jTotalCount
+) {
+    auto s = progressive::formatBadgeText(jTotalCount);
+    return env->NewStringUTF(s.c_str());
 }
 
 // --- Sync Utils ---

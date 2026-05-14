@@ -141,6 +141,7 @@ add_library(
     src/device_naming.cpp
     src/sync_filter.cpp
     src/room_name.cpp
+    src/notif_format.cpp
     # src/olm.cpp  # disabled: libolm API mismatches
     src/jni_bridge.cpp
 )
