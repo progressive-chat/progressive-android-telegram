@@ -129,6 +129,7 @@
 #include "progressive/content_utils.hpp"
 #include "progressive/room_state.hpp"
 #include "progressive/login_flow.hpp"
+#include "progressive/device_naming.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4947,6 +4948,54 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetSsoProviderIco
     if (jProviderId) env->ReleaseStringUTFChars(jProviderId, id.c_str());
     auto icon = progressive::getSsoProviderIcon(id);
     return env->NewStringUTF(icon.c_str());
+}
+
+// --- Device Naming / User Agent ---
+// Ported from: ComputeUserAgentUseCase.kt (83 lines)
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildUserAgent(
+    JNIEnv* env, jclass,
+    jstring jAppName, jstring jAppVersion, jstring jManufacturer,
+    jstring jModel, jstring jAndroidVersion, jstring jBuildId,
+    jstring jFlavor, jstring jSdkVersion
+) {
+    auto getStr = [&](jstring js) -> std::string {
+        if (!js) return "";
+        auto s = std::string(env->GetStringUTFChars(js, nullptr));
+        env->ReleaseStringUTFChars(js, s.c_str());
+        return s;
+    };
+    auto ua = progressive::buildUserAgent(
+        getStr(jAppName), getStr(jAppVersion), getStr(jManufacturer),
+        getStr(jModel), getStr(jAndroidVersion), getStr(jBuildId),
+        getStr(jFlavor), getStr(jSdkVersion)
+    );
+    return env->NewStringUTF(ua.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildDeviceDisplayName(
+    JNIEnv* env, jclass, jstring jAppName, jstring jDeviceModel
+) {
+    auto app = jAppName ? std::string(env->GetStringUTFChars(jAppName, nullptr)) : "";
+    auto model = jDeviceModel ? std::string(env->GetStringUTFChars(jDeviceModel, nullptr)) : "";
+    if (jAppName) env->ReleaseStringUTFChars(jAppName, app.c_str());
+    if (jDeviceModel) env->ReleaseStringUTFChars(jDeviceModel, model.c_str());
+    auto name = progressive::buildDeviceDisplayName(app, model);
+    return env->NewStringUTF(name.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeShortDeviceName(
+    JNIEnv* env, jclass, jstring jManufacturer, jstring jModel
+) {
+    auto mfr = jManufacturer ? std::string(env->GetStringUTFChars(jManufacturer, nullptr)) : "";
+    auto model = jModel ? std::string(env->GetStringUTFChars(jModel, nullptr)) : "";
+    if (jManufacturer) env->ReleaseStringUTFChars(jManufacturer, mfr.c_str());
+    if (jModel) env->ReleaseStringUTFChars(jModel, model.c_str());
+    auto name = progressive::shortDeviceName(mfr, model);
+    return env->NewStringUTF(name.c_str());
 }
 
 // --- Sync Utils ---

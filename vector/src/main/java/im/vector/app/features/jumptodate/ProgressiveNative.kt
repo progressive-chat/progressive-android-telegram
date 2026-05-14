@@ -1050,6 +1050,13 @@ object ProgressiveNative {
     @JvmStatic external fun nativeGetLoginFlowDescription(type: String): String
     @JvmStatic external fun nativeGetSsoProviderIcon(providerId: String): String
 
+    // --- Device Naming / User Agent ---
+    // Ported from: ComputeUserAgentUseCase.kt
+
+    @JvmStatic external fun nativeBuildUserAgent(appName: String, appVersion: String, manufacturer: String, model: String, androidVersion: String, buildId: String, flavor: String, sdkVersion: String): String
+    @JvmStatic external fun nativeBuildDeviceDisplayName(appName: String, deviceModel: String): String
+    @JvmStatic external fun nativeShortDeviceName(manufacturer: String, model: String): String
+
     // --- Kotlin fallbacks for Slash Commands ---
 
     fun parseSlashCommandFallback(text: String): JSONObject {
