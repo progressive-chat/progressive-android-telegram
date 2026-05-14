@@ -130,6 +130,7 @@
 #include "progressive/room_state.hpp"
 #include "progressive/login_flow.hpp"
 #include "progressive/device_naming.hpp"
+#include "progressive/sync_filter.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4996,6 +4997,51 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeShortDeviceName(
     if (jModel) env->ReleaseStringUTFChars(jModel, model.c_str());
     auto name = progressive::shortDeviceName(mfr, model);
     return env->NewStringUTF(name.c_str());
+}
+
+// --- Sync Filter Builder ---
+// Ported from: SyncFilterParams.kt (25L), SyncFilterBuilder.kt (119L)
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildSyncFilter(
+    JNIEnv* env, jclass,
+    jboolean jLazyLoadState, jboolean jLazyLoadMessages,
+    jboolean jUseThreadNotif, jboolean jCanUseThreadNotif,
+    jobjectArray jTimelineTypes, jobjectArray jStateTypes
+) {
+    progressive::SyncFilterParams params;
+    params.lazyLoadMembersForStateEvents = jLazyLoadState;
+    params.lazyLoadMembersForMessageEvents = jLazyLoadMessages;
+    params.useThreadNotifications = jUseThreadNotif;
+
+    auto readStrArray = [&](jobjectArray arr) -> std::vector<std::string> {
+        std::vector<std::string> result;
+        if (!arr) return result;
+        jsize len = env->GetArrayLength(arr);
+        for (jsize i = 0; i < len; ++i) {
+            auto js = (jstring)env->GetObjectArrayElement(arr, i);
+            const char* c = env->GetStringUTFChars(js, nullptr);
+            result.push_back(c);
+            env->ReleaseStringUTFChars(js, c);
+            env->DeleteLocalRef(js);
+        }
+        return result;
+    };
+    params.listOfSupportedEventTypes = readStrArray(jTimelineTypes);
+    params.listOfSupportedStateEventTypes = readStrArray(jStateTypes);
+
+    auto filter = progressive::buildSyncFilter(params, jCanUseThreadNotif);
+    auto json = progressive::syncFilterToJson(filter);
+    return env->NewStringUTF(json.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetDefaultSyncFilter(
+    JNIEnv* env, jclass
+) {
+    auto filter = progressive::getDefaultSyncFilter();
+    auto json = progressive::syncFilterToJson(filter);
+    return env->NewStringUTF(json.c_str());
 }
 
 // --- Sync Utils ---

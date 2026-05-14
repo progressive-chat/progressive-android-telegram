@@ -1057,6 +1057,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeBuildDeviceDisplayName(appName: String, deviceModel: String): String
     @JvmStatic external fun nativeShortDeviceName(manufacturer: String, model: String): String
 
+    // --- Sync Filter Builder ---
+    // Ported from: SyncFilterParams.kt, SyncFilterBuilder.kt
+
+    @JvmStatic external fun nativeBuildSyncFilter(lazyLoadState: Boolean, lazyLoadMessages: Boolean, useThreadNotif: Boolean, canUseThreadNotif: Boolean, timelineTypes: Array<String>, stateTypes: Array<String>): String
+    @JvmStatic external fun nativeGetDefaultSyncFilter(): String
+
     // --- Kotlin fallbacks for Slash Commands ---
 
     fun parseSlashCommandFallback(text: String): JSONObject {
