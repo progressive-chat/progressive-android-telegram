@@ -180,6 +180,21 @@ bool isContentReportable(const std::string& eventType);
 // Check if event is an invitation.
 bool isInvitationEvent(const std::string& eventType, const std::string& contentJson);
 
+// ---- Relation Types (from RelationType.kt 36L) ----
+namespace RelationType {
+    constexpr const char* ANNOTATION = "m.annotation";
+    constexpr const char* REPLACE = "m.replace";
+    constexpr const char* REFERENCE = "m.reference";
+    constexpr const char* THREAD = "m.thread";
+    constexpr const char* RESPONSE = "org.matrix.response";
+}
+
+// Check if event is a reply (has m.in_reply_to with event_id).
+bool isReplyRelation(const std::string& contentJson);
+
+// Check if event should render in thread (is reply AND isFallingBack==false).
+bool shouldRenderInThread(const std::string& contentJson);
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_EVENT_CLASSIFIER_HPP

@@ -202,4 +202,20 @@ bool isInvitationEvent(const std::string& eventType, const std::string& contentJ
            contentJson.find("\"membership\": \"invite\"") != std::string::npos;
 }
 
+// ==== Relation Types (from RelationType.kt + RelationDefaultContent.kt) ====
+bool isReplyRelation(const std::string& contentJson) {
+    // Original: this?.inReplyTo?.eventId != null
+    auto replyPos = contentJson.find("\"m.in_reply_to\"");
+    if (replyPos == std::string::npos) return false;
+    return contentJson.find("\"event_id\":\"", replyPos) != std::string::npos ||
+           contentJson.find("\"event_id\": \"", replyPos) != std::string::npos;
+}
+
+bool shouldRenderInThread(const std::string& contentJson) {
+    // Original: isFallingBack == false
+    if (!isReplyRelation(contentJson)) return false;
+    return contentJson.find("\"is_falling_back\": true") == std::string::npos &&
+           contentJson.find("\"is_falling_back\":true") == std::string::npos;
+}
+
 } // namespace progressive
