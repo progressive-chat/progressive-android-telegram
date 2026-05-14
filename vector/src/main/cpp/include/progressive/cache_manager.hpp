@@ -7,6 +7,9 @@
 
 namespace progressive {
 
+// Cache strategy — from CacheStrategy.kt (35L)
+enum class CacheStrategy { NoCache, TtlCache, InfiniteCache };
+
 struct CacheEntry {
     std::string eventId;
     std::string roomId;
