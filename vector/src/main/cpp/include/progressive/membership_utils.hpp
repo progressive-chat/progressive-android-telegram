@@ -9,7 +9,7 @@ namespace progressive {
 
 // ---- Room Membership ----
 
-enum class Membership { Join, Invite, Leave, Ban, Knock, Unknown };
+enum class Membership { None, Join, Invite, Leave, Ban, Knock, Unknown };
 
 struct MemberInfo {
     std::string userId;
