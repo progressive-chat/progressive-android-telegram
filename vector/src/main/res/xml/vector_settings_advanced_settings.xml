@@ -109,6 +109,36 @@
     </im.vector.app.core.preference.VectorPreferenceCategory>
 
     <im.vector.app.core.preference.VectorPreferenceCategory
+        android:dependency="SETTINGS_DEVELOPER_MODE_PREFERENCE_KEY"
+        android:title="Progressive Chat Debug">
+
+        <im.vector.app.core.preference.VectorPreference
+            android:key="SETTINGS_NATIVE_MODULE_STATUS"
+            android:persistent="false"
+            android:summary="Shows which of the 101 C++ modules are loaded in libprogressive_native.so"
+            android:title="Native Module Status" />
+
+        <im.vector.app.core.preference.VectorPreference
+            android:key="SETTINGS_LIBOLM_VERSION_DETAIL"
+            android:persistent="false"
+            android:summary="Detailed libolm crypto library version and capabilities"
+            android:title="libolm Version &amp; Status" />
+
+        <im.vector.app.core.preference.VectorPreference
+            android:key="SETTINGS_FEATURE_FLAGS_DUMP"
+            android:persistent="false"
+            android:summary="Quick overview of all Labs feature flags and their current state"
+            android:title="Feature Flag Status" />
+
+        <im.vector.app.core.preference.VectorPreference
+            android:key="SETTINGS_RECALC_POWER_LEVELS"
+            android:persistent="false"
+            android:summary="Re-parse all room power levels and dump computed permissions"
+            android:title="Recalculate Power Levels" />
+
+    </im.vector.app.core.preference.VectorPreferenceCategory>
+
+    <im.vector.app.core.preference.VectorPreferenceCategory
         android:key="SETTINGS_NIGHTLY_BUILD_PREFERENCE_KEY"
         android:title="@string/settings_nightly_build"
         app:isPreferenceVisible="true">

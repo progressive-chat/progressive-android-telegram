@@ -1080,6 +1080,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeCheckEmojiAttack(text: String, maxEmojis: Int, maxUnique: Int): String
 
+    // --- Debug Tools ---
+
+    @JvmStatic external fun nativeGetModuleCount(): String
+
     // --- Content Utils (MXC URLs, Message Types) ---
     // Ported from: ContentUrlResolver.kt, MessageContent.kt
 

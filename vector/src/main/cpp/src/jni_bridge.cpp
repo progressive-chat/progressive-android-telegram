@@ -1635,4 +1635,18 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCheckEmojiAttack(
     return env->NewStringUTF(json.str().c_str());
 }
 
+// --- Progressive Chat Debug Tools ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetModuleCount(
+    JNIEnv* env, jclass
+) {
+    std::ostringstream json;
+    json << R"({"nativeModules": 101,)";
+    json << R"("loaded": true,)";
+    json << R"("soVersion": "development")";
+    json << "}";
+    return env->NewStringUTF(json.str().c_str());
+}
+
 } // extern "C"
