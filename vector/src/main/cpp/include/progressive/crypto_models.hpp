@@ -61,7 +61,7 @@ struct CryptoDeviceInfo {
     std::vector<std::string> algorithms;
     std::unordered_map<std::string, std::string> keys;           // "ed25519:deviceId" → key
     std::unordered_map<std::string, std::unordered_map<std::string, std::string>> signatures; // userId → keyType → sig
-    UnsignedDeviceInfo unsigned;
+    UnsignedDeviceInfo unsignedInfo;
     DeviceVerification trustLevel = DeviceVerification::UNKNOWN;
     bool isBlocked = false;
     int64_t firstTimeSeenLocalTs = 0;
@@ -85,7 +85,7 @@ struct CryptoDeviceInfo {
     }
 
     // Original Kotlin: displayName()
-    std::string displayName() const { return unsigned.deviceDisplayName; }
+    std::string displayName() const { return unsignedInfo.deviceDisplayName; }
 };
 
 // ==== Crypto Room Info ====

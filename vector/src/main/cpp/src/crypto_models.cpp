@@ -122,7 +122,7 @@ CryptoDeviceInfo parseCryptoDeviceInfo(const std::string& json) {
 
     auto unsignedJson = extractJsonObject(json, "unsigned");
     if (!unsignedJson.empty()) {
-        d.unsigned.deviceDisplayName = extractJsonString(unsignedJson, "device_display_name");
+        d.unsignedInfo.deviceDisplayName = extractJsonString(unsignedJson, "device_display_name");
     }
 
     return d;
