@@ -94,6 +94,7 @@ add_library(
     src/presence_utils.cpp
     src/room_permissions.cpp
     src/room_summary.cpp
+    src/room_tombstone.cpp
     src/membership_utils.cpp
     src/event_validator.cpp
     src/room_encryption.cpp
@@ -105,14 +106,17 @@ add_library(
     src/event_relations.cpp
     src/e2ee_decoration.cpp
     src/room_list.cpp
+    src/room_uploads.cpp
     src/media_utils.cpp
     src/notif_settings.cpp
     src/invite_utils.cpp
     src/verification_utils.cpp
     src/session_manager.cpp
+    src/signout_service.cpp
     src/auth_utils.cpp
     src/content_scanner.cpp
     src/event_encryption.cpp
+    src/federation_version.cpp
     src/report_utils.cpp
     src/webrtc_utils.cpp
     src/message_retry.cpp
@@ -126,6 +130,7 @@ add_library(
     src/message_location.cpp
     src/timeline_utils.cpp
     src/cross_signing.cpp
+    src/terms_service.cpp
     src/edit_history.cpp
     src/read_marker.cpp
     src/slash_command.cpp
@@ -147,6 +152,7 @@ add_library(
     src/user_status.cpp
     src/offline_cache.cpp
     src/olm.cpp
+    src/openid_token.cpp
     src/jni_bridge.cpp
 )
 
