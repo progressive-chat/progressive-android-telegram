@@ -69,6 +69,20 @@ bool isDirectSection(const RoomSortEntry& room);
 // Check if a room should be in the "Favourites" section.
 bool isFavouriteSection(const RoomSortEntry& room);
 
+// ---- Breadcrumbs Sorting (from BreadcrumbsRoomComparator.kt 35L) ----
+// Breadcrumbs are recently visited rooms. They appear at the top of the room list.
+// Rooms with breadcrumbsIndex != -1 are sorted by index (lower = more recent).
+// Rooms without breadcrumbs fall back to chronological order.
+
+constexpr int NOT_IN_BREADCRUMBS = -1;
+
+// Sort rooms by breadcrumbs first, then chronologically.
+// Original: leftBreadcrumbsIndex <=> rightBreadcrumbsIndex, fallback to timestamp
+std::vector<RoomSortEntry> sortRoomsByBreadcrumbs(std::vector<RoomSortEntry> rooms);
+
+// Compare two rooms by breadcrumbs index.
+bool breadcrumbsRoomCompare(const RoomSortEntry& a, const RoomSortEntry& b);
+
 // Format sort results as JSON for the Kotlin UI.
 std::string roomSortEntryToJson(const RoomSortEntry& room);
 

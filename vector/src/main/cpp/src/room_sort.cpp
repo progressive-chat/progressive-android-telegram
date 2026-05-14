@@ -142,24 +142,29 @@ bool isFavouriteSection(const RoomSortEntry& room) {
     return room.tag == RoomTag::Favourite;
 }
 
-std::string roomSortEntryToJson(const RoomSortEntry& room) {
-    auto esc = [](const std::string& s) -> std::string {
-        std::string out;
-        for (char c : s) { if (c == '"') out += "\\\""; else out += c; }
-        return out;
-    };
-    std::ostringstream json;
-    json << R"({"roomId": ")" << esc(room.roomId) << R"(",)";
-    json << R"("displayName": ")" << esc(room.displayName) << R"(",)";
-    json << R"("lastEventTs": )" << room.lastEventTs << ",";
-    json << R"("notificationCount": )" << room.notificationCount << ",";
-    json << R"("highlightCount": )" << room.highlightCount << ",";
-    json << R"("isDirect": )" << (room.isDirect ? "true" : "false") << ",";
-    json << R"("hasUnread": )" << (room.hasUnread ? "true" : "false") << ",";
-    json << R"("tag": ")" << roomTagToString(room.tag) << R"(",)";
-    json << R"("section": ")" << esc(getRoomSectionName(room.tag, room.isDirect)) << R"(",)";
-    json << R"("sortKey": )" << getRoomSortKey(room) << "}";
-    return json.str();
+// ==== Breadcrumbs Sorting (from BreadcrumbsRoomComparator.kt:17-33) ====
+
+bool breadcrumbsRoomCompare(const RoomSortEntry& a, const RoomSortEntry& b) {
+    int aIdx = a.priority;  // breadcrumbs index stored in priority field
+    int bIdx = b.priority;
+
+    if (aIdx == NOT_IN_BREADCRUMBS) {
+        if (bIdx == NOT_IN_BREADCRUMBS) {
+            // Both not in breadcrumbs — fall back to chronological
+            return a.lastEventTs > b.lastEventTs;
+        }
+        return false; // b has breadcrumbs, b comes first
+    }
+    if (bIdx == NOT_IN_BREADCRUMBS) {
+        return true; // a has breadcrumbs, a comes first
+    }
+    // Both have breadcrumbs — sort by index (lower = more recent)
+    return aIdx < bIdx;
+}
+
+std::vector<RoomSortEntry> sortRoomsByBreadcrumbs(std::vector<RoomSortEntry> rooms) {
+    std::sort(rooms.begin(), rooms.end(), breadcrumbsRoomCompare);
+    return rooms;
 }
 
 } // namespace progressive
