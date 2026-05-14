@@ -324,4 +324,196 @@ RoomGuestAccessContent parseRoomGuestAccessContent(const std::string& json) {
     return c;
 }
 
+// ==== Room Directory Visibility ====
+
+const char* roomDirectoryVisibilityToString(RoomDirectoryVisibility v) {
+    return v == RoomDirectoryVisibility::PUBLIC ? "public" : "private";
+}
+RoomDirectoryVisibility roomDirectoryVisibilityFromString(const std::string& s) {
+    if (s == "public") return RoomDirectoryVisibility::PUBLIC;
+    return RoomDirectoryVisibility::PRIVATE;
+}
+
+// ==== Room Server ACL ====
+//
+// Original Kotlin (RoomServerAclContent.kt:26-49)
+
+RoomServerAclContent parseRoomServerAclContent(const std::string& json) {
+    RoomServerAclContent acl;
+    acl.allowIpLiterals = extractJsonBool(json, "allow_ip_literals");
+
+    auto allowPos = json.find("\"allow\"");
+    if (allowPos != std::string::npos) {
+        allowPos = json.find('[', allowPos);
+        if (allowPos != std::string::npos) {
+            allowPos++;
+            while (allowPos < json.size()) {
+                while (allowPos < json.size() && (json[allowPos] == ' ' || json[allowPos] == ',' || json[allowPos] == '\n')) allowPos++;
+                if (allowPos >= json.size() || json[allowPos] == ']') break;
+                if (json[allowPos] == '"') {
+                    allowPos++;
+                    size_t end = allowPos;
+                    while (end < json.size() && json[end] != '"') end++;
+                    acl.allowList.push_back(json.substr(allowPos, end - allowPos));
+                    allowPos = end + 1;
+                }
+            }
+        }
+    }
+
+    auto denyPos = json.find("\"deny\"");
+    if (denyPos != std::string::npos) {
+        denyPos = json.find('[', denyPos);
+        if (denyPos != std::string::npos) {
+            denyPos++;
+            while (denyPos < json.size()) {
+                while (denyPos < json.size() && (json[denyPos] == ' ' || json[denyPos] == ',' || json[denyPos] == '\n')) denyPos++;
+                if (denyPos >= json.size() || json[denyPos] == ']') break;
+                if (json[denyPos] == '"') {
+                    denyPos++;
+                    size_t end = denyPos;
+                    while (end < json.size() && json[end] != '"') end++;
+                    acl.denyList.push_back(json.substr(denyPos, end - denyPos));
+                    denyPos = end + 1;
+                }
+            }
+        }
+    }
+
+    return acl;
+}
+
+// ==== Room Third Party Invite ====
+//
+// Original Kotlin (RoomThirdPartyInviteContent.kt:28-43)
+
+RoomThirdPartyInviteContent parseRoomThirdPartyInvite(const std::string& json) {
+    RoomThirdPartyInviteContent c;
+    c.displayName = extractJsonString(json, "display_name");
+    c.keyValidityUrl = extractJsonString(json, "key_validity_url");
+    c.publicKey = extractJsonString(json, "public_key");
+
+    // Parse public_keys array
+    auto pkPos = json.find("\"public_keys\"");
+    if (pkPos != std::string::npos) {
+        pkPos = json.find('[', pkPos);
+        if (pkPos != std::string::npos) {
+            pkPos++;
+            while (pkPos < json.size()) {
+                while (pkPos < json.size() && (json[pkPos] == ' ' || json[pkPos] == ',' || json[pkPos] == '\n')) pkPos++;
+                if (pkPos >= json.size() || json[pkPos] == ']') break;
+                if (json[pkPos] == '{') {
+                    int d = 1;
+                    size_t start = pkPos;
+                    pkPos++;
+                    while (pkPos < json.size() && d > 0) {
+                        if (json[pkPos] == '{') d++;
+                        else if (json[pkPos] == '}') d--;
+                        pkPos++;
+                    }
+                    std::string pkJson = json.substr(start, pkPos - start);
+                    PublicKeyInfo pk;
+                    pk.keyValidityUrl = extractJsonString(pkJson, "key_validity_url");
+                    pk.publicKey = extractJsonString(pkJson, "public_key");
+                    c.publicKeys.push_back(pk);
+                }
+            }
+        }
+    }
+
+    return c;
+}
+
+// ==== Room Stripped State ====
+//
+// Original Kotlin (RoomStrippedState.kt:26-103)
+
+RoomStrippedState parseRoomStrippedState(const std::string& json) {
+    RoomStrippedState s;
+    s.roomId = extractJsonString(json, "room_id");
+    s.name = extractJsonString(json, "name");
+    s.topic = extractJsonString(json, "topic");
+    s.canonicalAlias = extractJsonString(json, "canonical_alias");
+    s.avatarUrl = extractJsonString(json, "avatar_url");
+    s.roomType = extractJsonString(json, "room_type");
+    s.membership = extractJsonString(json, "membership");
+    s.numJoinedMembers = extractJsonInt(json, "num_joined_members");
+    s.worldReadable = extractJsonBool(json, "world_readable");
+    s.guestCanJoin = extractJsonBool(json, "guest_can_join");
+    s.isFederated = extractJsonBool(json, "m.federate");
+    s.isEncrypted = extractJsonBool(json, "is_encrypted");
+
+    // Parse aliases array
+    auto aliasPos = json.find("\"aliases\"");
+    if (aliasPos != std::string::npos) {
+        aliasPos = json.find('[', aliasPos);
+        if (aliasPos != std::string::npos) {
+            aliasPos++;
+            while (aliasPos < json.size()) {
+                while (aliasPos < json.size() && (json[aliasPos] == ' ' || json[aliasPos] == ',' || json[aliasPos] == '\n')) aliasPos++;
+                if (aliasPos >= json.size() || json[aliasPos] == ']') break;
+                if (json[aliasPos] == '"') {
+                    aliasPos++;
+                    size_t end = aliasPos;
+                    while (end < json.size() && json[end] != '"') end++;
+                    s.aliases.push_back(json.substr(aliasPos, end - aliasPos));
+                    aliasPos = end + 1;
+                }
+            }
+        }
+    }
+
+    return s;
+}
+
+// ==== Public Room ====
+//
+// Original Kotlin (PublicRoom.kt:26-79)
+
+PublicRoom parsePublicRoom(const std::string& json) {
+    PublicRoom r;
+    r.roomId = extractJsonString(json, "room_id");
+    r.name = extractJsonString(json, "name");
+    r.topic = extractJsonString(json, "topic");
+    r.canonicalAlias = extractJsonString(json, "canonical_alias");
+    r.avatarUrl = extractJsonString(json, "avatar_url");
+    r.numJoinedMembers = extractJsonInt(json, "num_joined_members");
+    r.worldReadable = extractJsonBool(json, "world_readable");
+    r.guestCanJoin = extractJsonBool(json, "guest_can_join");
+    r.isFederated = extractJsonBool(json, "m.federate");
+    return r;
+}
+
+PublicRoomsResponse parsePublicRoomsResponse(const std::string& json) {
+    PublicRoomsResponse r;
+    r.nextBatch = extractJsonString(json, "next_batch");
+    r.prevBatch = extractJsonString(json, "prev_batch");
+    r.totalRoomCountEstimate = extractJsonInt(json, "total_room_count_estimate");
+
+    auto chunkPos = json.find("\"chunk\"");
+    if (chunkPos != std::string::npos) {
+        chunkPos = json.find('[', chunkPos);
+        if (chunkPos != std::string::npos) {
+            chunkPos++;
+            while (chunkPos < json.size()) {
+                while (chunkPos < json.size() && (json[chunkPos] == ' ' || json[chunkPos] == ',' || json[chunkPos] == '\n')) chunkPos++;
+                if (chunkPos >= json.size() || json[chunkPos] == ']') break;
+                if (json[chunkPos] == '{') {
+                    int d = 1;
+                    size_t start = chunkPos;
+                    chunkPos++;
+                    while (chunkPos < json.size() && d > 0) {
+                        if (json[chunkPos] == '{') d++;
+                        else if (json[chunkPos] == '}') d--;
+                        chunkPos++;
+                    }
+                    r.chunk.push_back(parsePublicRoom(json.substr(start, chunkPos - start)));
+                }
+            }
+        }
+    }
+
+    return r;
+}
+
 } // namespace progressive

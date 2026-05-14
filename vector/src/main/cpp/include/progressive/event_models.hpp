@@ -306,6 +306,73 @@ inline bool isPollStart(const std::string& type) { return type == "m.poll.start"
 inline bool isPollEnd(const std::string& type) { return type == "m.poll.end"; }
 inline bool isPoll(const std::string& type) { return isPollStart(type) || isPollEnd(type); }
 
+// ==== Server-side Aggregation ====
+//
+// Original Kotlin (AggregatedRelations.kt:28-44):
+//   data class AggregatedRelations(annotations, references, replaces, latestThread)
+
+struct UnsignedRelationInfo {
+    bool limited = false;                // "limited" key
+    int count = 0;                       // "count" key
+};
+
+struct AggregatedAnnotation : UnsignedRelationInfo {
+    std::vector<RelationChunkInfo> chunk; // "chunk" key — reaction counts
+};
+
+struct DefaultUnsignedRelationInfo : UnsignedRelationInfo {
+    std::vector<Event> chunk;            // "chunk" key — related events
+};
+
+// Original Kotlin (AggregatedReplace.kt:28-32):
+//   data class AggregatedReplace(eventId, originServerTs, senderId)
+struct AggregatedReplace {
+    std::string eventId;                 // "event_id" key — latest edit
+    int64_t originServerTs = 0;          // "origin_server_ts" key
+    std::string senderId;                // "sender" key
+};
+
+// Extended AggregatedRelations (full struct, not just chunks)
+struct AggregatedRelationsFull {
+    AggregatedAnnotation annotations;    // "m.annotation" key
+    DefaultUnsignedRelationInfo references; // "m.reference" key
+    AggregatedReplace replaces;          // "m.replace" key
+    DefaultUnsignedRelationInfo latestThread; // "m.thread" key
+};
+
+// ==== Local Echo ====
+//
+// Original Kotlin (LocalEcho.kt:22-26):
+//   object LocalEcho {
+//       fun isLocalEchoId(eventId: String) = eventId.startsWith("\$local.")
+//       fun createLocalEchoId() = "\$local.${UUID.randomUUID()}"
+//   }
+
+constexpr const char* LOCAL_ECHO_PREFIX = "$local.";
+
+inline bool isLocalEchoId(const std::string& eventId) {
+    return eventId.find(LOCAL_ECHO_PREFIX) == 0;
+}
+
+// ==== Stable/Unstable ID ====
+//
+// Original Kotlin (StableUnstableId.kt:21-25):
+//   data class StableUnstableId(stable: String, unstable: String)
+//   val values = listOf(stable, unstable)
+
+struct StableUnstableId {
+    std::string stable;
+    std::string unstable;
+
+    std::vector<std::string> values() const {
+        return {stable, unstable};
+    }
+
+    bool matches(const std::string& type) const {
+        return type == stable || type == unstable;
+    }
+};
+
 // ==== JSON Parsing ====
 
 Event parseEvent(const std::string& eventJson);

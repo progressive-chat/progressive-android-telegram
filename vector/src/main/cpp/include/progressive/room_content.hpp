@@ -334,6 +334,158 @@ RoomPowerLevelsContent parsePowerLevelsContent(const std::string& contentJson);
 RoomNameContent parseRoomNameContent(const std::string& contentJson);
 RoomTopicContent parseRoomTopicContent(const std::string& contentJson);
 RoomAvatarContent parseRoomAvatarContent(const std::string& contentJson);
+// ==== Room Server ACL ====
+//
+// Original Kotlin (RoomServerAclContent.kt:26-49):
+//   data class RoomServerAclContent(allowIpLiterals, allowList, denyList)
+//   companion object { const val ALL = "*" }
+
+constexpr const char* ACL_ALL = "*";
+
+struct RoomServerAclContent {
+    bool allowIpLiterals = true;         // "allow_ip_literals" key
+    std::vector<std::string> allowList;  // "allow" key — wildcards supported
+    std::vector<std::string> denyList;   // "deny" key — wildcards supported
+};
+
+// ==== Room Third-Party Invite ====
+//
+// Original Kotlin (RoomThirdPartyInviteContent.kt:28-43):
+//   data class RoomThirdPartyInviteContent(displayName, keyValidityUrl, publicKey, publicKeys)
+
+struct PublicKeyInfo {
+    std::string keyValidityUrl;          // "key_validity_url" key
+    std::string publicKey;               // "public_key" key — base64 ed25519
+};
+
+struct RoomThirdPartyInviteContent {
+    std::string displayName;             // "display_name" key
+    std::string keyValidityUrl;          // "key_validity_url" key
+    std::string publicKey;               // "public_key" key (legacy)
+    std::vector<PublicKeyInfo> publicKeys; // "public_keys" key
+};
+
+// ==== Room Stripped State ====
+//
+// Original Kotlin (RoomStrippedState.kt:26-103):
+//   data class RoomStrippedState(aliases, canonicalAlias, name, numJoinedMembers,
+//       roomId, topic, worldReadable, guestCanJoin, avatarUrl, isFederated,
+//       isEncrypted, roomType, membership)
+
+struct RoomStrippedState {
+    std::vector<std::string> aliases;
+    std::string canonicalAlias;
+    std::string name;
+    int numJoinedMembers = 0;
+    std::string roomId;
+    std::string topic;
+    bool worldReadable = false;
+    bool guestCanJoin = false;
+    std::string avatarUrl;
+    bool isFederated = true;
+    bool isEncrypted = false;
+    std::string roomType;                // e.g. "m.space"
+    std::string membership;              // e.g. "leave"
+
+    // Original Kotlin: getPrimaryAlias()
+    std::string getPrimaryAlias() const {
+        if (!canonicalAlias.empty()) return canonicalAlias;
+        if (!aliases.empty()) return aliases[0];
+        return "";
+    }
+};
+
+// ==== Room Directory Visibility ====
+//
+// Original Kotlin (RoomDirectoryVisibility.kt:23-26):
+//   enum class RoomDirectoryVisibility { PRIVATE, PUBLIC }
+
+enum class RoomDirectoryVisibility {
+    PRIVATE = 0,    // "private"
+    PUBLIC = 1      // "public"
+};
+const char* roomDirectoryVisibilityToString(RoomDirectoryVisibility v);
+RoomDirectoryVisibility roomDirectoryVisibilityFromString(const std::string& s);
+
+// ==== Room Tag ====
+//
+// Original Kotlin (RoomTag.kt:21-31):
+//   data class RoomTag(name, order)
+
+namespace RoomTag {
+    constexpr const char* FAVOURITE = "m.favourite";
+    constexpr const char* LOW_PRIORITY = "m.lowpriority";
+    constexpr const char* SERVER_NOTICE = "m.server_notice";
+}
+
+struct RoomTagData {
+    std::string name;
+    double order = 0.0;
+};
+
+// Original Kotlin (RoomTagContent.kt:25-27):
+//   data class RoomTagContent(tags: Map<String, Map<String, Any>>)
+struct RoomTagContent {
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> tags;
+};
+
+// ==== Public Room (Directory) ====
+//
+// Original Kotlin (PublicRoom.kt:26-79):
+//   data class PublicRoom(aliases, canonicalAlias, name, numJoinedMembers,
+//       roomId, topic, worldReadable, guestCanJoin, avatarUrl, isFederated)
+
+struct PublicRoom {
+    std::vector<std::string> aliases;
+    std::string canonicalAlias;
+    std::string name;
+    int numJoinedMembers = 0;
+    std::string roomId;
+    std::string topic;
+    bool worldReadable = false;
+    bool guestCanJoin = false;
+    std::string avatarUrl;
+    bool isFederated = true;
+
+    // Original Kotlin: getPrimaryAlias()
+    std::string getPrimaryAlias() const {
+        if (!canonicalAlias.empty()) return canonicalAlias;
+        if (!aliases.empty()) return aliases[0];
+        return "";
+    }
+};
+
+// Original Kotlin (PublicRoomsResponse.kt:26-47):
+//   data class PublicRoomsResponse(nextBatch, prevBatch, chunk, totalRoomCountEstimate)
+struct PublicRoomsResponse {
+    std::string nextBatch;               // "next_batch" key
+    std::string prevBatch;               // "prev_batch" key
+    std::vector<PublicRoom> chunk;       // "chunk" key
+    int totalRoomCountEstimate = 0;      // "total_room_count_estimate" key
+};
+
+// Original Kotlin (PublicRoomsParams.kt:25-51):
+//   data class PublicRoomsParams(limit, since, filter, includeAllNetworks, thirdPartyInstanceId)
+struct PublicRoomsParams {
+    int limit = 0;
+    std::string since;                   // pagination token
+    std::string searchTerm;              // "filter.generic_search_term"
+    bool includeAllNetworks = false;
+    std::string thirdPartyInstanceId;
+};
+
+// ==== JSON Parsing (extended) ====
+
+// Room server ACL
+RoomServerAclContent parseRoomServerAclContent(const std::string& contentJson);
+// Room third-party invite
+RoomThirdPartyInviteContent parseRoomThirdPartyInvite(const std::string& contentJson);
+// Room stripped state
+RoomStrippedState parseRoomStrippedState(const std::string& json);
+// Public rooms
+PublicRoom parsePublicRoom(const std::string& json);
+PublicRoomsResponse parsePublicRoomsResponse(const std::string& json);
+
 RoomCanonicalAliasContent parseRoomCanonicalAliasContent(const std::string& contentJson);
 RoomJoinRulesContent parseRoomJoinRulesContent(const std::string& contentJson);
 RoomHistoryVisibilityContent parseRoomHistoryVisibilityContent(const std::string& contentJson);
