@@ -9,8 +9,8 @@ permissions: {}
 
 # Enrich gradle.properties for CI/CD
 env:
-  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx3584m -Dfile.encoding=UTF-8" -Dkotlin.incremental=false
-  CI_GRADLE_ARG_PROPERTIES: --stacktrace --info -PpreDexEnable=false --max-workers 1 --no-daemon -PminifyEnabled=false -Pkotlin.compiler.execution.strategy=out-of-process -PciAbi=armeabi-v7a
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4096m -Dfile.encoding=UTF-8" -Dkotlin.incremental=false
+  CI_GRADLE_ARG_PROPERTIES: --stacktrace --info -PpreDexEnable=false --max-workers 1 --no-daemon -PminifyEnabled=false -Pkotlin.compiler.execution.strategy=in-process -PciAbi=armeabi-v7a
 
 jobs:
   debug:
