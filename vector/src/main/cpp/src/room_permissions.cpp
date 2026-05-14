@@ -5,8 +5,8 @@
 
 namespace progressive {
 
-PowerLevels parsePowerLevels(const std::string& stateContentJson) {
-    PowerLevels pl;
+RoomPowerLevels parseRoomPowerLevels(const std::string& stateContentJson) {
+    RoomPowerLevels pl;
 
     auto extractNum = [&](const std::string& key) -> int {
         auto val = parseJsonStringValue(stateContentJson, key);
@@ -61,19 +61,19 @@ PowerLevels parsePowerLevels(const std::string& stateContentJson) {
     return pl;
 }
 
-int getUserPowerLevel(const PowerLevels& pl, const std::string& userId) {
+int getUserPowerLevel(const RoomPowerLevels& pl, const std::string& userId) {
     auto it = pl.userOverrides.find(userId);
     if (it != pl.userOverrides.end()) return it->second;
     return pl.usersDefault;
 }
 
-int getRequiredLevel(const PowerLevels& pl, const std::string& eventType, bool isState) {
+int getRequiredLevel(const RoomPowerLevels& pl, const std::string& eventType, bool isState) {
     auto it = pl.eventOverrides.find(eventType);
     if (it != pl.eventOverrides.end()) return it->second;
     return isState ? pl.stateDefault : pl.eventsDefault;
 }
 
-RoomPermissions computePermissions(const PowerLevels& pl, const std::string& myUserId) {
+RoomPermissions computePermissions(const RoomPowerLevels& pl, const std::string& myUserId) {
     RoomPermissions p;
     p.myUserId = myUserId;
 
@@ -110,14 +110,14 @@ RoomPermissions computePermissions(const PowerLevels& pl, const std::string& myU
     return p;
 }
 
-bool hasPower(const PowerLevels& pl, const std::string& userId,
+bool hasPower(const RoomPowerLevels& pl, const std::string& userId,
     const std::string& action, bool isState) {
     int userPL = getUserPowerLevel(pl, userId);
     int required = getRequiredLevel(pl, action, isState);
     return userPL >= required;
 }
 
-std::string getSuggestedRole(const PowerLevels& pl, const std::string& userId) {
+std::string getSuggestedRole(const RoomPowerLevels& pl, const std::string& userId) {
     int plvl = getUserPowerLevel(pl, userId);
     if (plvl >= 100) return "Admin";
     if (plvl >= 50) return "Moderator";

@@ -9,7 +9,7 @@ namespace progressive {
 
 // ---- Power Levels & Permissions ----
 
-struct RoomPowerLevels {
+struct RoomRoomPowerLevels {
     int usersDefault = 0;
     int eventsDefault = 0;
     int stateDefault = 50;
@@ -52,23 +52,23 @@ struct RoomPermissions {
 };
 
 // Parse power levels from m.room.power_levels state event.
-PowerLevels parsePowerLevels(const std::string& stateContentJson);
+RoomPowerLevels parseRoomPowerLevels(const std::string& stateContentJson);
 
 // Compute room permissions from power levels.
-RoomPermissions computePermissions(const PowerLevels& pl, const std::string& myUserId);
+RoomPermissions computePermissions(const RoomPowerLevels& pl, const std::string& myUserId);
 
 // Get a user's effective power level.
-int getUserPowerLevel(const PowerLevels& pl, const std::string& userId);
+int getUserPowerLevel(const RoomPowerLevels& pl, const std::string& userId);
 
 // Get the required level for an event type.
-int getRequiredLevel(const PowerLevels& pl, const std::string& eventType, bool isState);
+int getRequiredLevel(const RoomPowerLevels& pl, const std::string& eventType, bool isState);
 
 // Check if a user has sufficient power for an action.
-bool hasPower(const PowerLevels& pl, const std::string& userId,
+bool hasPower(const RoomPowerLevels& pl, const std::string& userId,
     const std::string& action, bool isState = false);
 
 // Get the suggested role name: Creator, Admin, Moderator, Default.
-std::string getSuggestedRole(const PowerLevels& pl, const std::string& userId);
+std::string getSuggestedRole(const RoomPowerLevels& pl, const std::string& userId);
 
 // Format permissions summary as text.
 std::string formatPermissionsSummary(const RoomPermissions& perms);
