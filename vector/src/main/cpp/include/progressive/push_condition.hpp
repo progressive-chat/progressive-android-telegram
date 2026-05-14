@@ -61,15 +61,15 @@ struct EventPushCondition {
 };
 
 // Evaluate a generic push condition against event JSON.
-PushCondition evaluatePushCondition(
-    const PushCondition& condition,
+EventPushCondition evaluateEventPushCondition(
+    const EventPushCondition& condition,
     const std::string& eventJson
 );
 
 // Format push condition as JSON for Kotlin UI.
-std::string pushConditionToJson(const PushCondition& condition);
+std::string pushConditionToJson(const EventPushCondition& condition);
 
-// ---- Push Rule & Rule Set (from PushRule.kt 142L + RuleSet.kt 75L) ----
+// ---- Push Rule & Rule Set (from EventPushRule.kt 142L + RuleSet.kt 75L) ----
 // Models for Matrix push rules as defined in the spec:
 //   https://matrix.org/docs/spec/client_server/latest#push-rules
 
@@ -79,36 +79,36 @@ struct EventPushRule {
     bool isDefault = false;
     std::string pattern;                     // glob pattern for content rules
     std::vector<std::string> actions;        // "notify", "dont_notify", "coalesce", "highlight"
-    std::vector<PushCondition> conditions;   // for override/sender/underride rules
+    std::vector<EventPushCondition> conditions;   // for override/sender/underride rules
     bool shouldHighlight = false;            // action contains "highlight"
     bool shouldNotify = true;                // action contains "notify" (not "dont_notify")
     std::string notificationSound;           // "default" or custom sound name
 };
 
 // Parse a push rule from JSON.
-PushRule parsePushRule(const std::string& json);
+EventPushRule parseEventPushRule(const std::string& json);
 
 // Set notification sound on a push rule.
-// Original: fun setNotificationSound(sound: String): PushRule
-PushRule setPushRuleSound(const PushRule& rule, const std::string& sound);
+// Original: fun setNotificationSound(sound: String): EventPushRule
+EventPushRule setEventPushRuleSound(const EventPushRule& rule, const std::string& sound);
 
 // Set highlight on a push rule.
-// Original: fun setHighlight(highlight: Boolean): PushRule
-PushRule setPushRuleHighlight(const PushRule& rule, bool highlight);
+// Original: fun setHighlight(highlight: Boolean): EventPushRule
+EventPushRule setEventPushRuleHighlight(const EventPushRule& rule, bool highlight);
 
 // Set notify/dont_notify on a push rule.
-// Original: fun setNotify(notify: Boolean): PushRule
-PushRule setPushRuleNotify(const PushRule& rule, bool notify);
+// Original: fun setNotify(notify: Boolean): EventPushRule
+EventPushRule setEventPushRuleNotify(const EventPushRule& rule, bool notify);
 
 // Check if rule should notify.
 // Original: fun shouldNotify() = actions.contains(ACTION_NOTIFY)
-inline bool pushRuleShouldNotify(const PushRule& rule) { return rule.shouldNotify; }
+inline bool pushRuleShouldNotify(const EventPushRule& rule) { return rule.shouldNotify; }
 
 // Check if rule should not notify (empty actions or contains dont_notify).
-inline bool pushRuleShouldNotNotify(const PushRule& rule) { return !rule.shouldNotify; }
+inline bool pushRuleShouldNotNotify(const EventPushRule& rule) { return !rule.shouldNotify; }
 
 // Format push rule as JSON.
-std::string pushRuleToJson(const PushRule& rule);
+std::string pushRuleToJson(const EventPushRule& rule);
 
 // ---- Contains Display Name Condition ----
 // Faithful port from org.matrix.android.sdk.api.session.pushrules.ContainsDisplayNameCondition.kt (47L)
