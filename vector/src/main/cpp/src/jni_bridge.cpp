@@ -1474,4 +1474,18 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeThreadMeta
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Pending Message Editing ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCanEditPendingMessage(
+    JNIEnv* env, jclass, jstring jLocalId, jint jState
+) {
+    progressive::PendingMessage msg;
+    msg.localId = jLocalId ? std::string(env->GetStringUTFChars(jLocalId, nullptr)) : "";
+    if (jLocalId) env->ReleaseStringUTFChars(jLocalId, msg.localId.c_str());
+    msg.state = static_cast<progressive::MessageSendState>(jState);
+    bool can = progressive::canEditPendingMessage(msg);
+    return env->NewStringUTF(can ? "true" : "false");
+}
+
 } // extern "C"

@@ -1049,6 +1049,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeComputeThreadMeta(rootContent: String, replySenders: Array<String>, replyBodies: Array<String>, replyTimestamps: LongArray): String
 
+    // --- Pending Message Editing ---
+    // Edit messages before they're sent — no need to wait for server confirmation
+
+    @JvmStatic external fun nativeCanEditPendingMessage(localId: String, state: Int): String
+
     // --- Content Utils (MXC URLs, Message Types) ---
     // Ported from: ContentUrlResolver.kt, MessageContent.kt
 

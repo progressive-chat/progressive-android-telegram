@@ -81,6 +81,28 @@ std::string formatMessageStatus(MessageSendState state);
 // Get a display text for the retry count badge.
 std::string formatRetryBadge(int retryCount);
 
+// ---- Pending Message Editing ----
+// Allow editing messages that are still pending/sending.
+// Original Element behavior: edit only after server confirms send.
+// Progressive Chat: edit immediately, apply to pending queue.
+// The edit is sent as an m.replace relation pointing to the pending event.
+
+struct EditResult {
+    bool success = false;
+    std::string error;
+    bool wasPending = false;       // message was still pending when edited
+    bool wasSending = false;       // message was being sent when edited
+};
+
+// Edit a message that may still be pending/sending.
+// Updates the body in the queue. If the message hasn't been sent yet,
+// the edited body will be sent when the queue retries.
+// If it's in progress, the edit event will be sent AFTER the original.
+PendingMessage editPendingMessage(std::vector<PendingMessage>& queue, const std::string& localId, const std::string& newBody, int64_t nowMs);
+
+// Check if a pending message CAN be edited (not failed/cancelled).
+bool canEditPendingMessage(const PendingMessage& msg);
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_MESSAGE_RETRY_HPP

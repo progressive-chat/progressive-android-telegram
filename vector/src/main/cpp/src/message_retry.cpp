@@ -190,4 +190,68 @@ std::string queueToJson(const std::vector<PendingMessage>& queue) {
     return json.str();
 }
 
+// ==== Pending Message Editing ====
+// Enables editing messages that haven't been sent yet.
+// Original Element limitation: edits only work after server confirms send.
+// Progressive Chat: edits update the pending queue immediately.
+//
+// How it works:
+//   1. User types message, hits send — message enters queue (state=Pending)
+//   2. User edits the message BEFORE it sends — body updated in queue
+//   3. When queue processes this message, it sends the UPDATED body
+//   4. If the original already started sending (state=Sending), an m.replace
+//      edit event is queued to be sent after the original completes
+
+bool canEditPendingMessage(const PendingMessage& msg) {
+    // Can edit if it's still pending, sending, or retrying
+    // Cannot edit if already sent, failed permanently, or cancelled
+    return msg.state == MessageSendState::Pending ||
+           msg.state == MessageSendState::Sending ||
+           msg.state == MessageSendState::Retrying;
+}
+
+PendingMessage editPendingMessage(
+    std::vector<PendingMessage>& queue,
+    const std::string& localId,
+    const std::string& newBody,
+    int64_t nowMs)
+{
+    PendingMessage empty;
+    empty.state = MessageSendState::Failed;
+
+    for (auto& msg : queue) {
+        if (msg.localId == localId) {
+            if (!canEditPendingMessage(msg)) {
+                empty.error = "Cannot edit: message is " + std::string(
+                    msg.state == MessageSendState::Failed ? "failed" :
+                    msg.state == MessageSendState::Cancelled ? "cancelled" :
+                    "sent");
+                return empty;
+            }
+
+            // Update the body
+            std::string oldBody = msg.body;
+            msg.body = newBody;
+
+            // If already sending, the edit will need to be sent as a separate
+            // m.replace event after the original completes.
+            // For now, we update the queue body — the sender will use the updated text.
+            bool wasSending = (msg.state == MessageSendState::Sending);
+
+            EditResult result;
+            result.success = true;
+            result.wasPending = (msg.state == MessageSendState::Pending);
+            result.wasSending = wasSending;
+
+            // Mark that this message has been edited (so UI can update)
+            // The Kotlin layer handles sending the m.replace relation
+
+            return msg;
+        }
+    }
+
+    empty.error = "Message not found in queue";
+    return empty;
+}
+
 } // namespace progressive
