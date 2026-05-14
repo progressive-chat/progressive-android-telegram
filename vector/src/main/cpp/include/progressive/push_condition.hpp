@@ -70,6 +70,21 @@ PushCondition evaluatePushCondition(
 // Format push condition as JSON for Kotlin UI.
 std::string pushConditionToJson(const PushCondition& condition);
 
+// ---- Contains Display Name Condition ----
+// Faithful port from org.matrix.android.sdk.api.session.pushrules.ContainsDisplayNameCondition.kt (47L)
+//
+// Checks if the user's display name appears in the message body.
+// Used by the default "contains_display_name" push rule for @mentions.
+// Matching is case-insensitive and matches at word boundaries.
+
+// Check if displayName is found in text (case-insensitive).
+// Original Kotlin: message.body.caseInsensitiveFind(displayName)
+bool caseInsensitiveFind(const std::string& text, const std::string& search);
+
+// Check if a message mentions a user by display name.
+// Reads content.body from event JSON, checks case-insensitive match.
+bool evaluateDisplayNameCondition(const std::string& eventJson, const std::string& displayName);
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_PUSH_CONDITION_HPP

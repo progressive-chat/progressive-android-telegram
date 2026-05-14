@@ -236,4 +236,46 @@ std::string pushConditionToJson(const PushCondition& condition) {
     return json.str();
 }
 
+// ==== Contains Display Name Condition (from ContainsDisplayNameCondition.kt:32-46) ====
+// Original Kotlin:
+//   fun isSatisfied(event: Event, displayName: String): Boolean {
+//       val message = when (event.type) { EventType.MESSAGE -> event.content.toModel<MessageContent>() else -> null } ?: return false
+//       return message.body.caseInsensitiveFind(displayName)
+//   }
+
+bool caseInsensitiveFind(const std::string& text, const std::string& search) {
+    if (search.empty()) return false;
+    if (text.size() < search.size()) return false;
+
+    // Case-insensitive substring search
+    for (size_t i = 0; i <= text.size() - search.size(); ++i) {
+        bool match = true;
+        for (size_t j = 0; j < search.size(); ++j) {
+            if (std::tolower(static_cast<unsigned char>(text[i + j])) !=
+                std::tolower(static_cast<unsigned char>(search[j]))) {
+                match = false;
+                break;
+            }
+        }
+        if (match) return true;
+    }
+    return false;
+}
+
+bool evaluateDisplayNameCondition(const std::string& eventJson, const std::string& displayName) {
+    if (displayName.empty()) return false;
+
+    // Extract msgtype to verify it's a message
+    // Original: when (event.type) { EventType.MESSAGE -> ... else -> null }
+    // We check for "msgtype" field which indicates a message event
+    if (eventJson.find("\"msgtype\"") == std::string::npos) return false;
+
+    // Extract the body field
+    std::string body = extractJsonField(eventJson, "content.body");
+    if (body.empty()) return false;
+
+    // Original: message.body.caseInsensitiveFind(displayName)
+    return caseInsensitiveFind(body, displayName);
+}
+
 } // namespace progressive
