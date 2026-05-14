@@ -120,6 +120,7 @@
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
 #include "progressive/slash_command.hpp"
+#include "progressive/typing_monitor.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -4938,6 +4939,83 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeGetAvailableComma
     }
     json << "]";
     return env->NewStringUTF(json.str().c_str());
+}
+
+// --- Typing Monitor ---
+// Ported from: TypingUsersTracker.kt, TypingHelper.kt, TypingView.kt
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeUpdateTypingState(
+    JNIEnv* env, jclass,
+    jstring jRoomId,
+    jobjectArray jTypingUserIds,
+    jobjectArray jDisplayNames,
+    jlong jNowMs
+) {
+    auto roomId = jRoomId ? std::string(env->GetStringUTFChars(jRoomId, nullptr)) : "";
+    if (jRoomId) env->ReleaseStringUTFChars(jRoomId, roomId.c_str());
+
+    std::vector<std::string> userIds;
+    jsize count = jTypingUserIds ? env->GetArrayLength(jTypingUserIds) : 0;
+    for (jsize i = 0; i < count; ++i) {
+        auto jId = (jstring)env->GetObjectArrayElement(jTypingUserIds, i);
+        const char* c = env->GetStringUTFChars(jId, nullptr);
+        userIds.push_back(c);
+        env->ReleaseStringUTFChars(jId, c);
+        env->DeleteLocalRef(jId);
+    }
+
+    std::vector<std::string> names;
+    jsize nameCount = jDisplayNames ? env->GetArrayLength(jDisplayNames) : 0;
+    for (jsize i = 0; i < nameCount; ++i) {
+        auto jName = (jstring)env->GetObjectArrayElement(jDisplayNames, i);
+        const char* c = env->GetStringUTFChars(jName, nullptr);
+        names.push_back(c);
+        env->ReleaseStringUTFChars(jName, c);
+        env->DeleteLocalRef(jName);
+    }
+
+    auto state = progressive::updateTypingState(roomId, userIds, names, jNowMs);
+    auto json = progressive::typingStateToJson(state);
+    return env->NewStringUTF(json.str().c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatTypingText(
+    JNIEnv* env, jclass, jstring jTypingStateJson
+) {
+    // Quick-parse the typing state from JSON
+    auto json = jTypingStateJson ? std::string(env->GetStringUTFChars(jTypingStateJson, nullptr)) : "{}";
+    if (jTypingStateJson) env->ReleaseStringUTFChars(jTypingStateJson, json.c_str());
+
+    // Parse typingUsers array
+    progressive::TypingState state;
+    state.hasAnyoneTyping = json.find(R"("hasAnyoneTyping": true)") != std::string::npos ||
+                            json.find(R"("hasAnyoneTyping":true)") != std::string::npos;
+
+    // Count typing users by counting "userId" occurrences
+    size_t pos = 0;
+    while ((pos = json.find("\"userId\"", pos)) != std::string::npos) {
+        pos++;
+        state.typingUsers.push_back({});
+    }
+    state.typingCount = static_cast<int>(state.typingUsers.size());
+
+    auto text = progressive::formatTypingText(state, 3);
+    return env->NewStringUTF(text.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsUserTyping(
+    JNIEnv* env, jclass, jstring jTypingStateJson, jstring jUserId, jlong jNowMs
+) {
+    auto json = jTypingStateJson ? std::string(env->GetStringUTFChars(jTypingStateJson, nullptr)) : "{}";
+    if (jTypingStateJson) env->ReleaseStringUTFChars(jTypingStateJson, json.c_str());
+    auto userId = jUserId ? std::string(env->GetStringUTFChars(jUserId, nullptr)) : "";
+    if (jUserId) env->ReleaseStringUTFChars(jUserId, userId.c_str());
+
+    // Quick check: is the userId in the JSON?
+    return json.find("\"userId\": \"" + userId + "\"") != std::string::npos;
 }
 
 } // extern "C"

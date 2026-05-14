@@ -129,6 +129,7 @@ add_library(
     src/edit_history.cpp
     src/read_marker.cpp
     src/slash_command.cpp
+    src/typing_monitor.cpp
     # src/olm.cpp  # disabled: libolm API mismatches
     src/jni_bridge.cpp
 )

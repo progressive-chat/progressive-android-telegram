@@ -978,6 +978,13 @@ object ProgressiveNative {
     @JvmStatic external fun nativeIsKnownSlashCommand(text: String): Boolean
     @JvmStatic external fun nativeGetAvailableCommands(): String
 
+    // --- Typing Monitor ---
+    // Ported from: TypingUsersTracker.kt, TypingHelper.kt, TypingView.kt
+
+    @JvmStatic external fun nativeUpdateTypingState(roomId: String, typingUserIds: Array<String>, displayNames: Array<String>, nowMs: Long): String
+    @JvmStatic external fun nativeFormatTypingText(typingStateJson: String): String
+    @JvmStatic external fun nativeIsUserTyping(typingStateJson: String, userId: String, nowMs: Long): Boolean
+
     // --- Kotlin fallbacks for Slash Commands ---
 
     fun parseSlashCommandFallback(text: String): JSONObject {
