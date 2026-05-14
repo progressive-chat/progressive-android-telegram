@@ -15,7 +15,7 @@ namespace progressive {
 //   2. Parse JSON → extract "m.homeserver".base_url
 //   3. Also extract "m.identity_server".base_url if present
 //   4. Validate URLs (must be https://)
-//   5. Return WellKnownResult
+//   5. Return ServerDiscoveryResult
 //
 // This is the parsing/validation logic — HTTP fetching is done by Kotlin.
 
@@ -33,7 +33,7 @@ struct ServerDiscoveryResult {
 //       val baseUrl = homeServer?.optString("base_url")
 //       return WellKnown(baseUrl, ...)
 //   }
-WellKnownResult parseWellKnown(const std::string& json);
+ServerDiscoveryResult parseWellKnown(const std::string& json);
 
 // Format a user-entered server URL (e.g. "matrix.org" → "https://matrix.org").
 // Original Kotlin (LoginServerUrlFormatter.kt:format):
@@ -64,7 +64,7 @@ bool isValidHomeserverUrl(const std::string& url);
 bool isValidIdentityServerUrl(const std::string& url);
 
 // Format the result as JSON for the Kotlin UI layer.
-std::string wellKnownToJson(const WellKnownResult& result);
+std::string wellKnownToJson(const ServerDiscoveryResult& result);
 
 // Check if a server URL needs a well-known lookup.
 // Returns true if the URL is a plain domain (no scheme, no port, no path).
