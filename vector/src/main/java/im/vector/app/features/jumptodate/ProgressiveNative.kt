@@ -1068,6 +1068,13 @@ object ProgressiveNative {
     @JvmStatic external fun nativeStringMidPoints(left: String, right: String, count: Int): String
     @JvmStatic external fun nativeStringAverage(left: String, right: String): String
 
+    // --- Event Type Classifier ---
+    // Ported from: EventType.kt (146L), MessageType.kt (52L)
+
+    @JvmStatic external fun nativeRouteEventForProcessing(eventType: String, msgType: String): String
+    @JvmStatic external fun nativeIsCallEvent(eventType: String): Boolean
+    @JvmStatic external fun nativeIsVerificationEvent(eventType: String): Boolean
+
     // --- Content Utils (MXC URLs, Message Types) ---
     // Ported from: ContentUrlResolver.kt, MessageContent.kt
 

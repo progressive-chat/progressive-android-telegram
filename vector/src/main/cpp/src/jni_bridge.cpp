@@ -138,6 +138,7 @@
 #include "progressive/push_condition.hpp"
 #include "progressive/sender_notif_filter.hpp"
 #include "progressive/string_order.hpp"
+#include "progressive/event_classifier.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -1577,6 +1578,39 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeStringAverage(
     if (jRight) env->ReleaseStringUTFChars(jRight, right.c_str());
     auto avg = progressive::stringAverage(left, right);
     return env->NewStringUTF(avg.c_str());
+}
+
+// --- Event Type Classifier ---
+// Ported from: EventType.kt (146L), MessageType.kt (52L)
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeRouteEventForProcessing(
+    JNIEnv* env, jclass, jstring jEventType, jstring jMsgType
+) {
+    auto et = jEventType ? std::string(env->GetStringUTFChars(jEventType, nullptr)) : "";
+    auto mt = jMsgType ? std::string(env->GetStringUTFChars(jMsgType, nullptr)) : "";
+    if (jEventType) env->ReleaseStringUTFChars(jEventType, et.c_str());
+    if (jMsgType) env->ReleaseStringUTFChars(jMsgType, mt.c_str());
+    auto route = progressive::routeEventForProcessing(et, mt);
+    return env->NewStringUTF(route.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsCallEvent(
+    JNIEnv* env, jclass, jstring jEventType
+) {
+    auto et = jEventType ? std::string(env->GetStringUTFChars(jEventType, nullptr)) : "";
+    if (jEventType) env->ReleaseStringUTFChars(jEventType, et.c_str());
+    return progressive::isCallEvent(et);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsVerificationEvent(
+    JNIEnv* env, jclass, jstring jEventType
+) {
+    auto et = jEventType ? std::string(env->GetStringUTFChars(jEventType, nullptr)) : "";
+    if (jEventType) env->ReleaseStringUTFChars(jEventType, et.c_str());
+    return progressive::isVerificationEvent(et);
 }
 
 } // extern "C"

@@ -141,6 +141,7 @@ add_library(
     src/push_condition.cpp
     src/sender_notif_filter.cpp
     src/string_order.cpp
+    src/event_classifier.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )
