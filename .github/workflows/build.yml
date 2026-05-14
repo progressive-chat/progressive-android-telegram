@@ -9,8 +9,8 @@ permissions: {}
 
 # Enrich gradle.properties for CI/CD
 env:
-  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx2048m -Dfile.encoding=UTF-8 -XX:+UseParallelGC -XX:MaxMetaspaceSize=512m" -Dkotlin.incremental=false
-  CI_GRADLE_ARG_PROPERTIES: --stacktrace --info --no-build-cache -PpreDexEnable=false --max-workers 1 --no-daemon -PminifyEnabled=false -Pkotlin.compiler.execution.strategy=out-of-process -PciAbi=armeabi-v7a -Pandroid.enableBuildCache=false
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx2048m -Dfile.encoding=UTF-8 -XX:+UseSerialGC" -Dkotlin.incremental=false -Dkotlin.daemon.jvm.options="-Xmx1024m"
+  CI_GRADLE_ARG_PROPERTIES: --stacktrace --warn --no-build-cache -PpreDexEnable=false --max-workers 1 --no-daemon -PminifyEnabled=false -Pkotlin.compiler.execution.strategy=out-of-process -PciAbi=armeabi-v7a -Pandroid.enableBuildCache=false -Pkotlin.daemon.jvmargs=-Xmx1024m
 
 jobs:
   debug:
