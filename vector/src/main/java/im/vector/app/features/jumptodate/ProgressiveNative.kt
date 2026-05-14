@@ -1068,6 +1068,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeParseServerCapabilities(json: String): String
     @JvmStatic external fun nativeIsDelegatedOidcEnabled(authenticationIssuer: String): Boolean
 
+    // --- Room Display Name ---
+    // Ported from: RoomDisplayNameResolver.kt
+
+    @JvmStatic external fun nativeParseRoomNameContent(contentJson: String): String
+    @JvmStatic external fun nativeNormalizeRoomName(name: String): String
+
     // --- Kotlin fallbacks for Slash Commands ---
 
     fun parseSlashCommandFallback(text: String): JSONObject {

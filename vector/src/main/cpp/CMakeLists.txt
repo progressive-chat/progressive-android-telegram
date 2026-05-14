@@ -140,6 +140,7 @@ add_library(
     src/login_flow.cpp
     src/device_naming.cpp
     src/sync_filter.cpp
+    src/room_name.cpp
     # src/olm.cpp  # disabled: libolm API mismatches
     src/jni_bridge.cpp
 )
