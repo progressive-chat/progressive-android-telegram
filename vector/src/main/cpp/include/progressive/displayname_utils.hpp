@@ -26,9 +26,8 @@ std::string userIdToColor(const std::string& userId);
 std::string stringToColor(const std::string& input);
 
 // Get the first letter of a display name for avatars.
-// "Alice Johnson" → "A"
-// "Bob" → "B"
-// "" → "?"
+// Enhanced algorithm from MatrixItem.kt (211L): firstLetterOfDisplayName()
+// Handles: @/#/+ prefixes, LTR marks (0x200E), surrogate pairs (emoji)
 std::string getFirstLetter(const std::string& name);
 
 // Generate avatar initials (1-2 chars).

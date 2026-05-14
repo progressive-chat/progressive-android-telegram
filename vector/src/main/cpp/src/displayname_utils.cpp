@@ -95,12 +95,45 @@ std::string stringToColor(const std::string& input) {
 }
 
 std::string getFirstLetter(const std::string& name) {
-    for (char c : name) {
-        if (!std::isspace(static_cast<unsigned char>(c))) {
-            return std::string(1, std::toupper(static_cast<unsigned char>(c)));
+    // Enhanced algorithm from MatrixItem.kt: firstLetterOfDisplayName()
+    // Handles: @/#/+ prefixes, LTR marks, surrogate pairs
+
+    if (name.empty()) return "?";
+
+    int startIndex = 0;
+    int firstChar = static_cast<unsigned char>(name[0]);
+
+    // Skip @ # + prefixes
+    if ((firstChar == '@' || firstChar == '#' || firstChar == '+') && name.size() > 1) {
+        startIndex = 1;
+        firstChar = static_cast<unsigned char>(name[1]);
+    }
+
+    // Skip LEFT-TO-RIGHT MARK (0x200E)
+    if (firstChar == 0xE2 && name.size() > startIndex + 2) {
+        // UTF-8: E2 80 8E = LTR mark
+        unsigned char b2 = static_cast<unsigned char>(name[startIndex + 1]);
+        unsigned char b3 = static_cast<unsigned char>(name[startIndex + 2]);
+        if (b2 == 0x80 && b3 == 0x8E && name.size() > startIndex + 3) {
+            startIndex += 3;
+            firstChar = static_cast<unsigned char>(name[startIndex]);
         }
     }
-    return "?";
+
+    int length = 1;
+    // Check for surrogate pair (emoji): D800-DBFF followed by DC00-DFFF
+    if (firstChar == 0xF0 && name.size() > startIndex + 1) {
+        // 4-byte UTF-8 sequence for supplementary planes (emoji)
+        length = 4;
+    } else if (firstChar == 0xED && name.size() > startIndex + 5) {
+        // Surrogate pair via UTF-8: ED A0 80–ED AF BF
+        // Keep as single char for simplicity
+        length = 1;
+    }
+
+    std::string result = name.substr(startIndex, length);
+    for (char& c : result) c = std::toupper(static_cast<unsigned char>(c));
+    return result;
 }
 
 std::string getInitials(const std::string& name, int maxChars) {
