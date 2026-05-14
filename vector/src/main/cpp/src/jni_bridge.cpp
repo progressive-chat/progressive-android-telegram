@@ -139,6 +139,7 @@
 #include "progressive/sender_notif_filter.hpp"
 #include "progressive/string_order.hpp"
 #include "progressive/event_classifier.hpp"
+#include "progressive/content_guard.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -1611,6 +1612,27 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsVerificationEve
     auto et = jEventType ? std::string(env->GetStringUTFChars(jEventType, nullptr)) : "";
     if (jEventType) env->ReleaseStringUTFChars(jEventType, et.c_str());
     return progressive::isVerificationEvent(et);
+}
+
+// --- Content Guard (Emoji Attack + Media Collapse) ---
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCheckEmojiAttack(
+    JNIEnv* env, jclass, jstring jText, jint jMaxEmojis, jint jMaxUnique
+) {
+    auto text = jText ? std::string(env->GetStringUTFChars(jText, nullptr)) : "";
+    if (jText) env->ReleaseStringUTFChars(jText, text.c_str());
+    auto result = progressive::checkEmojiAttack(text, jMaxEmojis, jMaxUnique);
+    auto esc = [](const std::string& s) -> std::string {
+        std::string out; for (char c : s) { if (c == '"') out += "\\\""; else out += c; } return out;
+    };
+    std::ostringstream json;
+    json << R"({"totalEmojis": )" << result.totalEmojis << ",";
+    json << R"("uniqueEmojis": )" << result.uniqueEmojis << ",";
+    json << R"("isAttack": )" << (result.isAttack ? "true" : "false") << ",";
+    json << R"("label": ")" << esc(result.label) << R"(")";
+    json << "}";
+    return env->NewStringUTF(json.str().c_str());
 }
 
 } // extern "C"

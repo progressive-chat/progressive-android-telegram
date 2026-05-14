@@ -1075,6 +1075,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeIsCallEvent(eventType: String): Boolean
     @JvmStatic external fun nativeIsVerificationEvent(eventType: String): Boolean
 
+    // --- Content Guard ---
+    // Protects against emoji attacks and excessive media
+
+    @JvmStatic external fun nativeCheckEmojiAttack(text: String, maxEmojis: Int, maxUnique: Int): String
+
     // --- Content Utils (MXC URLs, Message Types) ---
     // Ported from: ContentUrlResolver.kt, MessageContent.kt
 

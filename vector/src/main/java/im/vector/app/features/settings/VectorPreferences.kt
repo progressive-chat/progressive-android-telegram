@@ -121,6 +121,9 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_INCLUDE_HISTORICAL_SERVERS_KEY = "SETTINGS_LABS_INCLUDE_HISTORICAL_SERVERS_KEY"
         const val SETTINGS_LABS_EDIT_STACKING_KEY = "SETTINGS_LABS_EDIT_STACKING_KEY"
         const val SETTINGS_LABS_SHOW_EDIT_COUNT_KEY = "SETTINGS_LABS_SHOW_EDIT_COUNT_KEY"
+        const val SETTINGS_LABS_EMOJI_ATTACK_PROTECTION_KEY = "SETTINGS_LABS_EMOJI_ATTACK_PROTECTION_KEY"
+        const val SETTINGS_LABS_EMOJI_MAX_COUNT_KEY = "SETTINGS_LABS_EMOJI_MAX_COUNT_KEY"
+        const val SETTINGS_LABS_MEDIA_COLLAPSE_THRESHOLD_KEY = "SETTINGS_LABS_MEDIA_COLLAPSE_THRESHOLD_KEY"
         const val SETTINGS_LABS_DUPLICATE_NAMES_KEY = "SETTINGS_LABS_DUPLICATE_NAMES_KEY"
         const val SETTINGS_LABS_READ_RECEIPTS_KEY = "SETTINGS_LABS_READ_RECEIPTS_KEY"
         const val SETTINGS_READ_RECEIPTS_MAX_VISIBLE = "SETTINGS_READ_RECEIPTS_MAX_VISIBLE"
@@ -1541,6 +1544,20 @@ class VectorPreferences @Inject constructor(
 
     fun isShowEditCountEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_SHOW_EDIT_COUNT_KEY, false)
+    }
+
+    fun isEmojiAttackProtectionEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_LABS_EMOJI_ATTACK_PROTECTION_KEY, false)
+    }
+
+    fun getEmojiMaxCount(): Int {
+        val count = defaultPrefs.getString(SETTINGS_LABS_EMOJI_MAX_COUNT_KEY, "50")
+        return count?.toIntOrNull() ?: 50
+    }
+
+    fun getMediaCollapseThreshold(): Int {
+        val count = defaultPrefs.getString(SETTINGS_LABS_MEDIA_COLLAPSE_THRESHOLD_KEY, "10")
+        return count?.toIntOrNull() ?: 10
     }
 
     fun isDuplicateNamesEnabled(): Boolean {
