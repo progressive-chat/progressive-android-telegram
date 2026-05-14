@@ -29,7 +29,9 @@ std::vector<LocalizedTerms> TermsResponse::getLocalizedTerms(
 ) const {
     std::vector<LocalizedTerms> result;
 
-    for (const auto& [policyName, langMap] : policies) {
+    for (const auto& policyPair : policies) {
+        const auto& policyName = policyPair.first;
+        const auto& langMap = policyPair.second;
         LocalizedTerms lt;
         lt.policyName = policyName;
 
@@ -50,8 +52,8 @@ std::vector<LocalizedTerms> TermsResponse::getLocalizedTerms(
             it = langMap.find(defaultLanguage);
             if (it != langMap.end()) return &it->second;
             // Fallback: first non-version entry
-            for (const auto& [k, v] : langMap) {
-                if (k != "version") return &v;
+            for (const auto& langEntry : langMap) {
+                if (langEntry.first != "version") return &langEntry.second;
             }
             return nullptr;
         }();
@@ -275,12 +277,16 @@ std::string termsResponseToJson(const TermsResponse& response) {
     // Original Kotlin: Moshi serialization of TermsResponse
     std::string json = "{\"policies\":{";
     bool firstPolicy = true;
-    for (const auto& [policyName, langMap] : response.policies) {
+    for (const auto& policyPair : response.policies) {
+        const auto& policyName = policyPair.first;
+        const auto& langMap = policyPair.second;
         if (!firstPolicy) json += ",";
         firstPolicy = false;
         json += "\"" + policyName + "\":{";
         bool firstLang = true;
-        for (const auto& [langKey, props] : langMap) {
+        for (const auto& langPair : langMap) {
+            const auto& langKey = langPair.first;
+            const auto& props = langPair.second;
             if (!firstLang) json += ",";
             firstLang = false;
             if (langKey == "version" && props.count("") > 0) {
@@ -288,7 +294,9 @@ std::string termsResponseToJson(const TermsResponse& response) {
             } else {
                 json += "\"" + langKey + "\":{";
                 bool firstProp = true;
-                for (const auto& [propKey, propVal] : props) {
+                for (const auto& propPair : props) {
+                    const auto& propKey = propPair.first;
+                    const auto& propVal = propPair.second;
                     if (!firstProp) json += ",";
                     firstProp = false;
                     json += "\"" + propKey + "\":\"" + propVal + "\"";
