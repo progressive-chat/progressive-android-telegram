@@ -272,4 +272,48 @@ std::string eventToJson(const Event& ev) {
     return json;
 }
 
+// ==== Valid Decrypted Event ====
+//
+// Original Kotlin (EventExt.kt:21-41): fun Event.toValidDecryptedEvent()
+//   Copies relation context from encrypted content into decrypted content.
+
+ValidDecryptedEvent ValidDecryptedEvent::fromEncryptedEvent(
+    const Event& ev, const std::string& decryptedContentJson)
+{
+    ValidDecryptedEvent vd;
+    vd.type = ev.getClearType();
+    vd.eventId = ev.eventId;
+    vd.roomId = ev.roomId;
+    vd.originServerTs = ev.originServerTs;
+    vd.cryptoSenderKey = ev.getSenderKey();
+    vd.unsignedData = ev.unsignedData;
+    vd.redacts = ev.redacts;
+    vd.prevContentJson = ev.prevContentJson;
+
+    // Original Kotlin: algorithm from content["algorithm"]
+    vd.algorithm = extractJsonString(ev.contentJson, "algorithm");
+
+    // Original Kotlin: copy m.relates_to from encrypted content to decrypted
+    // val updatedContent = content.get("m.relates_to")?.let {
+    //     decryptedContent.toMutableMap().apply { put("m.relates_to", it) }
+    // } ?: decryptedContent
+    auto relJson = extractJsonObject(ev.contentJson, "m.relates_to");
+    if (!relJson.empty()) {
+        // Insert m.relates_to into decrypted content
+        if (!decryptedContentJson.empty() && decryptedContentJson.size() > 1) {
+            std::string updated = decryptedContentJson;
+            updated.pop_back(); // remove closing }
+            if (updated.back() != '{') updated += ",";
+            updated += "\"m.relates_to\":" + relJson + "}";
+            vd.clearContentJson = updated;
+        } else {
+            vd.clearContentJson = "{\"m.relates_to\":" + relJson + "}";
+        }
+    } else {
+        vd.clearContentJson = decryptedContentJson;
+    }
+
+    return vd;
+}
+
 } // namespace progressive

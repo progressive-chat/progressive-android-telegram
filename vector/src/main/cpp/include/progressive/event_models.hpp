@@ -337,7 +337,7 @@ struct AggregatedRelationsFull {
     AggregatedAnnotation annotations;    // "m.annotation" key
     DefaultUnsignedRelationInfo references; // "m.reference" key
     AggregatedReplace replaces;          // "m.replace" key
-    DefaultUnsignedRelationInfo latestThread; // "m.thread" key
+    LatestThreadUnsignedRelation latestThread; // "m.thread" key
 };
 
 // ==== Local Echo ====
@@ -372,6 +372,79 @@ struct StableUnstableId {
         return type == stable || type == unstable;
     }
 };
+
+// ==== Latest Thread Unsigned Relation ====
+//
+// Original Kotlin (LatestThreadUnsignedRelation.kt:25-34):
+//   data class LatestThreadUnsignedRelation : UnsignedRelationInfo(
+//       limited, count,
+//       @Json(name="latest_event") event: Event?,
+//       @Json(name="current_user_participated") isUserParticipating: Boolean?
+//   )
+
+struct LatestThreadUnsignedRelation : UnsignedRelationInfo {
+    Event latestEvent;                       // "latest_event" key
+    bool isUserParticipating = false;        // "current_user_participated" key
+};
+
+// ==== Valid Decrypted Event ====
+//
+// Original Kotlin (ValidDecryptedEvent.kt:28-38):
+//   data class ValidDecryptedEvent(type, eventId, clearContent, prevContent,
+//       originServerTs, cryptoSenderKey, roomId, unsignedData, redacts, algorithm)
+
+struct ValidDecryptedEvent {
+    std::string type;
+    std::string eventId;
+    std::string clearContentJson;            // decrypted content JSON
+    std::string prevContentJson;
+    int64_t originServerTs = 0;
+    std::string cryptoSenderKey;             // curve25519 sender key
+    std::string roomId;
+    UnsignedData unsignedData;
+    std::string redacts;
+    std::string algorithm;                   // e.g. "m.megolm.v1.aes-sha2"
+
+    // Original Kotlin (EventExt.kt:21-41): fun Event.toValidDecryptedEvent()
+    static ValidDecryptedEvent fromEncryptedEvent(const Event& ev, const std::string& decryptedContentJson);
+};
+
+// ==== Reaction Aggregated Summary ====
+//
+// Original Kotlin (ReactionAggregatedSummary.kt:21-29):
+//   data class ReactionAggregatedSummary(key, count, addedByMe,
+//       firstTimestamp, sourceEvents, localEchoEvents)
+
+struct ReactionAggregatedSummary {
+    std::string key;                         // "👍"
+    int count = 0;
+    bool addedByMe = false;
+    int64_t firstTimestamp = 0;
+    std::vector<std::string> sourceEvents;   // event IDs
+    std::vector<std::string> localEchoEvents;
+};
+
+// ==== References Aggregated Content ====
+//
+// Original Kotlin (ReferencesAggregatedContent.kt:28-32):
+//   data class ReferencesAggregatedContent(verificationState: VerificationState)
+
+struct ReferencesAggregatedContent {
+    int verificationState = 0;               // VerificationState enum value
+};
+
+// ==== Room Local Echo ====
+//
+// Original Kotlin (RoomLocalEcho.kt:23-31):
+//   object RoomLocalEcho { const val PREFIX = "!local." }
+//   fun isLocalEchoId(roomId) = roomId.startsWith(PREFIX)
+//   fun createLocalEchoId() = "${PREFIX}${UUID.randomUUID()}"
+
+constexpr const char* ROOM_LOCAL_ECHO_PREFIX = "!local.";
+
+inline bool isRoomLocalEchoId(const std::string& roomId) {
+    return roomId.find(ROOM_LOCAL_ECHO_PREFIX) == 0;
+}
 
 // ==== JSON Parsing ====
 

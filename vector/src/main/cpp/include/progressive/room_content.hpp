@@ -474,6 +474,90 @@ struct PublicRoomsParams {
     std::string thirdPartyInstanceId;
 };
 
+// ==== Third Party Protocol ====
+//
+// Original Kotlin (ThirdPartyProtocol.kt:26-67):
+//   data class ThirdPartyProtocol(userFields, locationFields, icon, fieldTypes, instances)
+
+struct FieldType {
+    std::string regexp;                  // "regexp" key — validation pattern
+    std::string placeholder;             // "placeholder" key — example value
+};
+
+struct ThirdPartyProtocolInstance {
+    std::string desc;                    // "desc" key — human-readable name
+    std::string icon;                    // "icon" key
+    std::string networkId;               // "network_id" key
+    std::string instanceId;              // "instance_id" key
+    std::string botUserId;               // "bot_user_id" key
+};
+
+struct ThirdPartyProtocol {
+    std::vector<std::string> userFields;     // "user_fields" key
+    std::vector<std::string> locationFields; // "location_fields" key
+    std::string icon;                        // "icon" key
+    std::unordered_map<std::string, FieldType> fieldTypes; // "field_types" key
+    std::vector<ThirdPartyProtocolInstance> instances;    // "instances" key
+};
+
+// ==== Space Info ====
+//
+// Original Kotlin (SpaceChildInfo.kt:23-36):
+//   data class SpaceChildInfo(childRoomId, isKnown, roomType, name, topic,
+//       avatarUrl, order, activeMemberCount, viaServers, parentRoomId,
+//       suggested, canonicalAlias, aliases, worldReadable)
+
+struct SpaceChildInfo {
+    std::string childRoomId;
+    bool isKnown = false;
+    std::string roomType;
+    std::string name;
+    std::string topic;
+    std::string avatarUrl;
+    std::string order;                        // fractional index for sorting
+    int activeMemberCount = 0;
+    std::vector<std::string> viaServers;
+    std::string parentRoomId;
+    bool suggested = false;
+    std::string canonicalAlias;
+    std::vector<std::string> aliases;
+    bool worldReadable = false;
+};
+
+// Original Kotlin (SpaceParentInfo.kt:21-26):
+//   data class SpaceParentInfo(parentId, roomSummary, canonical, viaServers)
+
+struct SpaceParentInfo {
+    std::string parentId;
+    std::string roomSummaryJson;              // RoomSummary serialized
+    bool canonical = false;
+    std::vector<std::string> viaServers;
+};
+
+// ==== Local Room State ====
+//
+// Original Kotlin (LocalRoomCreationState.kt:23-28):
+//   enum class LocalRoomCreationState { NOT_CREATED, CREATING, FAILURE, CREATED }
+
+enum class LocalRoomCreationState {
+    NOT_CREATED = 0,
+    CREATING = 1,
+    FAILURE = 2,
+    CREATED = 3
+};
+
+// Original Kotlin (LocalRoomSummary.kt:28-43):
+//   data class LocalRoomSummary(roomId, roomSummary, createRoomParams,
+//       replacementRoomId, creationState)
+
+struct LocalRoomSummary {
+    std::string roomId;
+    std::string roomSummaryJson;              // RoomSummary serialized
+    std::string createRoomParamsJson;         // CreateRoomParams serialized
+    std::string replacementRoomId;
+    LocalRoomCreationState creationState = LocalRoomCreationState::NOT_CREATED;
+};
+
 // ==== JSON Parsing (extended) ====
 
 // Room server ACL
