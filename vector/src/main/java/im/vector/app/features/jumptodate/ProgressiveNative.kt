@@ -1038,6 +1038,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeParseToolCalls(llmResponse: String): String
     @JvmStatic external fun nativeExtractTextAnswer(llmResponse: String): String
 
+    // --- Push Condition Evaluator ---
+    // Ported from: EventMatchCondition.kt, Glob.kt
+
+    @JvmStatic external fun nativeEvaluatePushCondition(eventJson: String, key: String, pattern: String): Boolean
+    @JvmStatic external fun nativeExtractJsonField(json: String, fieldPath: String): String
+
     // --- Content Utils (MXC URLs, Message Types) ---
     // Ported from: ContentUrlResolver.kt, MessageContent.kt
 

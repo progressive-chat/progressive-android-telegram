@@ -135,6 +135,7 @@
 #include "progressive/notif_format.hpp"
 #include "progressive/matrix_error.hpp"
 #include "progressive/agent_executor.hpp"
+#include "progressive/push_condition.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
 #include <sstream>
@@ -1407,6 +1408,34 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeExtractTextAnswer
     if (jLlmResponse) env->ReleaseStringUTFChars(jLlmResponse, resp.c_str());
     auto answer = progressive::extractTextAnswer(resp);
     return env->NewStringUTF(answer.c_str());
+}
+
+// --- Push Condition Evaluator ---
+// Ported from: EventMatchCondition.kt (105L), Glob.kt (39L)
+
+JNIEXPORT jboolean JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeEvaluatePushCondition(
+    JNIEnv* env, jclass, jstring jEventJson, jstring jKey, jstring jPattern
+) {
+    auto json = jEventJson ? std::string(env->GetStringUTFChars(jEventJson, nullptr)) : "{}";
+    auto key = jKey ? std::string(env->GetStringUTFChars(jKey, nullptr)) : "";
+    auto pattern = jPattern ? std::string(env->GetStringUTFChars(jPattern, nullptr)) : "";
+    if (jEventJson) env->ReleaseStringUTFChars(jEventJson, json.c_str());
+    if (jKey) env->ReleaseStringUTFChars(jKey, key.c_str());
+    if (jPattern) env->ReleaseStringUTFChars(jPattern, pattern.c_str());
+    return progressive::evaluateEventMatchCondition(json, key, pattern);
+}
+
+JNIEXPORT jstring JNICALL
+Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeExtractJsonField(
+    JNIEnv* env, jclass, jstring jJson, jstring jFieldPath
+) {
+    auto json = jJson ? std::string(env->GetStringUTFChars(jJson, nullptr)) : "{}";
+    auto path = jFieldPath ? std::string(env->GetStringUTFChars(jFieldPath, nullptr)) : "";
+    if (jJson) env->ReleaseStringUTFChars(jJson, json.c_str());
+    if (jFieldPath) env->ReleaseStringUTFChars(jFieldPath, path.c_str());
+    auto value = progressive::extractJsonField(json, path);
+    return env->NewStringUTF(value.c_str());
 }
 
 } // extern "C"

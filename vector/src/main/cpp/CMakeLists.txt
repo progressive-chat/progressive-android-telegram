@@ -138,6 +138,7 @@ add_library(
     src/notif_format.cpp
     src/matrix_error.cpp
     src/agent_executor.cpp
+    src/push_condition.cpp
     src/olm.cpp
     src/jni_bridge.cpp
 )
