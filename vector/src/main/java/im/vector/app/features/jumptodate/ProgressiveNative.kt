@@ -1437,6 +1437,19 @@ object ProgressiveNative {
     @JvmStatic external fun nativeIsPreviewableUrl(url: String): Boolean
     @JvmStatic external fun nativeExtractUrls(text: String): String
 
+    // --- Device Manager ---
+
+    @JvmStatic external fun nativeFormatDeviceLastSeen(lastSeenMs: Long): String
+
+    // --- Permalink Utilities ---
+
+    @JvmStatic external fun nativeIsSameRoomPermalink(url1: String, url2: String): Boolean
+
+    // --- Display Name (advanced) ---
+
+    @JvmStatic external fun nativeGetBestDisplayName(displayName: String, userId: String): String
+    @JvmStatic external fun nativeFormatMemberName(displayName: String, userId: String, powerLevel: Int, showBadge: Boolean): String
+
     // --- OIDC / MAS Authentication ---
 
     @JvmStatic external fun nativeDiscoverOidc(homeserverUrl: String): String
@@ -2456,6 +2469,33 @@ object ProgressiveNative {
     @JvmStatic fun nativeExtractUrlsFallback(text: String): String {
         val regex = Regex("https?://[^\\s]+")
         return regex.findAll(text).joinToString(",", "[", "]") { "\"${it.value}\"" }
+    }
+
+    // --- Device Manager fallback ---
+    @JvmStatic fun nativeFormatDeviceLastSeenFallback(lastSeenMs: Long): String {
+        if (lastSeenMs <= 0) return "Never"
+        val diff = (System.currentTimeMillis() - lastSeenMs) / 1000
+        return when {
+            diff < 60 -> "Active now"
+            diff < 3600 -> "${diff / 60}m ago"
+            diff < 86400 -> "${diff / 3600}h ago"
+            else -> "${diff / 86400}d ago"
+        }
+    }
+
+    // --- Permalink fallback ---
+    @JvmStatic fun nativeIsSameRoomPermalinkFallback(url1: String, url2: String): Boolean {
+        val id1 = Regex("#/([!@#][^/?]+)").find(url1)?.groupValues?.get(1) ?: ""
+        val id2 = Regex("#/([!@#][^/?]+)").find(url2)?.groupValues?.get(1) ?: ""
+        return id1 == id2 && id1.isNotEmpty()
+    }
+
+    // --- Display Name fallbacks ---
+    @JvmStatic fun nativeGetBestDisplayNameFallback(displayName: String, userId: String): String =
+        displayName.ifEmpty { userId.removePrefix("@").substringBefore(":") }
+    @JvmStatic fun nativeFormatMemberNameFallback(displayName: String, userId: String, powerLevel: Int, showBadge: Boolean): String {
+        val name = displayName.ifEmpty { userId.removePrefix("@").substringBefore(":") }
+        return if (showBadge && powerLevel >= 50) "$name ⭐" else name
     }
 
 }

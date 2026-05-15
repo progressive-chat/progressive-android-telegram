@@ -2066,4 +2066,29 @@ JNI_FUNC(jstring, nativeExtractUrls)(JNIEnv* env, jclass, jstring jText) {
     return env->NewStringUTF(os.str().c_str());
 }
 
+// --- Device Manager ---
+
+JNI_FUNC(jstring, nativeFormatDeviceLastSeen)(JNIEnv* env, jclass, jlong jLastSeenMs) {
+    auto result = progressive::formatDeviceLastSeen(jLastSeenMs);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Permalink Utilities ---
+
+JNI_FUNC(jboolean, nativeIsSameRoomPermalink)(JNIEnv* env, jclass, jstring jUrl1, jstring jUrl2) {
+    return progressive::isSameRoomPermalink(jStr(env, jUrl1), jStr(env, jUrl2)) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Display Name (advanced) ---
+
+JNI_FUNC(jstring, nativeGetBestDisplayName)(JNIEnv* env, jclass, jstring jName, jstring jUserId) {
+    auto result = progressive::getBestDisplayName(jStr(env, jName), jStr(env, jUserId));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatMemberName)(JNIEnv* env, jclass, jstring jName, jstring jUserId, jint jPower, jboolean jShowBadge) {
+    auto result = progressive::formatMemberName(jStr(env, jName), jStr(env, jUserId), jPower, jShowBadge);
+    return env->NewStringUTF(result.c_str());
+}
+
 } // extern "C"
