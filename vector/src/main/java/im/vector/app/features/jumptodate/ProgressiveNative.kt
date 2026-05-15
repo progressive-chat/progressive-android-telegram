@@ -1,6 +1,7 @@
 package im.vector.app.features.jumptodate
 
 import org.json.JSONObject
+import org.json.JSONArray
 import timber.log.Timber
 
 /**
