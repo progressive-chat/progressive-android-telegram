@@ -1043,12 +1043,16 @@ object ProgressiveNative {
     // Ported from: KeysBackup.kt, KeysBackupSetupSharedViewModel.kt
 
     @JvmStatic external fun nativeFormatRecoveryKey(raw: String): String
-    @JvmStatic external fun nativeValidateRecoveryKey(key: String): String
+    @JvmStatic external fun nativeValidateRecoveryKey(key: String): Boolean
     @JvmStatic external fun nativeParseKeyBackupVersion(json: String): String
     @JvmStatic external fun nativeIsValidPassphrase(passphrase: String): Boolean
     @JvmStatic external fun nativeComputeRecoveryKey(curve25519Key: String): String
     @JvmStatic external fun nativeParseMatrixError(json: String): String
     @JvmStatic external fun nativeGetErrorDescription(errorCode: String): String
+    @JvmStatic external fun nativeGetBackupAlgorithmDescription(algorithm: String): String
+    @JvmStatic external fun nativeIsSupportedBackupAlgorithm(algorithm: String): Boolean
+    @JvmStatic external fun nativeGetRecoveryKeyExample(): String
+    @JvmStatic external fun nativeGetMinPassphraseLength(): Int
 
     // --- AI Agent Executor ---
     // Enables /agent <task> — LLM-driven chat automation like Claude Code
@@ -1281,23 +1285,14 @@ object ProgressiveNative {
 
     // --- Permalink Builder ---
 
-    @JvmStatic external fun nativeBuildEventPermalink(roomId: String, eventId: String): String
     @JvmStatic external fun nativeBuildRoomPermalink(roomId: String): String
     @JvmStatic external fun nativeBuildUserPermalink(userId: String): String
 
     // --- Media Utilities ---
 
-    @JvmStatic external fun nativeFormatFileSize(bytes: Long): String
-    @JvmStatic external fun nativeMimeToMsgType(mimeType: String): String
-
-    // --- Key Backup ---
-
-    @JvmStatic external fun nativeFormatRecoveryKey(raw: String): String
-    @JvmStatic external fun nativeValidateRecoveryKey(key: String): Boolean
 
     // --- Room Encryption ---
 
-    @JvmStatic external fun nativeIsRoomEncrypted(stateContentJson: String): Boolean
 
     // --- Event Display ---
 
@@ -1311,7 +1306,6 @@ object ProgressiveNative {
 
     // --- Well-Known / Server Discovery ---
 
-    @JvmStatic external fun nativeParseWellKnown(responseJson: String): String
     @JvmStatic external fun nativeNeedsWellKnownDiscovery(homeserverUrl: String): Boolean
 
     // --- Polls ---
@@ -1324,7 +1318,6 @@ object ProgressiveNative {
 
     // --- Invites ---
 
-    @JvmStatic external fun nativeBuildInviteBody(userId: String, reason: String): String
 
     // --- Event Validation ---
 
@@ -1338,7 +1331,6 @@ object ProgressiveNative {
     // --- WebRTC / Calls ---
 
     @JvmStatic external fun nativeIsCallExpired(createdAtMs: Long, timeoutSec: Int): Boolean
-    @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
 
     // --- Notification Settings ---
 
@@ -1360,7 +1352,6 @@ object ProgressiveNative {
     // --- Edit History ---
 
     @JvmStatic external fun nativeFormatEditSummary(originalBody: String, newBody: String): String
-    @JvmStatic external fun nativeGetEditBadgeText(editCount: Int): String
 
     // --- Cross-Signing ---
 
@@ -1404,11 +1395,6 @@ object ProgressiveNative {
     @JvmStatic external fun nativeParseEncryptionConfig(stateContentJson: String): String
     @JvmStatic external fun nativeComputeEncryptionStatus(algorithm: String): String
 
-    // --- Key Backup ---
-
-    @JvmStatic external fun nativeGetBackupAlgorithmDescription(algorithm: String): String
-    @JvmStatic external fun nativeIsSupportedBackupAlgorithm(algorithm: String): Boolean
-
     // --- Space Utilities ---
 
     @JvmStatic external fun nativeParseSpaceChildren(stateEventsJson: String): String
@@ -1435,7 +1421,6 @@ object ProgressiveNative {
 
     // --- Device Manager ---
 
-    @JvmStatic external fun nativeFormatDeviceLastSeen(lastSeenMs: Long): String
 
     // --- Permalink Utilities ---
 
@@ -1453,12 +1438,6 @@ object ProgressiveNative {
     @JvmStatic external fun nativeExtractAliasLocalpart(alias: String): String
 
     @JvmStatic external fun nativeIsImageUrl(url: String): Boolean
-
-    // --- Key Backup Extended ---
-
-    @JvmStatic external fun nativeGetRecoveryKeyExample(): String
-    @JvmStatic external fun nativeIsValidPassphrase(passphrase: String): Boolean
-    @JvmStatic external fun nativeGetMinPassphraseLength(): Int
 
     // --- OIDC / MAS Authentication ---
 
@@ -1504,10 +1483,6 @@ object ProgressiveNative {
 
     // --- Media Utilities ---
 
-    @JvmStatic external fun nativeCalculateThumbnailSize(origW: Int, origH: Int, maxW: Int, maxH: Int): String
-    @JvmStatic external fun nativeFormatFileSize(bytes: Long): String
-    @JvmStatic external fun nativeFormatDuration(ms: Long): String
-    @JvmStatic external fun nativeSanitizeFilename(name: String, maxLen: Int): String
 
     // --- Account Data ---
 
@@ -2239,6 +2214,14 @@ object ProgressiveNative {
     // --- Key Backup fallbacks ---
     @JvmStatic fun nativeFormatRecoveryKeyFallback(raw: String): String = raw.chunked(4).joinToString(" ")
     @JvmStatic fun nativeValidateRecoveryKeyFallback(key: String): Boolean = key.length == 59 && key.all { it in '0'..'9' || it in 'A'..'Z' || it in 'a'..'z' }
+    @JvmStatic fun nativeGetBackupAlgorithmDescriptionFallback(algorithm: String): String = when(algorithm) {
+        "m.megolm_backup.v1.curve25519-aes-sha2" -> "Encrypted backup (Megolm key)"
+        else -> algorithm
+    }
+    @JvmStatic fun nativeIsSupportedBackupAlgorithmFallback(algorithm: String): Boolean = algorithm.startsWith("m.megolm_backup")
+    @JvmStatic fun nativeGetRecoveryKeyExampleFallback(): String = "EsTj 4fGz 8hWq ... (example)"
+    @JvmStatic fun nativeIsValidPassphraseFallback(passphrase: String): Boolean = passphrase.length >= 8
+    @JvmStatic fun nativeGetMinPassphraseLengthFallback(): Int = 8
 
     // --- Room Encryption fallback ---
     @JvmStatic fun nativeIsRoomEncryptedFallback(stateContentJson: String): Boolean = stateContentJson.contains("m.megolm") || stateContentJson.contains("encrypted")
@@ -2339,7 +2322,7 @@ object ProgressiveNative {
     @JvmStatic fun nativeFormatEditSummaryFallback(originalBody: String, newBody: String): String = newBody
     @JvmStatic fun nativeGetEditBadgeTextFallback(editCount: Int): String = if (editCount > 0) "Edited ($editCount)" else ""
 
-    // --- Edit History fallbacks ---
+    // --- Cross-Signing fallbacks ---
     @JvmStatic fun nativeNeedsCrossSigningSetupFallback(statusJson: String): Boolean =
         !statusJson.contains("\"master_key_ok\":true") || !statusJson.contains("\"self_signing_key_ok\":true")
     @JvmStatic fun nativeFormatCrossSigningStatusFallback(statusJson: String): String {
@@ -2439,13 +2422,6 @@ object ProgressiveNative {
         else -> "Encrypted"
     }
 
-    // --- Key Backup fallbacks ---
-    @JvmStatic fun nativeGetBackupAlgorithmDescriptionFallback(algorithm: String): String = when(algorithm) {
-        "m.megolm_backup.v1.curve25519-aes-sha2" -> "Encrypted backup (Megolm key)"
-        else -> algorithm
-    }
-    @JvmStatic fun nativeIsSupportedBackupAlgorithmFallback(algorithm: String): Boolean = algorithm.startsWith("m.megolm_backup")
-
     // --- Space Utilities fallback ---
     @JvmStatic fun nativeParseSpaceChildrenFallback(stateEventsJson: String): String = "[]"
 
@@ -2516,10 +2492,5 @@ object ProgressiveNative {
     // --- Link Preview fallback ---
     @JvmStatic fun nativeIsImageUrlFallback(url: String): Boolean =
         url.endsWith(".jpg") || url.endsWith(".png") || url.endsWith(".gif") || url.endsWith(".webp")
-
-    // --- Key Backup Extended fallbacks ---
-    @JvmStatic fun nativeGetRecoveryKeyExampleFallback(): String = "EsTj 4fGz 8hWq ... (example)"
-    @JvmStatic fun nativeIsValidPassphraseFallback(passphrase: String): Boolean = passphrase.length >= 8
-    @JvmStatic fun nativeGetMinPassphraseLengthFallback(): Int = 8
 
 }
