@@ -1,6 +1,5 @@
 #include "progressive/crypto_algorithms.hpp"
 #include <olm/crypto.h>
-#include <olm/olm.h>
 #include <cstring>
 #include <algorithm>
 
@@ -10,8 +9,7 @@ namespace progressive {
 
 std::vector<uint8_t> sha256(const uint8_t* data, size_t len) {
     std::vector<uint8_t> result(32);
-    size_t outLen = olm_sha256(data, len, result.data(), result.size());
-    result.resize(outLen);
+    _olm_crypto_sha256(data, len, result.data());
     return result;
 }
 
