@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <utility>
 
 namespace progressive {
 
@@ -19,6 +20,19 @@ class SqliteDB {
 public:
     // Open or create a database file.
     static SqliteDB open(const std::string& path);
+
+    // Move semantics (unique ownership of DB handle)
+    SqliteDB(SqliteDB&& other) noexcept : db_(other.db_) { other.db_ = nullptr; }
+    SqliteDB& operator=(SqliteDB&& other) noexcept {
+        if (this != &other) {
+            std::swap(db_, other.db_);
+        }
+        return *this;
+    }
+
+    // Non-copyable
+    SqliteDB(const SqliteDB&) = delete;
+    SqliteDB& operator=(const SqliteDB&) = delete;
 
     // Close and clean up.
     ~SqliteDB();

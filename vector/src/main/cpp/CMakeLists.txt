@@ -183,6 +183,8 @@ add_library(
     src/olm.cpp
     src/openid_token.cpp
     src/jni_bridge.cpp
+    src/sqlite3.c
+    src/eventdb.cpp
 )
 
 target_include_directories(
@@ -203,3 +205,9 @@ target_link_libraries(
 )
 
 target_compile_definitions(progressive_native PRIVATE PROGRESSIVE_HAS_OLM=1)
+
+# SQLite3 amalgamation compile flags (optimize for Android)
+set_source_files_properties(
+    src/sqlite3.c
+    PROPERTIES COMPILE_FLAGS "-DSQLITE_THREADSAFE=1 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DEFAULT_MEMSTATUS=0 -DSQLITE_DEFAULT_WAL_SYNCHRONOUS=1 -DSQLITE_LIKE_DOESNT_MATCH_BLOBS -DSQLITE_MAX_EXPR_DEPTH=0 -DSQLITE_OMIT_DECLTYPE -DSQLITE_OMIT_DEPRECATED -DSQLITE_OMIT_PROGRESS_CALLBACK -DSQLITE_OMIT_SHARED_CACHE -DSQLITE_USE_ALLOCA -Os"
+)

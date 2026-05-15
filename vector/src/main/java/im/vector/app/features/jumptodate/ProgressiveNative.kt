@@ -157,6 +157,34 @@ object ProgressiveNative {
     @JvmStatic
     external fun nativeDbCount(): Int
 
+    // --- Native SQLite DB (SqliteDB - richer API with room summaries, transactions) ---
+
+    @JvmStatic external fun nativeSqliteDbOpen(dbPath: String, key: String): Boolean
+    @JvmStatic external fun nativeSqliteDbClose(key: String)
+    @JvmStatic external fun nativeSqliteDbInsertEvent(
+        key: String, eventId: String, roomId: String, type: String, senderId: String,
+        contentJson: String, originTs: Long, ageTs: Long, displayIndex: Int
+    ): Boolean
+    @JvmStatic external fun nativeSqliteDbInsertEventRel(
+        key: String, eventId: String, roomId: String, type: String, senderId: String,
+        contentJson: String, originTs: Long, ageTs: Long, displayIndex: Int,
+        stateKey: String, redacts: String, relType: String, relatesToId: String
+    ): Boolean
+    @JvmStatic external fun nativeSqliteDbQueryEvents(key: String, roomId: String, limit: Int, offset: Int, ascending: Boolean): String
+    @JvmStatic external fun nativeSqliteDbQueryEvent(key: String, eventId: String): String
+    @JvmStatic external fun nativeSqliteDbDeleteEvent(key: String, eventId: String)
+    @JvmStatic external fun nativeSqliteDbCountEvents(key: String, roomId: String): Int
+    @JvmStatic external fun nativeSqliteDbMaxDisplayIndex(key: String, roomId: String): Int
+    @JvmStatic external fun nativeSqliteDbUpsertRoom(
+        key: String, roomId: String, displayName: String, avatarUrl: String,
+        topic: String, membership: String, notifCount: Int, highlightCount: Int,
+        lastActivityMs: Long, isDirect: Boolean, isSpace: Boolean, isFavourite: Boolean, isEncrypted: Boolean
+    ): Boolean
+    @JvmStatic external fun nativeSqliteDbQueryRooms(key: String): String
+    @JvmStatic external fun nativeSqliteDbBeginTransaction(key: String)
+    @JvmStatic external fun nativeSqliteDbCommitTransaction(key: String)
+    @JvmStatic external fun nativeSqliteDbSchemaVersion(key: String): Int
+
     // --- Translation ---
 
     @JvmStatic
@@ -1926,5 +1954,37 @@ object ProgressiveNative {
     @JvmStatic fun wrapWithRelationFallback(contentJson: String, relationJson: String): String {
         return contentJson.dropLast(1) + ",\"m.relates_to\":" + relationJson + "}"
     }
+
+    // --- Native SQLite DB fallbacks ---
+    @JvmStatic fun nativeSqliteDbOpenFallback(dbPath: String, key: String): Boolean =
+        false // Fallback: no-op, use Realm
+
+    @JvmStatic fun nativeSqliteDbCloseFallback(key: String) {}
+    @JvmStatic fun nativeSqliteDbInsertEventFallback(key: String, eventId: String, roomId: String,
+        type: String, senderId: String, contentJson: String, originTs: Long,
+        ageTs: Long, displayIndex: Int): Boolean = false
+
+    @JvmStatic fun nativeSqliteDbInsertEventRelFallback(key: String, eventId: String, roomId: String,
+        type: String, senderId: String, contentJson: String, originTs: Long,
+        ageTs: Long, displayIndex: Int, stateKey: String, redacts: String,
+        relType: String, relatesToId: String): Boolean = false
+
+    @JvmStatic fun nativeSqliteDbQueryEventsFallback(key: String, roomId: String,
+        limit: Int, offset: Int, ascending: Boolean): String = "[]"
+
+    @JvmStatic fun nativeSqliteDbQueryEventFallback(key: String, eventId: String): String = "{}"
+    @JvmStatic fun nativeSqliteDbDeleteEventFallback(key: String, eventId: String) {}
+    @JvmStatic fun nativeSqliteDbCountEventsFallback(key: String, roomId: String): Int = 0
+    @JvmStatic fun nativeSqliteDbMaxDisplayIndexFallback(key: String, roomId: String): Int = 0
+
+    @JvmStatic fun nativeSqliteDbUpsertRoomFallback(key: String, roomId: String,
+        displayName: String, avatarUrl: String, topic: String, membership: String,
+        notifCount: Int, highlightCount: Int, lastActivityMs: Long,
+        isDirect: Boolean, isSpace: Boolean, isFavourite: Boolean, isEncrypted: Boolean): Boolean = false
+
+    @JvmStatic fun nativeSqliteDbQueryRoomsFallback(key: String): String = "[]"
+    @JvmStatic fun nativeSqliteDbBeginTransactionFallback(key: String) {}
+    @JvmStatic fun nativeSqliteDbCommitTransactionFallback(key: String) {}
+    @JvmStatic fun nativeSqliteDbSchemaVersionFallback(key: String): Int = 0
 
 }

@@ -116,6 +116,14 @@
 #include "progressive/displayname_utils.hpp"
 #include "progressive/message_location.hpp"
 #include "progressive/timeline_utils.hpp"
+#include "progressive/timeline_chunk.hpp"
+#include "progressive/sliding_sync.hpp"
+#include "progressive/oidc_auth.hpp"
+#include "progressive/unified_push.hpp"
+#include "progressive/sqlite_wrapper.hpp"
+#include "progressive/eventdb.hpp"
+#include "progressive/room_filter.hpp"
+#include "progressive/thumbnail.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -241,6 +249,9 @@ static progressive::LocationSharingManager g_locationSharing;
 #define LOG_TAG "ProgressiveNative"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
+#define JNI_FUNC(ret, name) \
+    JNIEXPORT ret JNICALL Java_im_vector_app_features_jumptodate_ProgressiveNative_##name
 
 extern "C" {
 
@@ -933,6 +944,307 @@ JNI_FUNC(jstring, nativeBuildReactionRelation)(JNIEnv* env, jclass, jstring jId,
 }
 JNI_FUNC(jstring, nativeWrapWithRelation)(JNIEnv* env, jclass, jstring jContent, jstring jRel) {
     return env->NewStringUTF(progressive::wrapWithRelation(jStr(env, jContent), jStr(env, jRel)).c_str());
+}
+
+// --- Timeline Chunk (native pagination) ---
+JNI_FUNC(jint, nativeTimelineAddEvents)(JNIEnv* env, jclass, jstring jRoom, jstring jEvents, jstring jPrev, jstring jNext, jint jDir) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    auto& mgr = managers[jStr(env, jRoom)];
+    // Parse events JSON array
+    auto eventsJson = jStr(env, jEvents);
+    std::vector<progressive::TimelineEventData> events;
+    // Simplified: each event is a JSON object with event_id, type, sender, etc.
+    // Full implementation would parse the array
+    auto dir = jDir == 0 ? progressive::TimelineDirection::FORWARDS : progressive::TimelineDirection::BACKWARDS;
+    return mgr.addChunk("chunk_" + std::to_string(time(nullptr)), events, jStr(env, jPrev), jStr(env, jNext), dir);
+}
+
+JNI_FUNC(jstring, nativeTimelineGetEvents)(JNIEnv* env, jclass, jstring jRoom) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    auto& mgr = managers[jStr(env, jRoom)];
+    auto events = mgr.getEventsInOrder();
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < events.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"id":")" << events[i].eventId << R"(","type":")" << events[i].type << R"(","di":)" << events[i].displayIndex << "}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeTimelineGetEvent)(JNIEnv* env, jclass, jstring jId) {
+    return env->NewStringUTF("{}");
+}
+
+JNI_FUNC(void, nativeTimelineClear)(JNIEnv* env, jclass, jstring jRoom) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    managers[jStr(env, jRoom)].clear();
+}
+
+JNI_FUNC(jstring, nativeTimelineGetReplies)(JNIEnv* env, jclass, jstring jId) {
+    return env->NewStringUTF("[]");
+}
+
+JNI_FUNC(jstring, nativeTimelineGetLatestEdit)(JNIEnv* env, jclass, jstring jId) {
+    return env->NewStringUTF(jStr(env, jId).c_str());
+}
+
+JNI_FUNC(jstring, nativeTimelineGetThreadEvents)(JNIEnv* env, jclass, jstring jRoot) {
+    return env->NewStringUTF("[]");
+}
+
+// --- Room Filter ---
+JNI_FUNC(jstring, nativeFilterRooms)(JNIEnv* env, jclass, jstring jRooms, jint jCat, jstring jQuery) {
+    // Stub: returns input as-is. Full impl parses JSON array, filters, returns.
+    return jRooms;
+}
+
+// --- Sliding Sync ---
+JNI_FUNC(jstring, nativeSlidingSync)(JNIEnv* env, jclass, jstring jReq, jstring jHs, jstring jTok) {
+    progressive::SlidingSyncRequest req;
+    req.pos = ""; req.timeout = 30000;
+    auto resp = progressive::slidingSync(req, jStr(env, jHs), jStr(env, jTok));
+    return resp.success ? env->NewStringUTF(resp.pos.c_str()) : env->NewStringUTF("");
+}
+
+// --- OIDC ---
+JNI_FUNC(jstring, nativeDiscoverOidc)(JNIEnv* env, jclass, jstring jHs) {
+    auto d = progressive::discoverOidc(jStr(env, jHs));
+    std::ostringstream os;
+    os << R"({"supportsOidc":)" << d.supportsOidc
+       << R"(,"supportsPassword":)" << d.supportsPassword
+       << R"(,"issuer":")" << d.issuer << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeBuildOAuthUrl)(JNIEnv* env, jclass, jstring jCid, jstring jRedir, jstring jState, jstring jPkce, jstring jPrompt) {
+    progressive::OidcDiscovery disc;
+    disc.authorizationEndpoint = jStr(env, jRedir);
+    auto url = progressive::buildOAuthAuthorizationUrl(disc, jStr(env, jCid), jStr(env, jRedir), jStr(env, jState), jStr(env, jPkce), jStr(env, jPrompt));
+    return env->NewStringUTF(url.c_str());
+}
+
+JNI_FUNC(jstring, nativeExchangeOidcCode)(JNIEnv* env, jclass, jstring jEp, jstring jCid, jstring jRedir, jstring jCode, jstring jVerifier) {
+    auto tok = progressive::exchangeOidcCode(jStr(env, jEp), jStr(env, jCid), jStr(env, jRedir), jStr(env, jCode), jStr(env, jVerifier));
+    std::ostringstream os;
+    os << R"({"success":)" << tok.success << R"(,"accessToken":")" << tok.accessToken << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeParseOAuthCallback)(JNIEnv* env, jclass, jstring jUrl, jstring jRedir) {
+    auto cb = progressive::parseOAuthCallback(jStr(env, jUrl), jStr(env, jRedir));
+    std::ostringstream os;
+    os << R"({"action":")" << (cb.action == progressive::OAuthAction::SUCCESS ? "success" : cb.action == progressive::OAuthAction::GO_BACK ? "go_back" : "none") << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeGenerateOAuthState)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(progressive::generateOAuthState().c_str());
+}
+
+JNI_FUNC(jstring, nativeGeneratePkce)(JNIEnv* env, jclass) {
+    auto pkce = progressive::generatePkce();
+    std::ostringstream os;
+    os << R"({"codeVerifier":")" << pkce.codeVerifier << R"(","codeChallenge":")" << pkce.codeChallenge << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- UnifiedPush ---
+JNI_FUNC(jstring, nativeParseUnifiedPushMessage)(JNIEnv* env, jclass, jstring jJson) {
+    auto msg = progressive::parseUnifiedPushMessage(jStr(env, jJson));
+    std::ostringstream os;
+    os << R"({"eventId":")" << msg.eventId << R"(","roomId":")" << msg.roomId
+       << R"(","valid":)" << msg.valid << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Thumbnail Calc ---
+JNI_FUNC(jstring, nativeCalculateThumbnailSize)(JNIEnv* env, jclass, jint jOw, jint jOh, jint jMw, jint jMh) {
+    progressive::ThumbnailParams params;
+    params.srcW = jOw; params.srcH = jOh;
+    params.maxW = jMw; params.maxH = jMh;
+    auto result = progressive::computeThumbnail(params);
+    std::ostringstream os;
+    os << R"({"width":)" << result.w << R"(,"height":)" << result.h << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Native SQLite Database (SqliteDB - replaces Realm for timeline storage) ---
+// Controlled by Labs: SETTINGS_LABS_NATIVE_DB
+
+static progressive::EventDatabase g_eventDb;
+static std::unordered_map<std::string, progressive::SqliteDB> g_sqliteDbs;
+
+// EventDatabase JNI (existing Kotlin signatures)
+JNI_FUNC(jboolean, nativeDbOpen)(JNIEnv* env, jclass, jstring jPath) {
+    return g_eventDb.open(jStr(env, jPath)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(void, nativeDbClose)(JNIEnv*, jclass) {
+    g_eventDb.close();
+}
+
+JNI_FUNC(void, nativeDbInsertEvent)(JNIEnv* env, jclass,
+    jstring jEventId, jstring jRoomId, jstring jSenderId, jstring jSenderName,
+    jstring jTimestamp, jstring jBody, jstring jMsgType, jstring jEventType,
+    jstring jRelType, jstring jSourceId,
+    jlong jOriginTs, jint jDi, jboolean jSentByMe) {
+    progressive::DbEvent e;
+    e.eventId = jStr(env, jEventId);
+    e.roomId = jStr(env, jRoomId);
+    e.senderId = jStr(env, jSenderId);
+    e.senderName = jStr(env, jSenderName);
+    e.timestamp = jStr(env, jTimestamp);
+    e.body = jStr(env, jBody);
+    e.msgType = jStr(env, jMsgType);
+    e.eventType = jStr(env, jEventType);
+    e.relationType = jStr(env, jRelType);
+    e.sourceEventId = jStr(env, jSourceId);
+    e.originServerTs = jOriginTs;
+    e.displayIndex = jDi;
+    e.sentByMe = jSentByMe;
+    e.isEncrypted = false;
+    g_eventDb.insertEvent(e);
+}
+
+JNI_FUNC(jstring, nativeDbGetContext)(JNIEnv* env, jclass, jstring jEventId) {
+    return env->NewStringUTF(g_eventDb.getContextJson(jStr(env, jEventId)).c_str());
+}
+
+JNI_FUNC(void, nativeDbClearRoom)(JNIEnv* env, jclass, jstring jRoomId) {
+    g_eventDb.clearRoom(jStr(env, jRoomId));
+}
+
+JNI_FUNC(jint, nativeDbCount)(JNIEnv*, jclass) {
+    return g_eventDb.count();
+}
+
+// SqliteDB JNI (richer API with room summaries, transactions)
+JNI_FUNC(jboolean, nativeSqliteDbOpen)(JNIEnv* env, jclass, jstring jPath, jstring jKey) {
+    auto db = progressive::SqliteDB::open(jStr(env, jPath));
+    if (db.db_ == nullptr) return JNI_FALSE;
+    db.createTimelineSchema();
+    g_sqliteDbs[jStr(env, jKey)] = std::move(db);
+    return JNI_TRUE;
+}
+
+JNI_FUNC(void, nativeSqliteDbClose)(JNIEnv* env, jclass, jstring jKey) {
+    g_sqliteDbs.erase(jStr(env, jKey));
+}
+
+JNI_FUNC(jboolean, nativeSqliteDbInsertEvent)(JNIEnv* env, jclass, jstring jKey,
+    jstring jEventId, jstring jRoomId, jstring jType, jstring jSenderId,
+    jstring jContentJson, jlong jOriginTs, jlong jAgeTs, jint jDi) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return JNI_FALSE;
+    return it->second.insertEvent(
+        jStr(env, jEventId), jStr(env, jRoomId), jStr(env, jType),
+        jStr(env, jSenderId), jStr(env, jContentJson),
+        jOriginTs, jAgeTs, jDi) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeSqliteDbInsertEventRel)(JNIEnv* env, jclass, jstring jKey,
+    jstring jEventId, jstring jRoomId, jstring jType, jstring jSenderId,
+    jstring jContentJson, jlong jOriginTs, jlong jAgeTs, jint jDi,
+    jstring jStateKey, jstring jRedacts, jstring jRelType, jstring jRelatesTo) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return JNI_FALSE;
+    return it->second.insertEvent(
+        jStr(env, jEventId), jStr(env, jRoomId), jStr(env, jType),
+        jStr(env, jSenderId), jStr(env, jContentJson),
+        jOriginTs, jAgeTs, jDi,
+        jStr(env, jStateKey), jStr(env, jRedacts),
+        jStr(env, jRelType), jStr(env, jRelatesTo)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeSqliteDbQueryEvents)(JNIEnv* env, jclass, jstring jKey,
+    jstring jRoomId, jint jLimit, jint jOffset, jboolean jAsc) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return env->NewStringUTF("[]");
+    auto rows = it->second.queryEvents(jStr(env, jRoomId), jLimit, jOffset, jAsc);
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < rows.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"id":")" << rows[i].eventId
+           << R"(","di":)" << rows[i].displayIndex << "}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeSqliteDbQueryEvent)(JNIEnv* env, jclass, jstring jKey, jstring jEventId) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return env->NewStringUTF("{}");
+    auto row = it->second.queryEvent(jStr(env, jEventId));
+    std::ostringstream os;
+    os << R"({"id":")" << row.eventId << R"(","type":")" << row.type
+       << R"(","content":)" << row.contentJson << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(void, nativeSqliteDbDeleteEvent)(JNIEnv* env, jclass, jstring jKey, jstring jEventId) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it != g_sqliteDbs.end()) it->second.deleteEvent(jStr(env, jEventId));
+}
+
+JNI_FUNC(jint, nativeSqliteDbCountEvents)(JNIEnv* env, jclass, jstring jKey, jstring jRoomId) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return 0;
+    return it->second.countEvents(jStr(env, jRoomId));
+}
+
+JNI_FUNC(jint, nativeSqliteDbMaxDisplayIndex)(JNIEnv* env, jclass, jstring jKey, jstring jRoomId) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return 0;
+    return it->second.maxDisplayIndex(jStr(env, jRoomId));
+}
+
+JNI_FUNC(jboolean, nativeSqliteDbUpsertRoom)(JNIEnv* env, jclass, jstring jKey,
+    jstring jRoomId, jstring jName, jstring jAvatar, jstring jTopic,
+    jstring jMembership, jint jNotifCount, jint jHighlightCount,
+    jlong jActivity, jboolean jDirect, jboolean jSpace,
+    jboolean jFav, jboolean jEnc) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return JNI_FALSE;
+    return it->second.upsertRoom(
+        jStr(env, jRoomId), jStr(env, jName), jStr(env, jAvatar),
+        jStr(env, jTopic), jStr(env, jMembership),
+        jNotifCount, jHighlightCount, jActivity,
+        jDirect, jSpace, jFav, jEnc) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeSqliteDbQueryRooms)(JNIEnv* env, jclass, jstring jKey) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return env->NewStringUTF("[]");
+    auto rows = it->second.queryRooms();
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < rows.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"id":")" << rows[i].roomId
+           << R"(","name":")" << rows[i].displayName
+           << R"(","membership":")" << rows[i].membership
+           << R"(","notif":)" << rows[i].notificationCount
+           << R"(,"highlight":)" << rows[i].highlightCount
+           << R"(,"direct":)" << (rows[i].isDirect ? "true" : "false") << "}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(void, nativeSqliteDbBeginTransaction)(JNIEnv* env, jclass, jstring jKey) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it != g_sqliteDbs.end()) it->second.beginTransaction();
+}
+
+JNI_FUNC(void, nativeSqliteDbCommitTransaction)(JNIEnv* env, jclass, jstring jKey) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it != g_sqliteDbs.end()) it->second.commitTransaction();
+}
+
+JNI_FUNC(jint, nativeSqliteDbSchemaVersion)(JNIEnv* env, jclass, jstring jKey) {
+    auto it = g_sqliteDbs.find(jStr(env, jKey));
+    if (it == g_sqliteDbs.end()) return 0;
+    return it->second.schemaVersion();
 }
 
 } // extern "C"

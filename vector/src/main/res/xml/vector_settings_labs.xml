@@ -603,6 +603,12 @@
 
     <im.vector.app.core.preference.VectorSwitchPreference
         android:defaultValue="false"
+        android:key="SETTINGS_LABS_NATIVE_DB_KEY"
+        android:summary="Use C++ SQLite database (SqliteDB) instead of Realm for event storage. Restart required."
+        android:title="Native SQLite DB (experimental)" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
         android:key="SETTINGS_LABS_FULL_AVATAR_KEY"
         android:summary="Show full avatars (square/rectangle) instead of circles for rooms and users"
         android:title="Full-size avatars (not circles)" />
