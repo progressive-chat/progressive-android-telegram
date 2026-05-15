@@ -99,6 +99,7 @@ add_library(
     src/sync_models.cpp
     src/user_rating.cpp
     src/event_timeline.cpp
+    src/event_utils.cpp
     src/room_directory.cpp
     src/widget_utils.cpp
     src/sso_utils.cpp
