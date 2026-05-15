@@ -705,4 +705,22 @@ inline EditValidationResult validateEventEdit(
     return {EditValidity::VALID, ""};
 }
 
+// ==== Event Edit Action Decision ====
+//
+// Original Kotlin (EventEditor.kt:40-76):
+//   fun editTextMessage(targetEvent, msgType, newBodyText, ...): Cancelable
+//
+// Decision tree based on send state:
+//   FAILED → update failed echo with edited content, re-send
+//   SENT → create m.replace event, send
+//   SENDING → error (NoOp)
+
+enum class EditAction { NONE = 0, RESEND_FAILED = 1, SEND_REPLACE = 2, ERROR = 3 };
+
+inline EditAction decideEditAction(bool isSent, bool hasFailed) {
+    if (hasFailed) return EditAction::RESEND_FAILED;
+    if (isSent) return EditAction::SEND_REPLACE;
+    return EditAction::ERROR;
+}
+
 } // namespace progressive
