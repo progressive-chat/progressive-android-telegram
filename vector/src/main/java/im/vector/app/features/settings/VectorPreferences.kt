@@ -156,6 +156,8 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_FULL_AVATAR_KEY = "SETTINGS_LABS_FULL_AVATAR_KEY"
         const val SETTINGS_LABS_WEB_SEARCH_KEY = "SETTINGS_LABS_WEB_SEARCH_KEY"
         const val SETTINGS_LABS_AGENT_WEB_ACCESS_KEY = "SETTINGS_LABS_AGENT_WEB_ACCESS_KEY"
+        const val SETTINGS_NOTIFICATION_ICON_STYLE = "SETTINGS_NOTIFICATION_ICON_STYLE"
+        const val SETTINGS_NOTIFICATION_SHOW_COUNT = "SETTINGS_NOTIFICATION_SHOW_COUNT"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1715,6 +1717,18 @@ class VectorPreferences @Inject constructor(
 
     fun isAgentWebAccessEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_AGENT_WEB_ACCESS_KEY, false)
+    }
+
+    fun getNotificationIconStyle(): String {
+        return defaultPrefs.getString(SETTINGS_NOTIFICATION_ICON_STYLE, "element") ?: "element"
+    }
+
+    fun setNotificationIconStyle(style: String) {
+        defaultPrefs.edit { putString(SETTINGS_NOTIFICATION_ICON_STYLE, style) }
+    }
+
+    fun isNotificationShowCountEnabled(): Boolean {
+        return defaultPrefs.getBoolean(SETTINGS_NOTIFICATION_SHOW_COUNT, false)
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

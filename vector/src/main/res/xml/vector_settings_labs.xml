@@ -608,4 +608,20 @@
         android:summary="Allow /agent to search the web when answering questions"
         android:title="Agent web access" />
 
+    <!-- === Notification Icon Style === -->
+
+    <im.vector.app.core.preference.VectorListPreference
+        android:defaultValue="element"
+        android:entries="@array/notification_icon_style_entries"
+        android:entryValues="@array/notification_icon_style_values"
+        android:key="SETTINGS_NOTIFICATION_ICON_STYLE"
+        android:summary="Choose notification icon: Element (default), Faraday/ShieldChat, or Progressive chart"
+        android:title="Notification icon style" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_NOTIFICATION_SHOW_COUNT"
+        android:summary="Show room notification count (1-9, or + for 10+) on the notification icon"
+        android:title="Show notification count on icon" />
+
 </androidx.preference.PreferenceScreen>
