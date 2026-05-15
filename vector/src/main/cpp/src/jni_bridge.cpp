@@ -2091,4 +2091,25 @@ JNI_FUNC(jstring, nativeFormatMemberName)(JNIEnv* env, jclass, jstring jName, js
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Identity Utilities ---
+
+JNI_FUNC(jboolean, nativeIsEmail)(JNIEnv* env, jclass, jstring jInput) {
+    return progressive::isEmail(jStr(env, jInput)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeIsMsisdn)(JNIEnv* env, jclass, jstring jInput) {
+    return progressive::isMsisdn(jStr(env, jInput)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeExtractAliasLocalpart)(JNIEnv* env, jclass, jstring jAlias) {
+    auto result = progressive::extractAliasLocalpart(jStr(env, jAlias));
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Link Preview ---
+
+JNI_FUNC(jboolean, nativeIsImageUrl)(JNIEnv* env, jclass, jstring jUrl) {
+    return progressive::isImageUrl(jStr(env, jUrl)) ? JNI_TRUE : JNI_FALSE;
+}
+
 } // extern "C"

@@ -1450,6 +1450,16 @@ object ProgressiveNative {
     @JvmStatic external fun nativeGetBestDisplayName(displayName: String, userId: String): String
     @JvmStatic external fun nativeFormatMemberName(displayName: String, userId: String, powerLevel: Int, showBadge: Boolean): String
 
+    // --- Identity Utilities ---
+
+    @JvmStatic external fun nativeIsEmail(input: String): Boolean
+    @JvmStatic external fun nativeIsMsisdn(input: String): Boolean
+    @JvmStatic external fun nativeExtractAliasLocalpart(alias: String): String
+
+    // --- Link Preview ---
+
+    @JvmStatic external fun nativeIsImageUrl(url: String): Boolean
+
     // --- OIDC / MAS Authentication ---
 
     @JvmStatic external fun nativeDiscoverOidc(homeserverUrl: String): String
@@ -2497,5 +2507,14 @@ object ProgressiveNative {
         val name = displayName.ifEmpty { userId.removePrefix("@").substringBefore(":") }
         return if (showBadge && powerLevel >= 50) "$name ⭐" else name
     }
+
+    // --- Identity fallbacks ---
+    @JvmStatic fun nativeIsEmailFallback(input: String): Boolean = input.contains("@") && input.contains(".")
+    @JvmStatic fun nativeIsMsisdnFallback(input: String): Boolean = input.startsWith("+") && input.drop(1).all { it.isDigit() }
+    @JvmStatic fun nativeExtractAliasLocalpartFallback(alias: String): String = alias.removePrefix("#").substringBefore(":")
+
+    // --- Link Preview fallback ---
+    @JvmStatic fun nativeIsImageUrlFallback(url: String): Boolean =
+        url.endsWith(".jpg") || url.endsWith(".png") || url.endsWith(".gif") || url.endsWith(".webp")
 
 }
