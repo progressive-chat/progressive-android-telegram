@@ -555,4 +555,38 @@
         android:summary="@string/labs_enable_location_sharing_summary"
         android:title="@string/labs_enable_location_sharing" />
 
+    <!-- === Progressive Chat: Room Counting === -->
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_ROOM_COUNT_KEY"
+        android:summary="Show room count next to the home screen title (e.g. (49))"
+        android:title="Room count in header" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:dependency="SETTINGS_LABS_ROOM_COUNT_KEY"
+        android:key="SETTINGS_LABS_ROOM_COUNT_SPLIT_KEY"
+        android:summary="Show per-account split like 24+13+12 in multi-account mode"
+        android:title="Split count by account" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:dependency="SETTINGS_LABS_ROOM_COUNT_KEY"
+        android:key="SETTINGS_LABS_ROOM_COUNT_UNIQUE_KEY"
+        android:summary="Count only rooms that are not shared across accounts; show unique/total note"
+        android:title="Count unique rooms only" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_ROOM_NUMBERING_KEY"
+        android:summary="Assign join-order numbers to rooms based on cache/export data"
+        android:title="Room join-order numbering" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
+        android:key="SETTINGS_LABS_MULTI_SERVER_EXPORT_KEY"
+        android:summary="Export from multiple servers simultaneously; keep the best dump"
+        android:title="Multi-server export" />
+
 </androidx.preference.PreferenceScreen>
