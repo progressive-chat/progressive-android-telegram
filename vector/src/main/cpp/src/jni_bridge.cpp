@@ -1742,4 +1742,47 @@ JNI_FUNC(jstring, nativeFormatTimeAgoLabel)(JNIEnv* env, jclass, jlong jTs, jlon
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Edit History ---
+
+JNI_FUNC(jstring, nativeFormatEditSummary)(JNIEnv* env, jclass, jstring jOriginalBody, jstring jNewBody) {
+    auto o = jStr(env, jOriginalBody);
+    auto n = jStr(env, jNewBody);
+    // Simple diff: if strings differ, report edit
+    if (o == n) return env->NewStringUTF(n.c_str());
+    std::ostringstream os;
+    if (n.size() > o.size()) os << n.substr(0, 30) << "...";
+    else os << n;
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeGetEditBadgeText)(JNIEnv* env, jclass, jint jEditCount) {
+    auto result = progressive::getEditBadgeText(jEditCount);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Cross-Signing ---
+
+JNI_FUNC(jboolean, nativeNeedsCrossSigningSetup)(JNIEnv* env, jclass, jstring jStatusJson) {
+    // Parse status from JSON, call needsCrossSigningSetup
+    auto json = jStr(env, jStatusJson);
+    bool masterKeyOk = json.find("\"master_key_ok\"") != std::string::npos &&
+                       json.find("\"master_key_ok\":true") != std::string::npos;
+    bool selfSigningOk = json.find("\"self_signing_key_ok\"") != std::string::npos &&
+                         json.find("\"self_signing_key_ok\":true") != std::string::npos;
+    return (!masterKeyOk || !selfSigningOk) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeFormatCrossSigningStatus)(JNIEnv* env, jclass, jstring jStatusJson) {
+    auto json = jStr(env, jStatusJson);
+    bool masterOk = json.find("\"master_ok\":true") != std::string::npos ||
+                    json.find("\"master_key_ok\":true") != std::string::npos;
+    bool selfOk = json.find("\"self_signing_ok\":true") != std::string::npos ||
+                  json.find("\"self_signing_key_ok\":true") != std::string::npos;
+    bool userOk = json.find("\"user_signing_ok\":true") != std::string::npos;
+    if (masterOk && selfOk && userOk) return env->NewStringUTF("Verified");
+    if (masterOk && selfOk) return env->NewStringUTF("Self-verified");
+    if (masterOk) return env->NewStringUTF("Not verified");
+    return env->NewStringUTF("Setup needed");
+}
+
 } // extern "C"

@@ -1361,6 +1361,16 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeFormatTimeAgoLabel(timestampMs: Long, nowMs: Long): String
 
+    // --- Edit History ---
+
+    @JvmStatic external fun nativeFormatEditSummary(originalBody: String, newBody: String): String
+    @JvmStatic external fun nativeGetEditBadgeText(editCount: Int): String
+
+    // --- Cross-Signing ---
+
+    @JvmStatic external fun nativeNeedsCrossSigningSetup(statusJson: String): Boolean
+    @JvmStatic external fun nativeFormatCrossSigningStatus(statusJson: String): String
+
     // --- OIDC / MAS Authentication ---
 
     @JvmStatic external fun nativeDiscoverOidc(homeserverUrl: String): String
@@ -2233,6 +2243,25 @@ object ProgressiveNative {
             diff < 3600 -> "${diff / 60}m ago"
             diff < 86400 -> "${diff / 3600}h ago"
             else -> "${diff / 86400}d ago"
+        }
+    }
+
+    // --- Edit History fallbacks ---
+    @JvmStatic fun nativeFormatEditSummaryFallback(originalBody: String, newBody: String): String = newBody
+    @JvmStatic fun nativeGetEditBadgeTextFallback(editCount: Int): String = if (editCount > 0) "Edited ($editCount)" else ""
+
+    // --- Cross-Signing fallbacks ---
+    @JvmStatic fun nativeNeedsCrossSigningSetupFallback(statusJson: String): Boolean =
+        !statusJson.contains("\"master_key_ok\":true") || !statusJson.contains("\"self_signing_key_ok\":true")
+    @JvmStatic fun nativeFormatCrossSigningStatusFallback(statusJson: String): String {
+        val masterOk = statusJson.contains("\"master_ok\":true") || statusJson.contains("\"master_key_ok\":true")
+        val selfOk = statusJson.contains("\"self_signing_ok\":true") || statusJson.contains("\"self_signing_key_ok\":true")
+        val userOk = statusJson.contains("\"user_signing_ok\":true")
+        return when {
+            masterOk && selfOk && userOk -> "Verified"
+            masterOk && selfOk -> "Self-verified"
+            masterOk -> "Not verified"
+            else -> "Setup needed"
         }
     }
 
