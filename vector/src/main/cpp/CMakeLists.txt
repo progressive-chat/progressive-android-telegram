@@ -162,6 +162,7 @@ add_library(
     src/room_sort.cpp
     src/key_backup.cpp
     src/notif_format.cpp
+    src/notif_formatter.cpp
     src/matrix_error.cpp
     src/message_content.cpp
     src/message_extras.cpp
