@@ -575,6 +575,10 @@ struct HomeServerVersion {
     bool operator==(const HomeServerVersion& o) const {
         return major == o.major && minor == o.minor && patch == o.patch;
     }
+    bool operator!=(const HomeServerVersion& o) const { return !(*this == o); }
+    bool operator>(const HomeServerVersion& o)  const { return o < *this; }
+    bool operator<=(const HomeServerVersion& o) const { return !(o < *this); }
+    bool operator>=(const HomeServerVersion& o) const { return !(*this < o); }
 };
 
 inline HomeServerVersion parseHomeServerVersion(const std::string& value) {
