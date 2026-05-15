@@ -1229,6 +1229,15 @@ object ProgressiveNative {
     @JvmStatic external fun nativeApiLogin(userId: String, password: String, deviceId: String): String
     @JvmStatic external fun nativeApiSendEvent(roomId: String, eventType: String, txnId: String, contentJson: String): String
 
+    // --- OIDC / MAS Authentication ---
+
+    @JvmStatic external fun nativeDiscoverOidc(homeserverUrl: String): String
+    @JvmStatic external fun nativeBuildOAuthUrl(clientId: String, redirectUri: String, state: String, codeChallenge: String, prompt: String): String
+    @JvmStatic external fun nativeExchangeOidcCode(tokenEndpoint: String, clientId: String, redirectUri: String, code: String, codeVerifier: String): String
+    @JvmStatic external fun nativeParseOAuthCallback(url: String, redirectUri: String): String
+    @JvmStatic external fun nativeGenerateOAuthState(): String
+    @JvmStatic external fun nativeGeneratePkce(): String
+
     // --- Live Draft ---
 
     @JvmStatic external fun nativeShouldAutoDraft(text: String, threshold: Int): Boolean
@@ -1760,6 +1769,37 @@ object ProgressiveNative {
         } catch (e: UnsatisfiedLinkError) {
             false
         }
+    }
+
+    // --- OIDC fallbacks ---
+
+    @JvmStatic fun discoverOidcFallback(homeserverUrl: String): String {
+        return """{"supportsOidc":false,"supportsPassword":true,"errorMessage":"Native OIDC not loaded"}"""
+    }
+
+    @JvmStatic fun buildOAuthUrlFallback(clientId: String, redirectUri: String, state: String, codeChallenge: String, prompt: String): String {
+        return ""
+    }
+
+    @JvmStatic fun exchangeOidcCodeFallback(tokenEndpoint: String, clientId: String, redirectUri: String, code: String, codeVerifier: String): String {
+        return """{"success":false,"errorMessage":"Native OIDC not loaded"}"""
+    }
+
+    @JvmStatic fun parseOAuthCallbackFallback(url: String, redirectUri: String): String {
+        return if (url.contains("error=access_denied")) """{"action":"go_back"}"""
+               else if (url.contains("code=")) """{"action":"success","fullUrl":"$url"}"""
+               else """{"action":"none"}"""
+    }
+
+    @JvmStatic fun generateOAuthStateFallback(): String {
+        return java.util.UUID.randomUUID().toString().replace("-", "")
+    }
+
+    @JvmStatic fun generatePkceFallback(): String {
+        val verifier = java.util.Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(java.util.UUID.randomUUID().toString().toByteArray())
+            .take(64)
+        return """{"codeVerifier":"$verifier","codeChallenge":"$verifier"}"""
     }
 
 }

@@ -172,6 +172,7 @@ add_library(
     src/content_guard.cpp
     src/user_status.cpp
     src/offline_cache.cpp
+    src/oidc_auth.cpp
     src/olm.cpp
     src/openid_token.cpp
     src/jni_bridge.cpp
