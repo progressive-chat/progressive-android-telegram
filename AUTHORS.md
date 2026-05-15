@@ -9,9 +9,10 @@ You can read about the original Element Android authors in their
 
 ## C++ Native Core
 
-The `libprogressive_native.so` C++ library (85+ modules in `vector/src/main/cpp/`)
+The `libprogressive_native.so` C++ library (165+ modules in `vector/src/main/cpp/`)
 is original work by Anton Maurer, gradually replacing Kotlin/Java components
-with high-performance native code.
+with high-performance native code. All C++ modules carry the progressive
+copyright alongside the original Element SPDX license.
 
 ## License
 
