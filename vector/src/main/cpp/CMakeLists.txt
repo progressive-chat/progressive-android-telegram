@@ -35,6 +35,7 @@ add_library(
     src/ram_monitor.cpp
     src/cache_manager.cpp
     src/call_models.cpp
+    src/canonical_json.cpp
     src/message_aggregator.cpp
     src/room_info.cpp
     src/deleted_archive.cpp
@@ -80,6 +81,7 @@ add_library(
     src/poll_utils.cpp
     src/reaction_utils.cpp
     src/file_validator.cpp
+    src/graph_utils.cpp
     src/date_utils.cpp
     src/message_queue.cpp
     src/pinned_events.cpp
