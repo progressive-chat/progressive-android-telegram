@@ -105,7 +105,7 @@ CI builds F-Droid arm32 (armeabi-v7a, works on all devices). Requires Android SD
 Progressive Chat is in active development. We have months of debugging and polishing ahead before the first stable release. Here's how you can contribute:
 
 - **Test and report bugs** — run the F-Droid debug APK, use the features, and open issues
-- **C++ code review** — all native modules in `vector/src/main/cpp/` welcome scrutiny
+- **C++ code review** — all native modules in `progressive/src/main/cpp/` welcome scrutiny
 - **Kotlin integration** — JNI wrappers are ready, UI wiring needs love
 - **Translations** — help localize the growing list of labs settings
 - **Documentation** — improve setup guides, feature descriptions

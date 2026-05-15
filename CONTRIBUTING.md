@@ -16,7 +16,7 @@ We're steadily replacing Kotlin/Java with compiled C++ modules.
 
 ```bash
 # Build just the C++ native library (no Android SDK needed)
-cd vector/src/main/cpp
+cd progressive/src/main/cpp
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc)
@@ -32,10 +32,10 @@ make -j$(nproc)
 
 | Path | Purpose |
 |------|---------|
-| `vector/src/main/cpp/` | **C++ native modules** (main focus) |
-| `vector/src/main/cpp/include/progressive/` | Headers (1 per module) |
-| `vector/src/main/cpp/src/` | Implementations + `jni_bridge.cpp` |
-| `vector/src/main/cpp/libolm/` | libolm E2EE crypto (git submodule) |
+| `progressive/src/main/cpp/` | **C++ native modules** (main focus) |
+| `progressive/src/main/cpp/include/progressive/` | Headers (1 per module) |
+| `progressive/src/main/cpp/src/` | Implementations + `jni_bridge.cpp` |
+| `progressive/src/main/cpp/libolm/` | libolm E2EE crypto (git submodule) |
 | `vector/src/main/java/` | Kotlin/JNI bridge (being replaced) |
 | `matrix-sdk-android/` | Original Matrix SDK (legacy) |
 | `docs/` | Documentation, module maps, design notes |
@@ -50,7 +50,7 @@ make -j$(nproc)
 6. **Add Kotlin fallback** — add `@JvmStatic external fun` declarations in `ProgressiveNative.kt`
 7. **Document** — add entry to `docs/cpp_module_map.md`
 
-See existing modules in `vector/src/main/cpp/include/progressive/` for patterns.
+See existing modules in `progressive/src/main/cpp/include/progressive/` for patterns.
 
 ## Code Style
 
