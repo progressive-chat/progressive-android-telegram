@@ -789,4 +789,26 @@ struct IntegrityResult {
 // ==== Matrix ID Failure ====
 enum class MatrixIdFailureType { INVALID = 0 };
 
+// ==== URL Parameter Builder ====
+//
+// Original Kotlin (UrlExtensions.kt:24-44):
+//   fun StringBuilder.appendParamToUrl(param, value)
+//   fun StringBuilder.appendParamsToUrl(params: Map)
+
+inline std::string appendParamToUrl(const std::string& url, const std::string& param, const std::string& value) {
+    std::string result = url;
+    result += (result.find('?') != std::string::npos) ? "&" : "?";
+    result += param + "=" + value; // URL encoding delegated to caller
+    return result;
+}
+
+inline std::string appendParamsToUrl(const std::string& url, const std::unordered_map<std::string, std::string>& params) {
+    std::string result = url;
+    for (const auto& [k, v] : params) {
+        result += (result.find('?') != std::string::npos) ? "&" : "?";
+        result += k + "=" + v;
+    }
+    return result;
+}
+
 } // namespace progressive
