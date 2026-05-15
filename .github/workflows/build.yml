@@ -143,3 +143,4 @@ jobs:
           TRACKER_IDS=$(jq ".trackers[] | .id" exodus.json || echo "")
           echo "Found tracker IDs: $TRACKER_IDS"
           [ -z "$TRACKER_IDS" ] || echo "::warning ::Trackers detected: $TRACKER_IDS"
+# retry build
