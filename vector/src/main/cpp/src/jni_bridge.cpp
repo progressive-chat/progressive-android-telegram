@@ -1958,4 +1958,61 @@ JNI_FUNC(jstring, nativeParseSpaceChildren)(JNIEnv* env, jclass, jstring jJson) 
     return env->NewStringUTF(os.str().c_str());
 }
 
+// --- E2EE Decoration ---
+
+JNI_FUNC(jstring, nativeGetE2eeIconName)(JNIEnv* env, jclass, jstring jState) {
+    auto result = progressive::getE2eeIconName(jStr(env, jState));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeGetE2eeColor)(JNIEnv* env, jclass, jstring jState) {
+    auto result = progressive::getE2eeColor(jStr(env, jState));
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Backup Utilities ---
+
+JNI_FUNC(jstring, nativeBuildCreateBackupBody)(JNIEnv* env, jclass) {
+    auto result = progressive::buildCreateBackupBody();
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatBackupStats)(JNIEnv* env, jclass, jint jKeys, jint jRooms, jlong jBytes) {
+    auto result = progressive::formatBackupStats(jKeys, jRooms, jBytes);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jboolean, nativeNeedsBackupAttention)(JNIEnv* env, jclass, jlong jLastBackupMs, jint jKeysTotal, jint jKeysBackedUp) {
+    return progressive::needsBackupAttention(jLastBackupMs, jKeysTotal, jKeysBackedUp) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Read Marker / Notifications ---
+
+JNI_FUNC(jstring, nativeBuildRoomNotifSettingsBody)(JNIEnv* env, jclass, jstring jMode) {
+    auto ms = jStr(env, jMode);
+    progressive::NotifMode m = progressive::NotifMode::Default;
+    if (ms == "all") m = progressive::NotifMode::All;
+    else if (ms == "mentions") m = progressive::NotifMode::Mentions;
+    else if (ms == "none") m = progressive::NotifMode::None;
+    auto result = progressive::buildRoomNotifSettingsBody(m);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- URL Preview ---
+
+JNI_FUNC(jboolean, nativeIsPreviewableUrl)(JNIEnv* env, jclass, jstring jUrl) {
+    return progressive::isPreviewableUrl(jStr(env, jUrl)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeExtractUrls)(JNIEnv* env, jclass, jstring jText) {
+    auto urls = progressive::extractUrls(jStr(env, jText));
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < urls.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"(")" << urls[i] << R"(")";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
 } // extern "C"

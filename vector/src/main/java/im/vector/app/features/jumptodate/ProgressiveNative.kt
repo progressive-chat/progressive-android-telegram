@@ -1417,6 +1417,26 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeParseSpaceChildren(stateEventsJson: String): String
 
+    // --- E2EE Decoration ---
+
+    @JvmStatic external fun nativeGetE2eeIconName(state: String): String
+    @JvmStatic external fun nativeGetE2eeColor(state: String): String
+
+    // --- Backup Utilities ---
+
+    @JvmStatic external fun nativeBuildCreateBackupBody(): String
+    @JvmStatic external fun nativeFormatBackupStats(keys: Int, rooms: Int, bytes: Long): String
+    @JvmStatic external fun nativeNeedsBackupAttention(lastBackupMs: Long, keysTotal: Int, keysBackedUp: Int): Boolean
+
+    // --- Read Marker / Notifications ---
+
+    @JvmStatic external fun nativeBuildRoomNotifSettingsBody(mode: String): String
+
+    // --- URL Preview ---
+
+    @JvmStatic external fun nativeIsPreviewableUrl(url: String): Boolean
+    @JvmStatic external fun nativeExtractUrls(text: String): String
+
     // --- OIDC / MAS Authentication ---
 
     @JvmStatic external fun nativeDiscoverOidc(homeserverUrl: String): String
@@ -2405,5 +2425,34 @@ object ProgressiveNative {
 
     // --- Space Utilities fallback ---
     @JvmStatic fun nativeParseSpaceChildrenFallback(stateEventsJson: String): String = "[]"
+
+    // --- E2EE Decoration fallbacks ---
+    @JvmStatic fun nativeGetE2eeIconNameFallback(state: String): String = when {
+        state.contains("verified") -> "ic_shield_verified"
+        state.contains("warning") -> "ic_shield_warning"
+        else -> "ic_shield_black"
+    }
+    @JvmStatic fun nativeGetE2eeColorFallback(state: String): String = when {
+        state.contains("verified") -> "#4CAF50"
+        state.contains("warning") -> "#FF9800"
+        else -> "#F44336"
+    }
+
+    // --- Backup fallbacks ---
+    @JvmStatic fun nativeBuildCreateBackupBodyFallback(): String = """{"algorithm":"m.megolm_backup.v1.curve25519-aes-sha2"}"""
+    @JvmStatic fun nativeFormatBackupStatsFallback(keys: Int, rooms: Int, bytes: Long): String =
+        "$keys keys across $rooms rooms (${bytes / 1024} KB)"
+    @JvmStatic fun nativeNeedsBackupAttentionFallback(lastBackupMs: Long, keysTotal: Int, keysBackedUp: Int): Boolean =
+        keysTotal > 0 && keysBackedUp < keysTotal
+
+    // --- Room Notif Settings fallback ---
+    @JvmStatic fun nativeBuildRoomNotifSettingsBodyFallback(mode: String): String = """{"actions":["$mode"]}"""
+
+    // --- URL Preview fallbacks ---
+    @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")
+    @JvmStatic fun nativeExtractUrlsFallback(text: String): String {
+        val regex = Regex("https?://[^\\s]+")
+        return regex.findAll(text).joinToString(",", "[", "]") { "\"${it.value}\"" }
+    }
 
 }
