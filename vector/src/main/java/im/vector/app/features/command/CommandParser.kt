@@ -415,6 +415,14 @@ class CommandParser @Inject constructor(
                 Command.CRASH_APP.matches(slashCommand) && vectorPreferences.developerMode() -> {
                     throw RuntimeException("Application crashed from user demand")
                 }
+                // Progressive Chat commands (delegated to native C++ layer)
+                Command.LLM.matches(slashCommand) || Command.LLMP.matches(slashCommand) ||
+                        Command.AGENT.matches(slashCommand) || Command.WEB.matches(slashCommand) ||
+                        Command.HIDE_EMOJI.matches(slashCommand) -> {
+                    val cmd = listOf(Command.LLM, Command.LLMP, Command.AGENT, Command.WEB, Command.HIDE_EMOJI)
+                            .firstOrNull { it.matches(slashCommand) }
+                    ParsedCommand.ProgressiveChatCommand(cmd ?: Command.LLM, message)
+                }
                 else -> {
                     // Unknown command
                     ParsedCommand.ErrorUnknownSlashCommand(slashCommand)

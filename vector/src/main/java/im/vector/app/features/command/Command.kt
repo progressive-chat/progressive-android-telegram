@@ -63,7 +63,13 @@ enum class Command(
     LEAVE_ROOM("/leave", null, "<roomId?>", CommonStrings.command_description_leave_room, true, false),
     UPGRADE_ROOM("/upgraderoom", null, "newVersion", CommonStrings.command_description_upgrade_room, true, false),
     JUMP_TO_DATE("/jumptodate", null, "<YYYY-MM-DD> [HH:MM]", CommonStrings.command_description_jump_to_date, false, true),
-    TABLE_FLIP("/tableflip", null, "<message>", CommonStrings.command_description_table_flip, false, true);
+    TABLE_FLIP("/tableflip", null, "<message>", CommonStrings.command_description_table_flip, false, true),
+    // Progressive Chat commands
+    LLM("/llm", null, "<query>", CommonStrings.command_description_llm, false, true),
+    LLMP("/llmp", null, "<query>", CommonStrings.command_description_llmp, false, true),
+    AGENT("/agent", null, "<task>", CommonStrings.command_description_agent, false, true),
+    WEB("/web", arrayOf("/search"), "[engine] <query>", CommonStrings.command_description_web, false, true),
+    HIDE_EMOJI("/hideemoji", null, "", CommonStrings.command_description_hide_emoji, false, true);
 
     val allAliases = arrayOf(command, *aliases.orEmpty())
 

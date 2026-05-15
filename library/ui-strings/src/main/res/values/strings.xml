@@ -3003,8 +3003,13 @@
     <string name="command_description_join_space">Join the Space with the given id</string>
     <string name="command_description_leave_room">Leave room with given id (or current room if null)</string>
      <string name="command_description_upgrade_room">Upgrades a room to a new version</string>
-     <string name="command_description_jump_to_date">Jump to the given date in the timeline (YYYY-MM-DD)</string>
-     <string name="labs_enable_jump_to_date">Jump to date (/jumptodate)</string>
+      <string name="command_description_jump_to_date">Jump to the given date in the timeline (YYYY-MM-DD)</string>
+      <string name="command_description_llm">Ask an LLM a question (uses configured LLM API)</string>
+      <string name="command_description_llmp">Ask an LLM a question and post response as plain text</string>
+      <string name="command_description_agent">Run an AI agent task (searches, reads, sends messages)</string>
+      <string name="command_description_web">Search the web via configured search engine</string>
+      <string name="command_description_hide_emoji">Hide all emoji in the current room</string>
+      <string name="labs_enable_jump_to_date">Jump to date (/jumptodate)</string>
      <string name="labs_enable_jump_to_date_summary">Enable /jumptodate slash command and date separator jump menu. Requires server support for MSC3030.</string>
      <string name="labs_enable_jump_to_source">Jump to source</string>
      <string name="labs_enable_jump_to_source_summary">Add \"Jump to source\" to the message context menu. Tap a reaction to navigate to the original message. Configure which event types below.</string>
