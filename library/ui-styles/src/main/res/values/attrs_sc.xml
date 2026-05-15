@@ -14,4 +14,10 @@
     <attr name="room_color_hash_06" format="color" />
     <attr name="room_color_hash_07" format="color" />
     <attr name="room_color_hash_08" format="color" />
+    <attr name="unread_line_unimportant" format="color" />
+    <attr name="background" format="color|reference" />
+    <attr name="boxStrokeColor" format="color" />
+    <attr name="chipBackgroundColor" format="color" />
+    <attr name="closeIconTint" format="color" />
+    <attr name="InReplyToViewParams" format="reference" />
 </resources>
