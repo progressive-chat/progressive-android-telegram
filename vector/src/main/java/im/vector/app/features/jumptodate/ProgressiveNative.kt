@@ -1399,6 +1399,24 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeFormatDowntime(downtimeMs: Long): String
 
+    // --- Event Preview ---
+
+    @JvmStatic external fun nativeFormatEventPreview(senderName: String, body: String, eventType: String, msgType: String, showSender: Boolean): String
+
+    // --- Room Encryption ---
+
+    @JvmStatic external fun nativeParseEncryptionConfig(stateContentJson: String): String
+    @JvmStatic external fun nativeComputeEncryptionStatus(algorithm: String): String
+
+    // --- Key Backup ---
+
+    @JvmStatic external fun nativeGetBackupAlgorithmDescription(algorithm: String): String
+    @JvmStatic external fun nativeIsSupportedBackupAlgorithm(algorithm: String): Boolean
+
+    // --- Space Utilities ---
+
+    @JvmStatic external fun nativeParseSpaceChildren(stateEventsJson: String): String
+
     // --- OIDC / MAS Authentication ---
 
     @JvmStatic external fun nativeDiscoverOidc(homeserverUrl: String): String
@@ -2363,5 +2381,29 @@ object ProgressiveNative {
         val s = downtimeMs / 1000
         return when { s < 60 -> "${s}s"; s < 3600 -> "${s/60}m ${s%60}s"; else -> "${s/3600}h ${(s%3600)/60}m" }
     }
+
+    // --- Event Preview fallback ---
+    @JvmStatic fun nativeFormatEventPreviewFallback(senderName: String, body: String, eventType: String, msgType: String, showSender: Boolean): String {
+        val prefix = if (showSender) "$senderName: " else ""
+        return prefix + body.take(120).replace("\n", " ")
+    }
+
+    // --- Room Encryption fallbacks ---
+    @JvmStatic fun nativeParseEncryptionConfigFallback(stateContentJson: String): String = "{}"
+    @JvmStatic fun nativeComputeEncryptionStatusFallback(algorithm: String): String = when {
+        algorithm.isEmpty() -> "Not encrypted"
+        algorithm.contains("megolm") -> "Encrypted (Megolm)"
+        else -> "Encrypted"
+    }
+
+    // --- Key Backup fallbacks ---
+    @JvmStatic fun nativeGetBackupAlgorithmDescriptionFallback(algorithm: String): String = when(algorithm) {
+        "m.megolm_backup.v1.curve25519-aes-sha2" -> "Encrypted backup (Megolm key)"
+        else -> algorithm
+    }
+    @JvmStatic fun nativeIsSupportedBackupAlgorithmFallback(algorithm: String): Boolean = algorithm.startsWith("m.megolm_backup")
+
+    // --- Space Utilities fallback ---
+    @JvmStatic fun nativeParseSpaceChildrenFallback(stateEventsJson: String): String = "[]"
 
 }

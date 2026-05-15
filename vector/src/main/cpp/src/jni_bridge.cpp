@@ -1899,4 +1899,63 @@ JNI_FUNC(jstring, nativeFormatDowntime)(JNIEnv* env, jclass, jlong jDowntimeMs) 
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Event Preview (room list last message) ---
+
+JNI_FUNC(jstring, nativeFormatEventPreview)(JNIEnv* env, jclass, jstring jSender, jstring jBody, jstring jType, jstring jMsgType, jboolean jShowSender) {
+    progressive::DisplayEvent ev;
+    ev.senderName = jStr(env, jSender);
+    ev.body = jStr(env, jBody);
+    ev.type = progressive::classifyEvent(jStr(env, jType), jStr(env, jMsgType));
+    auto result = progressive::formatEventPreview(ev, jShowSender);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Room Encryption ---
+
+JNI_FUNC(jstring, nativeParseEncryptionConfig)(JNIEnv* env, jclass, jstring jStateJson) {
+    auto cfg = progressive::parseEncryptionConfig(jStr(env, jStateJson));
+    std::ostringstream os;
+    os << R"({"algorithm":")" << cfg.algorithm
+       << R"(","rotation_period_ms":)" << cfg.rotationPeriodMs
+       << R"(,"rotation_period_msgs":)" << cfg.rotationPeriodMessages
+       << R"(,"enabled":)" << (cfg.enabled ? "true" : "false") << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeComputeEncryptionStatus)(JNIEnv* env, jclass, jstring jAlgorithm) {
+    // Simplified: just check if algorithm is set and recognized
+    auto algo = jStr(env, jAlgorithm);
+    if (algo.empty()) return env->NewStringUTF("Not encrypted");
+    if (algo.find("megolm") != std::string::npos) return env->NewStringUTF("Encrypted (Megolm)");
+    if (algo.find("olm") != std::string::npos) return env->NewStringUTF("Encrypted (Olm)");
+    return env->NewStringUTF("Encrypted");
+}
+
+// --- Key Backup ---
+
+JNI_FUNC(jstring, nativeGetBackupAlgorithmDescription)(JNIEnv* env, jclass, jstring jAlgo) {
+    auto result = progressive::getBackupAlgorithmDescription(jStr(env, jAlgo));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jboolean, nativeIsSupportedBackupAlgorithm)(JNIEnv* env, jclass, jstring jAlgo) {
+    return progressive::isSupportedBackupAlgorithm(jStr(env, jAlgo)) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Space Utilities ---
+
+JNI_FUNC(jstring, nativeParseSpaceChildren)(JNIEnv* env, jclass, jstring jJson) {
+    auto children = progressive::parseSpaceChildren(jStr(env, jJson));
+    progressive::sortSpaceChildren(children);
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < children.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"room_id":")" << children[i].childId
+           << R"(","name":")" << children[i].name
+           << R"(","is_room":)" << (children[i].isRoom ? "true" : "false") << "}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
 } // extern "C"
