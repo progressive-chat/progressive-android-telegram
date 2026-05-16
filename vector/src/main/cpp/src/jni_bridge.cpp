@@ -3144,6 +3144,33 @@ JNI_FUNC(jstring, nativeGeneratePollOptionId)(JNIEnv* env, jclass) {
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Identity Utilities ---
+
+JNI_FUNC(jstring, nativeDisambiguateName)(JNIEnv* env, jclass, jstring jDisplayName, jstring jMxid) {
+    auto result = progressive::disambiguateName(jStr(env, jDisplayName), jStr(env, jMxid));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeGetIdentityInitials)(JNIEnv* env, jclass, jstring jName) {
+    auto result = progressive::getIdentityInitials(jStr(env, jName));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jboolean, nativeIsCanonicalAlias)(JNIEnv* env, jclass, jstring jAlias, jstring jExpectedRoomId) {
+    return progressive::isCanonicalAlias(jStr(env, jAlias), jStr(env, jExpectedRoomId)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeSuggestAliases)(JNIEnv* env, jclass, jstring jRoomName) {
+    auto aliases = progressive::suggestAliases(jStr(env, jRoomName));
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < aliases.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"(")" << aliases[i] << R"(")";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
 // --- Poll Validation ---
 
 JNI_FUNC(jboolean, nativeIsValidPollQuestion)(JNIEnv* env, jclass, jstring jQuestion) {

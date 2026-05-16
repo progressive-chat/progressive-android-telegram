@@ -277,6 +277,13 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeGeneratePollOptionId(): String
 
+    // --- Identity Utilities ---
+
+    @JvmStatic external fun nativeDisambiguateName(displayName: String, mxid: String): String
+    @JvmStatic external fun nativeGetIdentityInitials(displayName: String): String
+    @JvmStatic external fun nativeIsCanonicalAlias(alias: String, expectedRoomId: String): Boolean
+    @JvmStatic external fun nativeSuggestAliases(roomName: String): String
+
     // --- Poll Validation ---
 
     @JvmStatic external fun nativeIsValidPollQuestion(question: String): Boolean
@@ -3182,6 +3189,18 @@ object ProgressiveNative {
     // --- Poll fallbacks ---
     @JvmStatic fun nativeGeneratePollOptionIdFallback(): String =
         java.util.UUID.randomUUID().toString().take(8)
+
+    // --- Identity fallbacks ---
+    @JvmStatic fun nativeDisambiguateNameFallback(displayName: String, mxid: String): String =
+        if (displayName.isNotEmpty()) displayName else mxid.removePrefix("@").substringBefore(":")
+    @JvmStatic fun nativeGetIdentityInitialsFallback(displayName: String): String =
+        displayName.take(2).uppercase()
+    @JvmStatic fun nativeIsCanonicalAliasFallback(alias: String, expectedRoomId: String): Boolean =
+        alias.startsWith("#") && alias.contains(":$expectedRoomId")
+    @JvmStatic fun nativeSuggestAliasesFallback(roomName: String): String {
+        val clean = roomName.lowercase().replace(" ", "-").take(20)
+        return """["#$clean"]"""
+    }
 
     // --- Poll fallback ---
     @JvmStatic fun nativeIsValidPollQuestionFallback(question: String): Boolean =
