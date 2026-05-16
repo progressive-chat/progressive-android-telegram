@@ -4191,6 +4191,62 @@ JNI_FUNC(jboolean, nativeIsUserDeactivated)(JNIEnv* env, jclass, jstring jErrorJ
     return progressive::isUserDeactivated(error) ? JNI_TRUE : JNI_FALSE;
 }
 
+// --- Notification Formatter ---
+
+JNI_FUNC(jstring, nativeFormatImageNotification)(JNIEnv* env, jclass, jstring jSender) {
+    auto r = progressive::formatImageNotification(jStr(env, jSender));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatFileNotification)(JNIEnv* env, jclass, jstring jSender, jstring jFileName) {
+    auto r = progressive::formatFileNotification(jStr(env, jSender), jStr(env, jFileName));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatVideoNotification)(JNIEnv* env, jclass, jstring jSender) {
+    auto r = progressive::formatVideoNotification(jStr(env, jSender));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatAudioNotification)(JNIEnv* env, jclass, jstring jSender, jboolean jVoice) {
+    auto r = progressive::formatAudioNotification(jStr(env, jSender), jVoice);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatInviteNotification)(JNIEnv* env, jclass, jstring jInviter, jstring jRoomName) {
+    auto r = progressive::formatInviteNotification(jStr(env, jInviter), jStr(env, jRoomName));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatRoomNotification)(JNIEnv* env, jclass, jint jCount, jstring jRoomName) {
+    auto r = progressive::formatRoomNotification(jCount, jStr(env, jRoomName));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatStickerNotification)(JNIEnv* env, jclass, jstring jSender) {
+    auto r = progressive::formatStickerNotification(jStr(env, jSender));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatLocationNotification)(JNIEnv* env, jclass, jstring jSender) {
+    auto r = progressive::formatLocationNotification(jStr(env, jSender));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatPollNotification)(JNIEnv* env, jclass, jstring jSender, jboolean jStart) {
+    auto r = progressive::formatPollNotification(jStr(env, jSender), jStart);
+    return env->NewStringUTF(r.c_str());
+}
+
+// --- Megolm Decryptor ---
+
+// --- Raw Service ---
+
+JNI_FUNC(jstring, nativeCacheKeyForUrl)(JNIEnv* env, jclass, jstring jUrl) {
+    auto r = progressive::cacheKeyForUrl(jStr(env, jUrl));
+    return env->NewStringUTF(r.c_str());
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 

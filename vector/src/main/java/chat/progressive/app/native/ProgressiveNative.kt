@@ -491,6 +491,22 @@ object ProgressiveNative {
     @JvmStatic external fun nativeNeedsConsent(errorJson: String): Boolean
     @JvmStatic external fun nativeIsUserDeactivated(errorJson: String): Boolean
 
+    // --- Notification Formatter ---
+
+    @JvmStatic external fun nativeFormatImageNotification(senderName: String): String
+    @JvmStatic external fun nativeFormatFileNotification(senderName: String, fileName: String): String
+    @JvmStatic external fun nativeFormatVideoNotification(senderName: String): String
+    @JvmStatic external fun nativeFormatAudioNotification(senderName: String, isVoice: Boolean): String
+    @JvmStatic external fun nativeFormatInviteNotification(inviterName: String, roomName: String): String
+    @JvmStatic external fun nativeFormatRoomNotification(messageCount: Int, roomName: String): String
+    @JvmStatic external fun nativeFormatStickerNotification(senderName: String): String
+    @JvmStatic external fun nativeFormatLocationNotification(senderName: String): String
+    @JvmStatic external fun nativeFormatPollNotification(senderName: String, isStart: Boolean): String
+
+    // --- Raw Service ---
+
+    @JvmStatic external fun nativeCacheKeyForUrl(url: String): String
+
     // --- Account Export ---
 
     @JvmStatic external fun nativeEncryptAccount(
@@ -3671,6 +3687,30 @@ object ProgressiveNative {
         errorJson.contains("M_CONSENT_NOT_GIVEN")
     @JvmStatic fun nativeIsUserDeactivatedFallback(errorJson: String): Boolean =
         errorJson.contains("M_USER_DEACTIVATED")
+
+    // --- Notification Formatter fallbacks ---
+    @JvmStatic fun nativeFormatImageNotificationFallback(sender: String): String =
+        "$sender sent an image"
+    @JvmStatic fun nativeFormatFileNotificationFallback(sender: String, fileName: String): String =
+        if (fileName.isNotEmpty()) "$sender sent a file: $fileName" else "$sender sent a file"
+    @JvmStatic fun nativeFormatVideoNotificationFallback(sender: String): String =
+        "$sender sent a video"
+    @JvmStatic fun nativeFormatAudioNotificationFallback(sender: String, isVoice: Boolean): String =
+        if (isVoice) "$sender sent a voice message" else "$sender sent an audio file"
+    @JvmStatic fun nativeFormatInviteNotificationFallback(inviter: String, roomName: String): String =
+        if (roomName.isNotEmpty()) "$inviter invited you to $roomName" else "$inviter invited you"
+    @JvmStatic fun nativeFormatRoomNotificationFallback(count: Int, roomName: String): String =
+        if (roomName.isNotEmpty()) "$count messages in $roomName" else "$count messages"
+    @JvmStatic fun nativeFormatStickerNotificationFallback(sender: String): String =
+        "$sender sent a sticker"
+    @JvmStatic fun nativeFormatLocationNotificationFallback(sender: String): String =
+        "$sender shared their location"
+    @JvmStatic fun nativeFormatPollNotificationFallback(sender: String, isStart: Boolean): String =
+        if (isStart) "$sender started a poll" else "$sender ended a poll"
+
+    // --- Raw Service fallback ---
+    @JvmStatic fun nativeCacheKeyForUrlFallback(url: String): String =
+        url.replace("https://", "").replace("/", "_").take(200)
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false
