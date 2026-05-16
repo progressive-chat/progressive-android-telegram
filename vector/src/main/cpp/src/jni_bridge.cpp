@@ -2273,4 +2273,35 @@ JNI_FUNC(jstring, nativeParseOpenIdToken)(JNIEnv* env, jclass, jstring jJson) {
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Notification Counts ---
+
+JNI_FUNC(jstring, nativeFormatCombinedNotificationCount)(JNIEnv* env, jclass, jint jRooms, jint jThreads) {
+    auto result = progressive::formatCombinedNotificationCount(jRooms, jThreads);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jint, nativeGetTotalUnreadCount)(JNIEnv* env, jclass, jint jRooms, jint jThreads) {
+    return progressive::getTotalUnreadCount(jRooms, jThreads);
+}
+
+// --- Presence Indicator ---
+
+JNI_FUNC(jstring, nativeGetPresenceIndicator)(JNIEnv* env, jclass, jstring jPresence) {
+    auto ps = jStr(env, jPresence);
+    progressive::Presence p = progressive::Presence::Offline;
+    if (ps == "online") p = progressive::Presence::Online;
+    else if (ps == "unavailable") p = progressive::Presence::Unavailable;
+    auto result = progressive::getPresenceIndicator(p);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jboolean, nativeIsPresenceStale)(JNIEnv* env, jclass, jlong jLastUpdatedMs) {
+    return progressive::isPresenceStale(jLastUpdatedMs) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeFormatStatusMessage)(JNIEnv* env, jclass, jstring jMsg, jint jMax) {
+    auto result = progressive::formatStatusMessage(jStr(env, jMsg), jMax);
+    return env->NewStringUTF(result.c_str());
+}
+
 } // extern "C"

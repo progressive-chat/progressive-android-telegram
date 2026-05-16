@@ -1427,6 +1427,17 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeParseOpenIdToken(json: String): String
 
+    // --- Notification Counts ---
+
+    @JvmStatic external fun nativeFormatCombinedNotificationCount(roomCount: Int, threadCount: Int): String
+    @JvmStatic external fun nativeGetTotalUnreadCount(roomCount: Int, threadCount: Int): Int
+
+    // --- Presence Indicator ---
+
+    @JvmStatic external fun nativeGetPresenceIndicator(presence: String): String
+    @JvmStatic external fun nativeIsPresenceStale(lastUpdatedMs: Long): Boolean
+    @JvmStatic external fun nativeFormatStatusMessage(message: String, maxLen: Int): String
+
     // --- URL Preview ---
 
     @JvmStatic external fun nativeIsPreviewableUrl(url: String): Boolean
@@ -2526,6 +2537,22 @@ object ProgressiveNative {
 
     // --- OpenID Token fallback ---
     @JvmStatic fun nativeParseOpenIdTokenFallback(json: String): String = "{}"
+
+    // --- Notification Counts fallbacks ---
+    @JvmStatic fun nativeFormatCombinedNotificationCountFallback(roomCount: Int, threadCount: Int): String {
+        val total = roomCount + threadCount
+        return if (total > 99) "99+" else if (total > 0) "$total" else ""
+    }
+    @JvmStatic fun nativeGetTotalUnreadCountFallback(roomCount: Int, threadCount: Int): Int = roomCount + threadCount
+
+    // --- Presence Indicator fallbacks ---
+    @JvmStatic fun nativeGetPresenceIndicatorFallback(presence: String): String = when(presence) {
+        "online" -> "🟢"; "unavailable" -> "🟡"; else -> "⚫"
+    }
+    @JvmStatic fun nativeIsPresenceStaleFallback(lastUpdatedMs: Long): Boolean =
+        (System.currentTimeMillis() - lastUpdatedMs) > 300_000
+    @JvmStatic fun nativeFormatStatusMessageFallback(message: String, maxLen: Int): String =
+        if (message.length <= maxLen) message else message.take(maxLen) + "…"
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")
