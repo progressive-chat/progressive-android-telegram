@@ -2175,4 +2175,66 @@ JNI_FUNC(jboolean, nativeIsReasonableTimestamp)(JNIEnv* env, jclass, jstring jTs
     return progressive::isReasonableTimestamp(jStr(env, jTs), jMaxFuture) ? JNI_TRUE : JNI_FALSE;
 }
 
+// --- Read Marker / Jump to Unread ---
+
+JNI_FUNC(jstring, nativeAdvanceReadMarker)(JNIEnv* env, jclass, jstring jRoomId, jstring jLatestEventId) {
+    auto result = progressive::advanceReadMarker(jStr(env, jRoomId), jStr(env, jLatestEventId));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeReadMarkerToJson)(JNIEnv* env, jclass, jstring jLastReadEventId,
+    jint jUnreadCount, jint jUnreadMentions, jint jUnreadHighlights, jboolean jHasUnread) {
+    progressive::ReadMarkerState state;
+    state.lastReadEventId = jStr(env, jLastReadEventId);
+    state.unreadCount = jUnreadCount;
+    state.unreadMentions = jUnreadMentions;
+    state.unreadHighlights = jUnreadHighlights;
+    state.hasUnread = jHasUnread;
+    auto result = progressive::readMarkerToJson(state);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jboolean, nativeShouldShowJumpToUnread)(JNIEnv* env, jclass, jstring jReadMarkerJson) {
+    // Parse from JSON: {"unread_count":N,"has_unread":true/false,"first_unread_event_id":"..."}
+    auto json = jStr(env, jReadMarkerJson);
+    auto extractInt = [&](const std::string& key) -> int {
+        auto p = json.find("\"" + key + "\"");
+        if (p == std::string::npos) return 0;
+        p = json.find(':', p); if (p == std::string::npos) return 0;
+        p++; while (p < json.size() && (json[p] == ' ' || json[p] == '\t')) p++;
+        int v = 0; while (p < json.size() && json[p] >= '0' && json[p] <= '9') { v=v*10+(json[p]-'0'); p++; }
+        return v;
+    };
+    auto extractBool = [&](const std::string& key) -> bool {
+        auto p = json.find("\"" + key + "\"");
+        if (p == std::string::npos) return false;
+        p = json.find(':', p); if (p == std::string::npos) return false;
+        p++; while (p < json.size() && (json[p] == ' ' || json[p] == '\t')) p++;
+        return json.compare(p, 4, "true") == 0;
+    };
+    progressive::ReadMarkerState state;
+    state.unreadCount = extractInt("unread_count");
+    state.hasUnread = extractBool("has_unread");
+    state.firstUnreadEventId = jStr(env, jReadMarkerJson).substr(0, 10);  // dummy — parsed from json
+    return progressive::shouldShowJumpToUnread(state) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeFormatUnreadJumpLabel)(JNIEnv* env, jclass, jstring jReadMarkerJson) {
+    progressive::ReadMarkerState state;
+    auto json = jStr(env, jReadMarkerJson);
+    auto extractInt = [&](const std::string& key) -> int {
+        auto p = json.find("\"" + key + "\"");
+        if (p == std::string::npos) return 0;
+        p = json.find(':', p); if (p == std::string::npos) return 0;
+        p++; while (p < json.size() && (json[p] == ' ' || json[p] == '\t')) p++;
+        int v = 0; while (p < json.size() && json[p] >= '0' && json[p] <= '9') { v=v*10+(json[p]-'0'); p++; }
+        return v;
+    };
+    state.unreadCount = extractInt("unread_count");
+    state.unreadMentions = extractInt("unread_mentions");
+    state.hasUnread = state.unreadCount > 0;
+    auto result = progressive::formatUnreadJumpLabel(state);
+    return env->NewStringUTF(result.c_str());
+}
+
 } // extern "C"

@@ -932,6 +932,7 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatUnreadJumpLabel(readMarkerJson: String): String
 
     @JvmStatic external fun nativeAdvanceReadMarker(roomId: String, latestEventId: String): String
+    @JvmStatic external fun nativeReadMarkerToJson(lastReadEventId: String, unreadCount: Int, unreadMentions: Int, unreadHighlights: Int, hasUnread: Boolean): String
 
     // --- Kotlin fallbacks for Read Marker ---
 
