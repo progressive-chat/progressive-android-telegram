@@ -20,6 +20,7 @@ import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysBackupState
 import org.matrix.android.sdk.api.session.crypto.model.MXEventDecryptionResult
 import org.matrix.android.sdk.api.session.events.model.Event
 import org.matrix.android.sdk.internal.crypto.EventDecryptor
+import org.matrix.android.sdk.internal.crypto.RustCryptoService
 import timber.log.Timber
 
 fun Session.startSyncing(context: Context) {
@@ -51,6 +52,18 @@ fun Session.startSyncing(context: Context) {
         } catch (e: Exception) {
             Timber.w(e, "PROGRESSIVE native decrypt failed, falling back to Rust SDK")
             null
+        }
+    }
+
+    // Progressive Chat: import room keys into native C++ MegolmSessionManager
+    // m.room_key and m.forwarded_room_key to_device events trigger this
+    RustCryptoService.nativeKeyImport = { algorithm, roomId, sessionId, sessionKey ->
+        try {
+            ProgressiveNative.ensureLoaded()
+            val ok = ProgressiveNative.nativeMegolmAddSession(roomId, "", sessionId, sessionKey)
+            if (ok) Timber.d("PROGRESSIVE native key imported: room=$roomId session=$sessionId")
+        } catch (e: Exception) {
+            Timber.w(e, "PROGRESSIVE native key import failed")
         }
     }
 

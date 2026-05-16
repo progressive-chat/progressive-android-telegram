@@ -653,8 +653,11 @@ internal class RustCryptoService @Inject constructor(
                 EventType.ROOM_KEY -> {
                     val content = event.getClearContent().toModel<RoomKeyContent>() ?: return@forEach
 
-                    val roomId = content.roomId
+                    val roomId = content.roomId ?: return@forEach
                     val sessionId = content.sessionId ?: return@forEach
+
+                    // Progressive Chat: import key into native C++ MegolmSessionManager
+                    nativeKeyImport?.invoke(content.algorithm ?: "", roomId, sessionId, content.sessionKey ?: "")
 
                     notifyRoomKeyReceived(roomId, sessionId)
                     matrixConfiguration.cryptoAnalyticsPlugin?.onRoomKeyImported(sessionId, EventType.ROOM_KEY)
@@ -662,8 +665,11 @@ internal class RustCryptoService @Inject constructor(
                 EventType.FORWARDED_ROOM_KEY -> {
                     val content = event.getClearContent().toModel<ForwardedRoomKeyContent>() ?: return@forEach
 
-                    val roomId = content.roomId
+                    val roomId = content.roomId ?: return@forEach
                     val sessionId = content.sessionId ?: return@forEach
+
+                    // Progressive Chat: import forwarded key into native C++ MegolmSessionManager
+                    nativeKeyImport?.invoke(content.algorithm ?: "", roomId, sessionId, content.sessionKey ?: "")
 
                     notifyRoomKeyReceived(roomId, sessionId)
                     matrixConfiguration.cryptoAnalyticsPlugin?.onRoomKeyImported(sessionId, EventType.FORWARDED_ROOM_KEY)
@@ -911,5 +917,14 @@ internal class RustCryptoService @Inject constructor(
 
     companion object {
         const val CRYPTO_MIN_FORCE_SESSION_PERIOD_MILLIS = 3_600_000 // one hour
+
+        /**
+         * Optional native C++ Megolm key import callback for Progressive Chat.
+         * Set by the app layer when SETTINGS_LABS_NATIVE_CRYPTO is enabled.
+         * Called when m.room_key or m.forwarded_room_key to_device events are received.
+         * Parameters: algorithm, roomId, sessionId, sessionKey (base64)
+         */
+        @JvmStatic
+        var nativeKeyImport: ((algorithm: String, roomId: String, sessionId: String, sessionKey: String) -> Unit)? = null
     }
 }

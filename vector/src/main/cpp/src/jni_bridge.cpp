@@ -3437,7 +3437,11 @@ JNI_FUNC(jboolean, nativeMegolmAddSession)(JNIEnv* env, jclass, jstring jRoom, j
 }
 
 JNI_FUNC(jstring, nativeMegolmDecrypt)(JNIEnv* env, jclass, jstring jRoom, jstring jSenderKey, jstring jSessionId, jstring jCiphertext) {
-    auto* session = g_megolmManager.findSession(jStr(env, jRoom), jStr(env, jSenderKey), jStr(env, jSessionId));
+    auto room = jStr(env, jRoom);
+    auto sk = jStr(env, jSenderKey);
+    auto sid = jStr(env, jSessionId);
+    auto* session = g_megolmManager.findSession(room, sk, sid);
+    if (!session) session = g_megolmManager.findSession(room, "", sid);  // fallback: try without senderKey
     if (!session) return env->NewStringUTF("");
     auto result = progressive::megolmDecrypt(*session, jStr(env, jCiphertext));
     return env->NewStringUTF(result.c_str());
