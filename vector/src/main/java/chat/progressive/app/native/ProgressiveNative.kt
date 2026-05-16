@@ -1484,6 +1484,17 @@ object ProgressiveNative {
     @JvmStatic external fun nativeGetStrengthLabel(strength: Int): String
     @JvmStatic external fun nativeGeneratePasswordFeedback(password: String): String
 
+    // --- Event Validator ---
+
+    @JvmStatic external fun nativeIsValidEventId(eventId: String): Boolean
+    @JvmStatic external fun nativeIsValidSenderId(senderId: String): Boolean
+    @JvmStatic external fun nativeIsFileSizeWithinLimits(fileSize: Long, maxSizeBytes: Long): Boolean
+
+    // --- Invite Utilities ---
+
+    @JvmStatic external fun nativeIsInviteExpired(invitedAtMs: Long, maxAgeDays: Int): Boolean
+    @JvmStatic external fun nativeBuildKnockBody(reason: String): String
+
     // --- URL Preview ---
 
     @JvmStatic external fun nativeIsPreviewableUrl(url: String): Boolean
@@ -2665,6 +2676,17 @@ object ProgressiveNative {
         !password.any { it.isDigit() } -> "Add a digit"
         else -> ""
     }
+
+    // --- Event Validator fallbacks ---
+    @JvmStatic fun nativeIsValidEventIdFallback(eventId: String): Boolean = eventId.startsWith("\$") && eventId.length > 10
+    @JvmStatic fun nativeIsValidSenderIdFallback(senderId: String): Boolean = senderId.startsWith("@") && senderId.contains(":")
+    @JvmStatic fun nativeIsFileSizeWithinLimitsFallback(fileSize: Long, maxSizeBytes: Long): Boolean = fileSize <= maxSizeBytes
+
+    // --- Invite fallbacks ---
+    @JvmStatic fun nativeIsInviteExpiredFallback(invitedAtMs: Long, maxAgeDays: Int): Boolean =
+        (System.currentTimeMillis() - invitedAtMs) > maxAgeDays * 86400_000L
+    @JvmStatic fun nativeBuildKnockBodyFallback(reason: String): String =
+        """{"reason":"$reason"}"""
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")

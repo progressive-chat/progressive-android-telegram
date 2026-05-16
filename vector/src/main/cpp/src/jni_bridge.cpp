@@ -2448,4 +2448,29 @@ JNI_FUNC(jstring, nativeGeneratePasswordFeedback)(JNIEnv* env, jclass, jstring j
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Event Validator ---
+
+JNI_FUNC(jboolean, nativeIsValidEventId)(JNIEnv* env, jclass, jstring jEventId) {
+    return progressive::isValidEventId(jStr(env, jEventId)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeIsValidSenderId)(JNIEnv* env, jclass, jstring jSenderId) {
+    return progressive::isValidSenderId(jStr(env, jSenderId)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeIsFileSizeWithinLimits)(JNIEnv* env, jclass, jlong jFileSize, jlong jMaxSize) {
+    return progressive::isFileSizeWithinLimits(jFileSize, jMaxSize) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Invite Utilities ---
+
+JNI_FUNC(jboolean, nativeIsInviteExpired)(JNIEnv* env, jclass, jlong jInvitedAtMs, jint jMaxDays) {
+    return progressive::isInviteExpired(jInvitedAtMs, jMaxDays) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeBuildKnockBody)(JNIEnv* env, jclass, jstring jReason) {
+    auto result = progressive::buildKnockBody(jStr(env, jReason));
+    return env->NewStringUTF(result.c_str());
+}
+
 } // extern "C"
