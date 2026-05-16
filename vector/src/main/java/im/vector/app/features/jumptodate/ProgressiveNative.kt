@@ -1148,7 +1148,6 @@ object ProgressiveNative {
     // --- Sync Filter Builder ---
     // Ported from: SyncFilterParams.kt, SyncFilterBuilder.kt
 
-    @JvmStatic external fun nativeBuildSyncFilter(lazyLoadState: Boolean, lazyLoadMessages: Boolean, useThreadNotif: Boolean, canUseThreadNotif: Boolean, timelineTypes: Array<String>, stateTypes: Array<String>): String
     @JvmStatic external fun nativeGetDefaultSyncFilter(): String
 
     // --- Server Capabilities (updated from HomeServerCapabilities.kt) ---
@@ -1280,8 +1279,6 @@ object ProgressiveNative {
 
     // --- Display Name & Avatar Utilities ---
 
-    @JvmStatic external fun nativeUserIdToDisplayName(userId: String, capitalize: Boolean): String
-    @JvmStatic external fun nativeGetInitials(name: String, maxChars: Int): String
 
     // --- Permalink Builder ---
 
@@ -1334,7 +1331,6 @@ object ProgressiveNative {
 
     // --- Notification Settings ---
 
-    @JvmStatic external fun nativeFormatNotifMode(mode: String): String
     @JvmStatic external fun nativeParseNotifMode(action: String): String
 
     // --- Crypto / E2EE ---
@@ -1453,11 +1449,9 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeClassifyDeviceType(userAgent: String, clientName: String): String
 
-    @JvmStatic external fun nativeTruncateDescription(text: String, maxLen: Int): String
 
     // --- Device Type ---
 
-    @JvmStatic external fun nativeClassifyDeviceType(userAgent: String, clientName: String): String
 
     // --- Knock Reason ---
 
