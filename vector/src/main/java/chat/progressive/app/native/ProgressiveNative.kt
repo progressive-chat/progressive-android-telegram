@@ -1951,6 +1951,10 @@ object ProgressiveNative {
     // --- URL Preview ---
 
     @JvmStatic external fun nativeTruncateDescription(text: String, maxLen: Int): String
+    @JvmStatic external fun nativeExtractHtmlTitle(html: String): String
+    @JvmStatic external fun nativeExtractMetaDescription(html: String): String
+    @JvmStatic external fun nativeResolveUrl(baseUrl: String, relative: String): String
+    @JvmStatic external fun nativeUrlPreviewToJson(previewJson: String): String
 
     // --- Device Type ---
 
@@ -3715,6 +3719,19 @@ object ProgressiveNative {
     @JvmStatic fun nativeStripHtmlTagsFallback(html: String): String = html.replace(Regex("<[^>]*>"), " ").replace(Regex("\\s+"), " ").trim()
     @JvmStatic fun nativeTruncateDescriptionFallback(text: String, maxLen: Int): String =
         if (text.length <= maxLen) text else text.take(maxLen).substringBeforeLast(" ") + "…"
+
+    @JvmStatic fun nativeExtractHtmlTitleFallback(html: String): String =
+        Regex("""<title[^>]*>([^<]+)</title>""", RegexOption.IGNORE_CASE).find(html)?.groupValues?.getOrNull(1) ?: ""
+    @JvmStatic fun nativeExtractMetaDescriptionFallback(html: String): String =
+        Regex("""<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)""", RegexOption.IGNORE_CASE).find(html)?.groupValues?.getOrNull(1) ?: ""
+    @JvmStatic fun nativeResolveUrlFallback(baseUrl: String, relative: String): String {
+        if (relative.startsWith("http")) return relative
+        if (relative.startsWith("//")) return "https:" + relative
+        val base = baseUrl.substringBeforeLast("/")
+        return if (relative.startsWith("/")) baseUrl.substringBefore("/", baseUrl.substringAfter("://")) + relative
+        else "$base/$relative"
+    }
+    @JvmStatic fun nativeUrlPreviewToJsonFallback(previewJson: String): String = previewJson
 
     // --- Device Type fallback ---
     @JvmStatic fun nativeClassifyDeviceTypeFallback(userAgent: String, clientName: String): String = when {

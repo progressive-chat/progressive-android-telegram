@@ -2204,6 +2204,47 @@ JNI_FUNC(jstring, nativeTruncateDescription)(JNIEnv* env, jclass, jstring jText,
     return env->NewStringUTF(result.c_str());
 }
 
+JNI_FUNC(jstring, nativeExtractHtmlTitle)(JNIEnv* env, jclass, jstring jHtml) {
+    auto result = progressive::extractHtmlTitle(jStr(env, jHtml));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeExtractMetaDescription)(JNIEnv* env, jclass, jstring jHtml) {
+    auto result = progressive::extractMetaDescription(jStr(env, jHtml));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeResolveUrl)(JNIEnv* env, jclass, jstring jBase, jstring jRel) {
+    auto result = progressive::resolveUrl(jStr(env, jBase), jStr(env, jRel));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeUrlPreviewToJson)(JNIEnv* env, jclass, jstring jPreviewJson) {
+    auto json = jStr(env, jPreviewJson);
+    progressive::UrlPreview p;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    auto ei = [&](const std::string& k) -> int64_t {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return 0;
+        pp = json.find(':', pp); if (pp == std::string::npos) return 0;
+        pp++; while (pp < json.size() && (json[pp] == ' ' || json[pp] == '\t')) pp++;
+        int64_t v = 0; while (pp < json.size() && json[pp] >= '0' && json[pp] <= '9') { v=v*10+(json[pp]-'0'); pp++; }
+        return v;
+    };
+    p.url = es("url"); p.title = es("title"); p.description = es("description");
+    p.imageUrl = es("image_url"); p.siteName = es("site_name"); p.type = es("type");
+    p.imageWidth = ei("image_width"); p.imageHeight = ei("image_height");
+    p.hasImage = json.find("\"has_image\":true") != std::string::npos;
+    p.hasTitle = json.find("\"has_title\":true") != std::string::npos;
+    p.valid = json.find("\"valid\":true") != std::string::npos;
+    auto result = progressive::urlPreviewToJson(p);
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Device Type ---
 
 JNI_FUNC(jstring, nativeClassifyDeviceType)(JNIEnv* env, jclass, jstring jAgent, jstring jClient) {
