@@ -150,6 +150,7 @@
 #include "progressive/poll_manager.hpp"
 #include "progressive/space_graph.hpp"
 #include "progressive/pin_manager.hpp"
+#include "progressive/media_viewer.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -5564,6 +5565,80 @@ JNI_FUNC(jboolean, nativePinCanManage)(JNIEnv*, jclass, jint jPowerLevel) {
 
 JNI_FUNC(void, nativePinReset)(JNIEnv*, jclass) {
     g_pinMgr.reset(new progressive::PinManager());
+}
+
+// ============================================================
+// Media Viewer
+// ============================================================
+
+JNI_FUNC(jstring, nativeMediaViewerParse)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto info = progressive::parseMediaInfo(jStr(env, jContentJson));
+    progressive::applyExifRotation(info);
+    auto dims = progressive::getDisplayDimensions(info);
+    std::ostringstream os;
+    os << R"({"mxc":")" << info.mxcUrl
+       << R"(","mime":")" << info.mimeType
+       << R"(","type":")" << progressive::getMediaTypeName(info.type)
+       << R"(","width":)" << info.width
+       << R"(,"height":)" << info.height
+       << R"(,"display_w":)" << dims.width
+       << R"(,"display_h":)" << dims.height
+       << R"(,"size":)" << info.sizeBytes
+       << R"(,"size_fmt":")" << progressive::formatMediaSize(info.sizeBytes)
+       << R"(","duration_ms":)" << info.durationMs
+       << R"(,"duration_fmt":")" << progressive::formatMediaDuration(info.durationMs)
+       << R"(,"exif_rotation":)" << progressive::exifRotationDegrees(info.exifOrientation)
+       << R"(,"has_thumb":)" << (info.hasThumbnail ? "true" : "false")
+       << R"(,"file_name":")" << info.fileName
+       << R"(","thumb_url":")" << info.thumbnailUrl << R"(")"
+       << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeMediaViewerFormatSize)(JNIEnv*, jclass, jlong jBytes) {
+    auto r = progressive::formatMediaSize(jBytes);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMediaViewerFormatDuration)(JNIEnv*, jclass, jint jMs) {
+    auto r = progressive::formatMediaDuration(jMs);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMediaViewerViewport)(JNIEnv* env, jclass, jstring jContentJson, jint jVpW, jint jVpH) {
+    auto info = progressive::parseMediaInfo(jStr(env, jContentJson));
+    auto state = progressive::calculateViewport(info, jVpW, jVpH);
+    std::ostringstream os;
+    os << R"({"scale":)" << state.scale
+       << R"(,"min_scale":)" << state.minScale
+       << R"(,"max_scale":)" << state.maxScale
+       << R"(,"offset_x":)" << state.offsetX
+       << R"(,"offset_y":)" << state.offsetY
+       << R"(,"media_w":)" << state.mediaWidth
+       << R"(,"media_h":)" << state.mediaHeight
+       << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeMediaViewerThumbnailUrl)(JNIEnv* env, jclass, jstring jMxcUrl, jstring jHomeServer,
+                                                   jint jW, jint jH) {
+    progressive::ThumbnailConfig cfg;
+    cfg.width = jW; cfg.height = jH;
+    auto r = progressive::resolveMxcThumbnailUrl(jStr(env, jMxcUrl), jStr(env, jHomeServer), cfg);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMediaViewerDownloadUrl)(JNIEnv* env, jclass, jstring jMxcUrl, jstring jHomeServer) {
+    auto r = progressive::resolveMxcDownloadUrl(jStr(env, jMxcUrl), jStr(env, jHomeServer));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jint, nativeMediaViewerExifRotation)(JNIEnv*, jclass, jint jRaw) {
+    return progressive::exifRotationDegrees(progressive::exifFromRaw(jRaw));
+}
+
+JNI_FUNC(jboolean, nativeMediaViewerCanThumbnail)(JNIEnv* env, jclass, jstring jMime) {
+    return progressive::canGenerateThumbnail(jStr(env, jMime)) ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"

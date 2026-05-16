@@ -1492,6 +1492,49 @@ static void test_pin_build_content() {
     ASSERT_TRUE(json.find("pinned") != std::string::npos);
 }
 
+// ==== Media Viewer ====
+
+#include "progressive/media_viewer.hpp"
+
+static void test_media_parse() {
+    std::string content = R"({"url":"mxc://example.org/abc123","mimetype":"image/jpeg","body":"photo.jpg","info":{"w":1920,"h":1080,"size":204800,"thumbnail_url":"mxc://example.org/thumb"}})";
+    auto info = progressive::parseMediaInfo(content);
+    ASSERT_STREQ(info.mxcUrl.c_str(), "mxc://example.org/abc123");
+    ASSERT_EQ(info.width, 1920);
+    ASSERT_EQ(info.height, 1080);
+    ASSERT_TRUE(info.hasThumbnail);
+}
+
+static void test_media_format_size() {
+    ASSERT_STREQ(progressive::formatMediaSize(1024).c_str(), "1.0 KB");
+    ASSERT_STREQ(progressive::formatMediaSize(1048576).c_str(), "1.0 MB");
+    ASSERT_STREQ(progressive::formatMediaSize(500).c_str(), "500 B");
+}
+
+static void test_media_format_duration() {
+    ASSERT_STREQ(progressive::formatMediaDuration(65000).c_str(), "1:05");
+    ASSERT_STREQ(progressive::formatMediaDuration(3661000).c_str(), "1:01:01");
+}
+
+static void test_media_exif_rotation() {
+    ASSERT_EQ(progressive::exifRotationDegrees(progressive::exifFromRaw(6)), 90);
+    ASSERT_EQ(progressive::exifRotationDegrees(progressive::exifFromRaw(3)), 180);
+    ASSERT_EQ(progressive::exifRotationDegrees(progressive::exifFromRaw(8)), 270);
+    ASSERT_EQ(progressive::exifRotationDegrees(progressive::exifFromRaw(1)), 0);
+}
+
+static void test_media_mxc_resolve() {
+    auto url = progressive::resolveMxcDownloadUrl("mxc://matrix.org/abc123", "https://matrix.org");
+    ASSERT_TRUE(url.find("_matrix/media/r0/download/matrix.org/abc123") != std::string::npos);
+}
+
+static void test_media_type_detect() {
+    ASSERT_TRUE(progressive::detectMediaType("image/png") == progressive::MediaType::IMAGE);
+    ASSERT_TRUE(progressive::detectMediaType("video/mp4") == progressive::MediaType::VIDEO);
+    ASSERT_TRUE(progressive::detectMediaType("audio/ogg") == progressive::MediaType::AUDIO);
+    ASSERT_TRUE(progressive::detectMediaType("application/pdf") == progressive::MediaType::FILE);
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -1760,6 +1803,14 @@ int main() {
     ADD_TEST(runner, test_pin_power_level);
     ADD_TEST(runner, test_pin_parse_ids);
     ADD_TEST(runner, test_pin_build_content);
+    
+    printf("\n-- Media Viewer --\n");
+    ADD_TEST(runner, test_media_parse);
+    ADD_TEST(runner, test_media_format_size);
+    ADD_TEST(runner, test_media_format_duration);
+    ADD_TEST(runner, test_media_exif_rotation);
+    ADD_TEST(runner, test_media_mxc_resolve);
+    ADD_TEST(runner, test_media_type_detect);
     
     return runner.summary();
 }

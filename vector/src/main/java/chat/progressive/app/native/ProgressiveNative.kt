@@ -1490,6 +1490,17 @@ object ProgressiveNative {
     @JvmStatic external fun nativePinCanManage(powerLevel: Int): Boolean
     @JvmStatic external fun nativePinReset()
 
+    // --- Media Viewer ---
+
+    @JvmStatic external fun nativeMediaViewerParse(contentJson: String): String
+    @JvmStatic external fun nativeMediaViewerFormatSize(bytes: Long): String
+    @JvmStatic external fun nativeMediaViewerFormatDuration(durationMs: Int): String
+    @JvmStatic external fun nativeMediaViewerViewport(contentJson: String, viewportW: Int, viewportH: Int): String
+    @JvmStatic external fun nativeMediaViewerThumbnailUrl(mxcUrl: String, homeServer: String, width: Int, height: Int): String
+    @JvmStatic external fun nativeMediaViewerDownloadUrl(mxcUrl: String, homeServer: String): String
+    @JvmStatic external fun nativeMediaViewerExifRotation(rawExif: Int): Int
+    @JvmStatic external fun nativeMediaViewerCanThumbnail(mimeType: String): Boolean
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4253,6 +4264,38 @@ object ProgressiveNative {
     @JvmStatic fun nativePinCountFallback(roomId: String): Int = 0
     @JvmStatic fun nativePinCanManageFallback(powerLevel: Int): Boolean = powerLevel >= 50
     @JvmStatic fun nativePinResetFallback() {}
+
+    // --- Media Viewer fallbacks ---
+    @JvmStatic fun nativeMediaViewerParseFallback(contentJson: String): String {
+        val url = Regex(""""url":"([^"]+)"""").find(contentJson)?.groupValues?.getOrNull(1) ?: ""
+        val mime = Regex(""""mimetype":"([^"]+)"""").find(contentJson)?.groupValues?.getOrNull(1) ?: ""
+        return """{"mxc":"$url","mime":"$mime","type":"Image","width":0,"height":0,"display_w":0,"display_h":0,"size":0,"size_fmt":"0 B","duration_ms":0,"duration_fmt":"0:00","exif_rotation":0,"has_thumb":false,"file_name":"","thumb_url":""}"""
+    }
+    @JvmStatic fun nativeMediaViewerFormatSizeFallback(bytes: Long): String = when {
+        bytes < 1024 -> "$bytes B"
+        bytes < 1048576 -> "${"%.1f".format(bytes/1024.0)} KB"
+        bytes < 1073741824 -> "${"%.1f".format(bytes/1048576.0)} MB"
+        else -> "${"%.2f".format(bytes/1073741824.0)} GB"
+    }
+    @JvmStatic fun nativeMediaViewerFormatDurationFallback(durationMs: Int): String {
+        val s = durationMs / 1000; val m = s / 60; val h = m / 60
+        return if (h > 0) "${h}:${(m%60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}"
+        else "${m}:${(s%60).toString().padStart(2,'0')}"
+    }
+    @JvmStatic fun nativeMediaViewerViewportFallback(contentJson: String, viewportW: Int, viewportH: Int): String =
+        """{"scale":1.0,"min_scale":0.5,"max_scale":5.0,"offset_x":0,"offset_y":0,"media_w":0,"media_h":0}"""
+    @JvmStatic fun nativeMediaViewerThumbnailUrlFallback(mxcUrl: String, homeServer: String, width: Int, height: Int): String {
+        val server = Regex("""mxc://([^/]+)/(.+)""").find(mxcUrl)?.destructured?.let { (s, id) -> "$s/$id" } ?: return ""
+        return "${homeServer.trimEnd('/')}/_matrix/media/r0/thumbnail/$server?width=$width&height=$height&method=scale"
+    }
+    @JvmStatic fun nativeMediaViewerDownloadUrlFallback(mxcUrl: String, homeServer: String): String {
+        val server = Regex("""mxc://([^/]+)/(.+)""").find(mxcUrl)?.destructured?.let { (s, id) -> "$s/$id" } ?: return ""
+        return "${homeServer.trimEnd('/')}/_matrix/media/r0/download/$server"
+    }
+    @JvmStatic fun nativeMediaViewerExifRotationFallback(rawExif: Int): Int = when(rawExif) {
+        3 -> 180; 6 -> 90; 8 -> 270; else -> 0 }
+    @JvmStatic fun nativeMediaViewerCanThumbnailFallback(mimeType: String): Boolean =
+        mimeType.startsWith("image/") || mimeType.startsWith("video/")
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")
