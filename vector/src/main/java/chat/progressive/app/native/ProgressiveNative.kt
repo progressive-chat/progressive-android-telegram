@@ -932,6 +932,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeIsNotifModeDifferent(oldMode: String, newMode: String): Boolean
     @JvmStatic external fun nativeGetDefaultModeForRoom(isDirect: Boolean, isEncrypted: Boolean): String
 
+    // --- Password Strength ---
+
+    @JvmStatic external fun nativeMeetsMinimumRequirements(password: String): Boolean
+    @JvmStatic external fun nativeCountCharClasses(password: String): Int
+    @JvmStatic external fun nativeIsCommonPassword(password: String): Boolean
+
     // --- Megolm Decryptor ---
 
     @JvmStatic external fun nativeMegolmAddSession(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean
@@ -2935,6 +2941,14 @@ object ProgressiveNative {
     @JvmStatic fun nativeIsNotifModeDifferentFallback(oldMode: String, newMode: String): Boolean = oldMode != newMode
     @JvmStatic fun nativeGetDefaultModeForRoomFallback(isDirect: Boolean, isEncrypted: Boolean): String =
         if (isDirect) "mentions" else "all"
+
+    // --- Password fallbacks ---
+    @JvmStatic fun nativeMeetsMinimumRequirementsFallback(password: String): Boolean =
+        password.length >= 8 && password.any { it.isUpperCase() } && password.any { it.isLowerCase() } && password.any { it.isDigit() }
+    @JvmStatic fun nativeCountCharClassesFallback(password: String): Int =
+        listOf(password.any { it.isUpperCase() }, password.any { it.isLowerCase() }, password.any { it.isDigit() }, password.any { !it.isLetterOrDigit() }).count { it }
+    @JvmStatic fun nativeIsCommonPasswordFallback(password: String): Boolean =
+        password == "password" || password == "12345678" || password == "qwerty123"
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false

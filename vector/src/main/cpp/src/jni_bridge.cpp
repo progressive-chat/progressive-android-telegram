@@ -2850,6 +2850,20 @@ JNI_FUNC(jstring, nativeGetDefaultModeForRoom)(JNIEnv* env, jclass, jboolean jDi
     return env->NewStringUTF(s);
 }
 
+// --- Password Strength ---
+
+JNI_FUNC(jboolean, nativeMeetsMinimumRequirements)(JNIEnv* env, jclass, jstring jPassword) {
+    return progressive::meetsMinimumRequirements(jStr(env, jPassword)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jint, nativeCountCharClasses)(JNIEnv* env, jclass, jstring jPassword) {
+    return progressive::countCharClasses(jStr(env, jPassword));
+}
+
+JNI_FUNC(jboolean, nativeIsCommonPassword)(JNIEnv* env, jclass, jstring jPassword) {
+    return progressive::isCommonPassword(jStr(env, jPassword)) ? JNI_TRUE : JNI_FALSE;
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 
