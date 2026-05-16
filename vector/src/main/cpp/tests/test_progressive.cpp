@@ -24,6 +24,8 @@
 #include "progressive/well_known.hpp"
 #include "progressive/olm_session.hpp"
 #include "progressive/sas_verification.hpp"
+#include "progressive/membership_utils.hpp"
+#include "progressive/url_tools.hpp"
 #include <cstring>
 
 // ==== SHA-256 verification (E2EE foundation) ====
@@ -421,13 +423,34 @@ static void test_sas_emoji_table() {
 
 // ==== Device fingerprint ====
 static void test_compute_device_fingerprint() {
-    // Base64 of 32 zero bytes = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
     auto fp = progressive::computeDeviceFingerprint("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
     ASSERT_TRUE(!fp.empty());
-    // Should have 8 words separated by spaces
     int spaces = 0;
     for (char c : fp) if (c == ' ') spaces++;
-    ASSERT_TRUE(spaces >= 6); // 7+ spaces for 8 words
+    ASSERT_TRUE(spaces >= 6);
+}
+
+// ==== Membership formatting ====
+static void test_format_membership_join() {
+    auto result = progressive::formatMembership(progressive::Membership::Join);
+    ASSERT_TRUE(!result.empty());
+}
+
+static void test_is_active_member() {
+    ASSERT_TRUE(progressive::isActiveMember(progressive::Membership::Join));
+    ASSERT_FALSE(progressive::isActiveMember(progressive::Membership::Leave));
+    ASSERT_FALSE(progressive::isActiveMember(progressive::Membership::Ban));
+}
+
+// ==== URL parsing ====
+static void test_is_matrix_to_permalink() {
+    ASSERT_TRUE(progressive::isMatrixToPermalink("https://matrix.to/#/!room:matrix.org"));
+    ASSERT_FALSE(progressive::isMatrixToPermalink("https://google.com"));
+}
+
+static void test_extract_room_id_from_permalink() {
+    auto roomId = progressive::extractRoomIdFromPermalink("https://matrix.to/#/!abc:matrix.org");
+    ASSERT_TRUE(roomId.find("!abc") != std::string::npos);
 }
 
 // ==== Run all tests ====
@@ -523,6 +546,12 @@ int main() {
     ADD_TEST(runner, test_sas_create);
     ADD_TEST(runner, test_sas_emoji_table);
     ADD_TEST(runner, test_compute_device_fingerprint);
+    
+    printf("\n-- Membership & URL --\n");
+    ADD_TEST(runner, test_format_membership_join);
+    ADD_TEST(runner, test_is_active_member);
+    ADD_TEST(runner, test_is_matrix_to_permalink);
+    ADD_TEST(runner, test_extract_room_id_from_permalink);
     
     return runner.summary();
 }
