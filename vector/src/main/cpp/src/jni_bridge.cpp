@@ -3387,6 +3387,55 @@ JNI_FUNC(jstring, nativeCanonicalizeJson)(JNIEnv* env, jclass, jstring jJson) {
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Chunked Uploader ---
+static progressive::ChunkedUploader g_uploader;
+
+JNI_FUNC(void, nativeUploaderSetChunkSizeMb)(JNIEnv* env, jclass, jint jMb) {
+    g_uploader.setChunkSizeMb(jMb);
+}
+
+JNI_FUNC(jint, nativeUploaderComputeChunks)(JNIEnv* env, jclass, jlong jFileSize) {
+    return g_uploader.computeChunks(jFileSize);
+}
+
+JNI_FUNC(jstring, nativeUploaderGetChunkInfo)(JNIEnv* env, jclass, jint jIndex) {
+    auto chunk = g_uploader.getChunkInfo(jIndex);
+    std::ostringstream os;
+    os << R"({"offset":)" << chunk.offset
+       << R"(,"size":)" << chunk.chunkSize
+       << R"(,"total_size":)" << chunk.totalSize
+       << R"(,"index":)" << chunk.chunkIndex
+       << R"(,"total":)" << chunk.totalChunks
+       << R"(,"is_last":)" << (chunk.isLast ? "true" : "false") << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeUploaderContentRange)(JNIEnv* env, jclass, jint jIndex) {
+    auto chunk = g_uploader.getChunkInfo(jIndex);
+    auto result = progressive::ChunkedUploader::formatContentRange(chunk);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(void, nativeUploaderAdvance)(JNIEnv*, jclass) { g_uploader.advanceChunk(); }
+JNI_FUNC(void, nativeUploaderCancel)(JNIEnv*, jclass) { g_uploader.cancel(); }
+JNI_FUNC(void, nativeUploaderReset)(JNIEnv*, jclass) { g_uploader.reset(); }
+
+JNI_FUNC(jstring, nativeUploaderProgress)(JNIEnv* env, jclass) {
+    auto p = g_uploader.progress();
+    std::ostringstream os;
+    os << R"({"uploaded":)" << p.bytesUploaded
+       << R"(,"total":)" << p.totalBytes
+       << R"(,"chunks":)" << p.chunksCompleted
+       << R"(,"total_chunks":)" << p.totalChunks
+       << R"(,"done":)" << (p.done ? "true" : "false")
+       << R"(,"progress":)" << p.progress() << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jint, nativeSuggestChunkSizeMb)(JNIEnv* env, jclass, jlong jFileSize) {
+    return progressive::ChunkedUploader::suggestChunkSizeMb(jFileSize);
+}
+
 // --- Member Notice / Call Notice / Edit Annotation ---
 
 JNI_FUNC(jstring, nativeFormatMemberNotice)(JNIEnv* env, jclass, jstring jMembership, jstring jPrevMembership, jstring jSenderId, jstring jSenderName, jstring jTargetId, jstring jTargetName, jstring jReason, jboolean jDirect, jboolean jSelf) {

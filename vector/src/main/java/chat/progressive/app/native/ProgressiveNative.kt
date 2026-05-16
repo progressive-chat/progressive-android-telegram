@@ -344,6 +344,18 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeCanonicalizeJson(json: String): String
 
+    // --- Chunked Uploader ---
+
+    @JvmStatic external fun nativeUploaderSetChunkSizeMb(mb: Int)
+    @JvmStatic external fun nativeUploaderComputeChunks(fileSize: Long): Int
+    @JvmStatic external fun nativeUploaderGetChunkInfo(index: Int): String
+    @JvmStatic external fun nativeUploaderContentRange(index: Int): String
+    @JvmStatic external fun nativeUploaderAdvance()
+    @JvmStatic external fun nativeUploaderCancel()
+    @JvmStatic external fun nativeUploaderReset()
+    @JvmStatic external fun nativeUploaderProgress(): String
+    @JvmStatic external fun nativeSuggestChunkSizeMb(fileSize: Long): Int
+
     // --- Member / Call Notices ---
 
     @JvmStatic external fun nativeFormatMemberNotice(membership: String, prevMembership: String, senderId: String, senderName: String, targetId: String, targetName: String, reason: String, isDirect: Boolean, sentBySelf: Boolean): String
@@ -3331,6 +3343,18 @@ object ProgressiveNative {
 
     // --- Canonical JSON fallback ---
     @JvmStatic fun nativeCanonicalizeJsonFallback(json: String): String = json
+
+    // --- Uploader fallbacks ---
+    @JvmStatic fun nativeUploaderSetChunkSizeMbFallback(mb: Int) {}
+    @JvmStatic fun nativeUploaderComputeChunksFallback(fileSize: Long): Int = 0
+    @JvmStatic fun nativeUploaderGetChunkInfoFallback(index: Int): String = "{}"
+    @JvmStatic fun nativeUploaderContentRangeFallback(index: Int): String = ""
+    @JvmStatic fun nativeUploaderAdvanceFallback() {}
+    @JvmStatic fun nativeUploaderCancelFallback() {}
+    @JvmStatic fun nativeUploaderResetFallback() {}
+    @JvmStatic fun nativeUploaderProgressFallback(): String = """{"uploaded":0,"total":0,"chunks":0,"done":false,"progress":0}"""
+    @JvmStatic fun nativeSuggestChunkSizeMbFallback(fileSize: Long): Int =
+        when { fileSize < 100_000_000 -> 10; fileSize < 1_000_000_000 -> 20; else -> 50 }
 
     // --- Member/Call/Edit fallbacks ---
     @JvmStatic fun nativeFormatMemberNoticeFallback(membership: String, prevMembership: String, senderId: String, senderName: String, targetId: String, targetName: String, reason: String, isDirect: Boolean, sentBySelf: Boolean): String {
