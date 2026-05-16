@@ -259,6 +259,12 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeNormalizeMimeType(mimeType: String): String
 
+    // --- Room State Parse ---
+
+    @JvmStatic external fun nativeParseJoinRules(contentJson: String): String
+    @JvmStatic external fun nativeParseHistoryVisibility(contentJson: String): String
+    @JvmStatic external fun nativeParseGuestAccess(contentJson: String): String
+
     // --- Account Export ---
 
     @JvmStatic external fun nativeEncryptAccount(
@@ -3125,6 +3131,20 @@ object ProgressiveNative {
     // --- MIME fallback ---
     @JvmStatic fun nativeNormalizeMimeTypeFallback(mimeType: String): String =
         if (mimeType == "image/jpg") "image/jpeg" else mimeType
+
+    // --- Room State fallbacks ---
+    @JvmStatic fun nativeParseJoinRulesFallback(contentJson: String): String {
+        val rule = Regex("\"join_rule\":\"(\\w+)\"").find(contentJson)?.groupValues?.get(1) ?: "unknown"
+        return """{"rule":"$rule"}"""
+    }
+    @JvmStatic fun nativeParseHistoryVisibilityFallback(contentJson: String): String {
+        val vis = Regex("\"history_visibility\":\"(\\w+)\"").find(contentJson)?.groupValues?.get(1) ?: "unknown"
+        return """{"visibility":"$vis"}"""
+    }
+    @JvmStatic fun nativeParseGuestAccessFallback(contentJson: String): String {
+        val acc = Regex("\"guest_access\":\"(\\w+)\"").find(contentJson)?.groupValues?.get(1) ?: "unknown"
+        return """{"access":"$acc"}"""
+    }
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false

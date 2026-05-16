@@ -3090,6 +3090,29 @@ JNI_FUNC(jstring, nativeNormalizeMimeType)(JNIEnv* env, jclass, jstring jMime) {
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Room State Parse+Serialize (JSON in → struct → JSON out) ---
+
+JNI_FUNC(jstring, nativeParseJoinRules)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto rules = progressive::parseJoinRules(jStr(env, jContentJson));
+    std::ostringstream os;
+    os << R"({"rule":")" << progressive::joinRuleToString(rules.rule) << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeParseHistoryVisibility)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto vis = progressive::parseHistoryVisibility(jStr(env, jContentJson));
+    std::ostringstream os;
+    os << R"({"visibility":")" << progressive::historyVisibilityToString(vis.visibility) << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeParseGuestAccess)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto access = progressive::parseGuestAccess(jStr(env, jContentJson));
+    std::ostringstream os;
+    os << R"({"access":")" << progressive::guestAccessToString(access.access) << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
 JNI_FUNC(jstring, nativeParseMarkdownTable)(JNIEnv* env, jclass, jstring jTableBlock, jboolean jWithScroll) {
     auto result = progressive::parseMarkdownTable(jStr(env, jTableBlock), jWithScroll);
     return env->NewStringUTF(result.c_str());
