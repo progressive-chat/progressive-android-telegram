@@ -3289,6 +3289,43 @@ JNI_FUNC(jstring, nativeParseEventRelation)(JNIEnv* env, jclass, jstring jConten
     return env->NewStringUTF(os.str().c_str());
 }
 
+// --- Public Rooms Response ---
+
+JNI_FUNC(jstring, nativeParsePublicRoomsResponse)(JNIEnv* env, jclass, jstring jJson) {
+    auto resp = progressive::parsePublicRoomsResponse(jStr(env, jJson));
+    std::ostringstream os;
+    os << R"({"total":)" << resp.totalRoomCountEstimate
+       << R"(,"next_batch":")" << resp.nextBatch
+       << R"(","rooms":[)";
+    for (size_t i = 0; i < resp.chunk.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"room_id":")" << resp.chunk[i].roomId
+           << R"(","name":")" << resp.chunk[i].name << "\"}";
+    }
+    os << "]}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Thread Summary ---
+
+JNI_FUNC(jstring, nativeComputeThreadSummary)(JNIEnv* env, jclass, jstring jRootEventId, jstring jEventsJson) {
+    // Parse events JSON array, compute thread summary
+    auto rootId = jStr(env, jRootEventId);
+    progressive::ThreadSummary summary;
+    summary.rootEventId = rootId;
+    summary.replyCount = 0;
+    // Count replies by scanning for m.thread or m.in_reply_to relations
+    auto json = jStr(env, jEventsJson);
+    size_t pos = 0;
+    while ((pos = json.find("\"m.thread\"", pos)) != std::string::npos ||
+           (pos = json.find("\"m.in_reply_to\"", pos)) != std::string::npos) {
+        summary.replyCount++;
+        pos++;
+    }
+    auto result = progressive::threadSummaryToJson(summary);
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Poll Validation ---
 
 JNI_FUNC(jboolean, nativeIsValidPollQuestion)(JNIEnv* env, jclass, jstring jQuestion) {

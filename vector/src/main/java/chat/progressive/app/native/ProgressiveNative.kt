@@ -323,6 +323,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeParseEventRelation(contentJson: String): String
 
+    // --- Public Rooms / Thread ---
+
+    @JvmStatic external fun nativeParsePublicRoomsResponse(json: String): String
+    @JvmStatic external fun nativeComputeThreadSummary(rootEventId: String, eventsJson: String): String
+
     // --- Poll Validation ---
 
     @JvmStatic external fun nativeIsValidPollQuestion(question: String): Boolean
@@ -909,7 +914,6 @@ object ProgressiveNative {
 
     // --- Event Relations ---
 
-    @JvmStatic external fun nativeParseEventRelation(contentJson: String): String
 
     // --- E2EE Decoration ---
 
@@ -3268,6 +3272,12 @@ object ProgressiveNative {
     // --- Event Relation fallback ---
     @JvmStatic fun nativeParseEventRelationFallback(contentJson: String): String =
         """{"rel_type":"","event_id":"","key":""}"""
+
+    // --- Public Rooms / Thread fallbacks ---
+    @JvmStatic fun nativeParsePublicRoomsResponseFallback(json: String): String =
+        """{"total":0,"next_batch":"","rooms":[]}"""
+    @JvmStatic fun nativeComputeThreadSummaryFallback(rootEventId: String, eventsJson: String): String =
+        """{"root_event_id":"$rootEventId","reply_count":0}"""
 
     // --- Poll fallback ---
     @JvmStatic fun nativeIsValidPollQuestionFallback(question: String): Boolean =
