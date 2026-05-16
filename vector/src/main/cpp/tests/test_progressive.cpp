@@ -29,6 +29,8 @@
 #include "progressive/sso_utils.hpp"
 #include "progressive/connection_monitor.hpp"
 #include "progressive/date_utils.hpp"
+#include "progressive/matrix_error.hpp"
+#include "progressive/content_guard.hpp"
 #include <cstring>
 
 // ==== SHA-256 verification (E2EE foundation) ====
@@ -488,6 +490,29 @@ static void test_format_duration_minutes() {
     ASSERT_TRUE(result.find("2") != std::string::npos);
 }
 
+// ==== Matrix errors ====
+static void test_is_password_error() {
+    ASSERT_TRUE(progressive::isPasswordError("M_WEAK_PASSWORD"));
+    ASSERT_FALSE(progressive::isPasswordError("M_FORBIDDEN"));
+}
+
+static void test_get_all_error_codes() {
+    auto codes = progressive::getAllErrorCodes();
+    ASSERT_GT(codes.size(), 5u);
+    ASSERT_TRUE(std::find(codes.begin(), codes.end(), "M_UNKNOWN") != codes.end());
+}
+
+// ==== Content guard ====
+static void test_count_emojis() {
+    ASSERT_GT(progressive::countEmojis("hello 😀 world"), 0);
+    ASSERT_EQ(progressive::countEmojis("no emoji"), 0);
+}
+
+static void test_format_media_collapse_label() {
+    auto result = progressive::formatMediaCollapseLabel(5);
+    ASSERT_TRUE(result.find("5") != std::string::npos);
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -596,6 +621,12 @@ int main() {
     printf("\n-- Date/Time --\n");
     ADD_TEST(runner, test_format_duration_seconds);
     ADD_TEST(runner, test_format_duration_minutes);
+    
+    printf("\n-- Errors & Content --\n");
+    ADD_TEST(runner, test_is_password_error);
+    ADD_TEST(runner, test_get_all_error_codes);
+    ADD_TEST(runner, test_count_emojis);
+    ADD_TEST(runner, test_format_media_collapse_label);
     
     return runner.summary();
 }
