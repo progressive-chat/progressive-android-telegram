@@ -1335,6 +1335,16 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeDeviceInfoToJson(deviceJson: String): String
 
+    // --- Offline Cache ---
+
+    @JvmStatic external fun nativeCanFitInStorage(required: Long, available: Long, reserved: Long): Boolean
+    @JvmStatic external fun nativeEstimateMessageCacheSize(messageCount: Int, avgBodySize: Int): Long
+
+    // --- Sign Out Service ---
+
+    @JvmStatic external fun nativeShouldIgnoreSignOutError(errorCode: String, httpCode: Int): Boolean
+    @JvmStatic external fun nativeSignInAgainBodyToJson(paramsJson: String): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -3843,6 +3853,17 @@ object ProgressiveNative {
 
     // --- Crypto Models fallback ---
     @JvmStatic fun nativeDeviceInfoToJsonFallback(deviceJson: String): String = deviceJson
+
+    // --- Offline Cache fallbacks ---
+    @JvmStatic fun nativeCanFitInStorageFallback(required: Long, available: Long, reserved: Long): Boolean =
+        required <= (available - reserved)
+    @JvmStatic fun nativeEstimateMessageCacheSizeFallback(messageCount: Int, avgBodySize: Int): Long =
+        messageCount.toLong() * avgBodySize.toLong()
+
+    // --- Sign Out Service fallbacks ---
+    @JvmStatic fun nativeShouldIgnoreSignOutErrorFallback(errorCode: String, httpCode: Int): Boolean =
+        httpCode == 401 || errorCode == "M_UNKNOWN_TOKEN"
+    @JvmStatic fun nativeSignInAgainBodyToJsonFallback(paramsJson: String): String = paramsJson
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")

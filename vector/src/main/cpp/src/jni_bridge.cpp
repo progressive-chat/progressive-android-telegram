@@ -4627,4 +4627,35 @@ JNI_FUNC(jstring, nativeDeviceInfoToJson)(JNIEnv* env, jclass, jstring jDeviceJs
     return env->NewStringUTF(r.c_str());
 }
 
+// --- Offline Cache ---
+
+JNI_FUNC(jboolean, nativeCanFitInStorage)(JNIEnv* env, jclass, jlong jRequired, jlong jAvailable, jlong jReserved) {
+    return progressive::canFitInStorage(jRequired, jAvailable, jReserved) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jlong, nativeEstimateMessageCacheSize)(JNIEnv* env, jclass, jint jCount, jint jAvgSize) {
+    return progressive::estimateMessageCacheSize(jCount, jAvgSize);
+}
+
+// --- Sign Out Service ---
+
+JNI_FUNC(jboolean, nativeShouldIgnoreSignOutError)(JNIEnv* env, jclass, jstring jCode, jint jHttpCode) {
+    return progressive::shouldIgnoreSignOutError(jStr(env, jCode), jHttpCode) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeSignInAgainBodyToJson)(JNIEnv* env, jclass, jstring jParamsJson) {
+    auto json = jStr(env, jParamsJson);
+    progressive::SignInAgainParams p;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    p.password = es("password"); p.userId = es("user_id");
+    p.deviceId = es("device_id"); p.homeServerUrl = es("home_server_url");
+    auto r = progressive::signInAgainBodyToJson(p);
+    return env->NewStringUTF(r.c_str());
+}
+
 } // extern "C"
