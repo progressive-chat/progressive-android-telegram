@@ -57,6 +57,17 @@ internal class TokenChunkEventPersistor @Inject constructor(
         private val clock: Clock,
 ) {
 
+    companion object {
+        /**
+         * Optional native C++ timeline storage callback for Progressive Chat.
+         * Called for each event persisted to Realm, so native SQLite can mirror it.
+         * Set by the app layer when SETTINGS_LABS_NATIVE_TIMELINE is enabled.
+         * Parameters: roomId, eventId, type, senderId, contentJson, originTs, displayIndex
+         */
+        @JvmStatic
+        var nativeEventPersistCallback: ((roomId: String, eventId: String, type: String, senderId: String, contentJson: String, originTs: Long, displayIndex: Int, stateKey: String, redacts: String, relType: String, relatesToId: String) -> Unit)? = null
+    }
+
     enum class Result {
         SHOULD_FETCH_MORE,
         REACHED_END,
@@ -157,6 +168,21 @@ internal class TokenChunkEventPersistor @Inject constructor(
                 }
                 val ageLocalTs = now - (event.unsignedData?.age ?: 0)
                 val eventEntity = event.toEntity(roomId, SendState.SYNCED, ageLocalTs).copyToRealmOrIgnore(realm, EventInsertType.PAGINATION)
+
+                // Progressive Chat: mirror event to native C++ timeline (Labs-gated)
+                val callback = nativeEventPersistCallback
+                if (callback != null) {
+                    val contentJson = org.matrix.android.sdk.api.util.toJsonString(event.content) ?: "{}"
+                    val relType = event.content?.get("m.relates_to")?.let { (it as? Map<*, *>)?.get("rel_type") as? String } ?: ""
+                    val relatesToId = event.content?.get("m.relates_to")?.let { (it as? Map<*, *>)?.get("event_id") as? String } ?: ""
+                    callback(
+                        roomId, event.eventId, event.type ?: "", event.senderId ?: "",
+                        contentJson, event.originServerTs ?: 0L,
+                        eventEntity.displayIndex, event.stateKey ?: "",
+                        event.redacts ?: "", relType, relatesToId
+                    )
+                }
+
                 if (event.type == EventType.STATE_ROOM_MEMBER && event.stateKey != null) {
                     val contentToUse = if (direction == PaginationDirection.BACKWARDS) {
                         event.prevContent

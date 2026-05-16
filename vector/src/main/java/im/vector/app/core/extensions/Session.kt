@@ -21,6 +21,7 @@ import org.matrix.android.sdk.api.session.crypto.model.MXEventDecryptionResult
 import org.matrix.android.sdk.api.session.events.model.Event
 import org.matrix.android.sdk.internal.crypto.EventDecryptor
 import org.matrix.android.sdk.internal.crypto.RustCryptoService
+import org.matrix.android.sdk.internal.session.room.timeline.TokenChunkEventPersistor
 import timber.log.Timber
 
 fun Session.startSyncing(context: Context) {
@@ -64,6 +65,21 @@ fun Session.startSyncing(context: Context) {
             if (ok) Timber.d("PROGRESSIVE native key imported: room=$roomId session=$sessionId")
         } catch (e: Exception) {
             Timber.w(e, "PROGRESSIVE native key import failed")
+        }
+    }
+
+    // Progressive Chat: mirror timeline events to native C++ TimelineChunkManager
+    // Called from TokenChunkEventPersistor for each event persisted to Realm
+    TokenChunkEventPersistor.nativeEventPersistCallback = { roomId, eventId, type, senderId, contentJson, originTs, displayIndex, stateKey, redacts, relType, relatesToId ->
+        try {
+            ProgressiveNative.ensureLoaded()
+            val di = ProgressiveNative.nativeTimelineAddSyncEvent(
+                roomId, eventId, type, senderId, contentJson, originTs,
+                displayIndex, stateKey, redacts, relType, relatesToId
+            )
+            if (di >= 0) Timber.d("PROGRESSIVE native timeline: stored $eventId (di=$di)")
+        } catch (e: Exception) {
+            Timber.w(e, "PROGRESSIVE native timeline storage failed")
         }
     }
 
