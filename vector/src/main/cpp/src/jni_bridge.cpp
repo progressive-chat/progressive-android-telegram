@@ -3220,6 +3220,29 @@ JNI_FUNC(jstring, nativeComputePermissions)(JNIEnv* env, jclass, jstring jPlJson
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Room Tombstone (JSON round-trip) ---
+
+JNI_FUNC(jstring, nativeParseTombstone)(JNIEnv* env, jclass, jstring jJson) {
+    auto tombstone = progressive::parseTombstone(jStr(env, jJson));
+    auto result = progressive::tombstoneToJson(tombstone);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Content Scanner (JSON round-trip) ---
+
+JNI_FUNC(jstring, nativeParseScanResult)(JNIEnv* env, jclass, jstring jJson) {
+    auto result = progressive::parseScanResult(jStr(env, jJson));
+    return env->NewStringUTF(progressive::formatScanResult(result).c_str());
+}
+
+// --- Server Notice (JSON round-trip) ---
+
+JNI_FUNC(jstring, nativeParseServerNotice)(JNIEnv* env, jclass, jstring jJson, jstring jEventId) {
+    auto notice = progressive::parseServerNotice(jStr(env, jJson), jStr(env, jEventId));
+    auto result = progressive::formatServerNotice(notice);
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Poll Validation ---
 
 JNI_FUNC(jboolean, nativeIsValidPollQuestion)(JNIEnv* env, jclass, jstring jQuestion) {

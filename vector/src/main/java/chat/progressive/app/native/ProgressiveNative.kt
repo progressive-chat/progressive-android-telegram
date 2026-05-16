@@ -299,6 +299,18 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeComputePermissions(powerLevelsJson: String, myUserId: String): String
 
+    // --- Room Tombstone ---
+
+    @JvmStatic external fun nativeParseTombstone(contentJson: String): String
+
+    // --- Content Scanner ---
+
+    @JvmStatic external fun nativeParseScanResult(apiResponseJson: String): String
+
+    // --- Server Notice ---
+
+    @JvmStatic external fun nativeParseServerNotice(eventContentJson: String, eventId: String): String
+
     // --- Poll Validation ---
 
     @JvmStatic external fun nativeIsValidPollQuestion(question: String): Boolean
@@ -3229,6 +3241,11 @@ object ProgressiveNative {
     // --- Permissions fallback ---
     @JvmStatic fun nativeComputePermissionsFallback(powerLevelsJson: String, myUserId: String): String =
         """{"can_send_messages":true,"can_send_images":true,"can_ban":false,"can_kick":false}"""
+
+    // --- Tombstone/Scanner/Notice fallbacks ---
+    @JvmStatic fun nativeParseTombstoneFallback(contentJson: String): String = "{}"
+    @JvmStatic fun nativeParseScanResultFallback(apiResponseJson: String): String = "Clean"
+    @JvmStatic fun nativeParseServerNoticeFallback(eventContentJson: String, eventId: String): String = "Notice"
 
     // --- Poll fallback ---
     @JvmStatic fun nativeIsValidPollQuestionFallback(question: String): Boolean =
