@@ -2829,6 +2829,27 @@ JNI_FUNC(jstring, nativeBuildUserIdentifier)(JNIEnv* env, jclass, jstring jUserI
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Notification Mode ---
+
+JNI_FUNC(jboolean, nativeIsNotifModeDifferent)(JNIEnv* env, jclass, jstring jOld, jstring jNew) {
+    auto parse = [](const std::string& s) -> progressive::NotifMode {
+        if (s == "all") return progressive::NotifMode::All;
+        if (s == "mentions") return progressive::NotifMode::Mentions;
+        if (s == "none") return progressive::NotifMode::None;
+        return progressive::NotifMode::Default;
+    };
+    return progressive::isNotifModeDifferent(parse(jStr(env, jOld)), parse(jStr(env, jNew))) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeGetDefaultModeForRoom)(JNIEnv* env, jclass, jboolean jDirect, jboolean jEncrypted) {
+    auto mode = progressive::getDefaultModeForRoom(jDirect, jEncrypted);
+    const char* s = "default";
+    if (mode == progressive::NotifMode::All) s = "all";
+    else if (mode == progressive::NotifMode::Mentions) s = "mentions";
+    else if (mode == progressive::NotifMode::None) s = "none";
+    return env->NewStringUTF(s);
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 

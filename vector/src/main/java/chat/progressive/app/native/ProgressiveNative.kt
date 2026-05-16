@@ -927,6 +927,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeParseLoginFlowsList(apiResponseJson: String): String
     @JvmStatic external fun nativeBuildUserIdentifier(userId: String): String
 
+    // --- Notification Mode ---
+
+    @JvmStatic external fun nativeIsNotifModeDifferent(oldMode: String, newMode: String): Boolean
+    @JvmStatic external fun nativeGetDefaultModeForRoom(isDirect: Boolean, isEncrypted: Boolean): String
+
     // --- Megolm Decryptor ---
 
     @JvmStatic external fun nativeMegolmAddSession(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean
@@ -2925,6 +2930,11 @@ object ProgressiveNative {
     @JvmStatic fun nativeParseLoginFlowsListFallback(apiResponseJson: String): String = """[{"type":"m.login.password","description":"Password","supported":true}]"""
     @JvmStatic fun nativeBuildUserIdentifierFallback(userId: String): String =
         """{"type":"m.id.user","user":"$userId"}"""
+
+    // --- Notification Mode fallbacks ---
+    @JvmStatic fun nativeIsNotifModeDifferentFallback(oldMode: String, newMode: String): Boolean = oldMode != newMode
+    @JvmStatic fun nativeGetDefaultModeForRoomFallback(isDirect: Boolean, isEncrypted: Boolean): String =
+        if (isDirect) "mentions" else "all"
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false
