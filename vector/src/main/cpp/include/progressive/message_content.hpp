@@ -46,7 +46,7 @@ struct EventMessageContent {
 //           }
 //   }
 
-struct EventMessageContentWithFormattedBody : EventMessageContent {
+struct MessageContentWithFormattedBody : EventMessageContent {
     std::string format;        // "format" key, e.g. "org.matrix.custom.html"
     std::string formattedBody; // "formatted_body" key
 

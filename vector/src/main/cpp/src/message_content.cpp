@@ -177,7 +177,7 @@ ParsedMessageType msgTypeFromString(const std::string& msgtype) {
 // Each message type is parsed by Moshi from the same JSON structure,
 // differentiated by the "msgtype" field.
 
-void fillMessageContent(MessageContent& mc, const std::string& json) {
+void fillMessageContent(EventMessageContent& mc, const std::string& json) {
     mc.msgType = extractJsonString(json, "msgtype");
     mc.body = extractJsonString(json, "body");
     mc.relatesTo = parseRelation(json);
