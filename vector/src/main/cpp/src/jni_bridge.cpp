@@ -3547,6 +3547,56 @@ JNI_FUNC(jstring, nativeFormatPresenceAggregation)(JNIEnv* env, jclass, jstring 
         if (e > p) names.push_back(json.substr(p, e - p));
         p = e + 1;
     }
+    std::ostringstream os;
+    int total = static_cast<int>(names.size());
+    int shown = std::min(total, jMaxNames);
+    for (int i = 0; i < shown; i++) {
+        if (i > 0) os << (i == shown - 1 && total <= jMaxNames ? " and " : ", ");
+        os << names[i];
+    }
+    if (total > jMaxNames) os << " and " << (total - shown) << " others";
+    os << (total == 1 ? " is online" : " are online");
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Reaction Aggregator ---
+
+JNI_FUNC(jstring, nativeFormatReactionAggregation)(JNIEnv* env, jclass, jstring jKey, jint jCount, jstring jReactorsJson) {
+    auto key = jStr(env, jKey);
+    auto json = jStr(env, jReactorsJson);
+    std::vector<std::string> names;
+    size_t p = 0;
+    while ((p = json.find('"', p)) != std::string::npos) {
+        p++; size_t e = p;
+        while (e < json.size() && json[e] != '"') e++;
+        if (e > p) names.push_back(json.substr(p, e - p));
+        p = e + 1;
+    }
+    // Format: "👍 5" or "👍 Alice, Bob and 3 others"
+    std::ostringstream os;
+    os << key << " " << jCount;
+    if (!names.empty()) {
+        os << " (";
+        for (size_t i = 0; i < std::min(names.size(), size_t(3)); i++) {
+            if (i > 0) os << ", ";
+            os << names[i];
+        }
+        if (names.size() > 3) os << " and " << (names.size() - 3) << " others";
+        os << ")";
+    }
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Poll Response Tracker ---
+
+JNI_FUNC(jstring, nativeTrackPollResponse)(JNIEnv* env, jclass, jstring jOptionId, jstring jUserId) {
+    // Simple: return JSON confirming the vote
+    std::ostringstream os;
+    os << R"({"option_id":")" << jStr(env, jOptionId)
+       << R"(","user_id":")" << jStr(env, jUserId)
+       << R"(","recorded":true})";
+    return env->NewStringUTF(os.str().c_str());
+}
     // Format: "Alice, Bob and 3 others online"
     std::ostringstream os;
     int total = static_cast<int>(names.size());

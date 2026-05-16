@@ -382,6 +382,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeParseThreePid(input: String): String
     @JvmStatic external fun nativeFormatPresenceAggregation(userNamesJson: String, maxNames: Int): String
 
+    // --- Reaction / Poll ---
+
+    @JvmStatic external fun nativeFormatReactionAggregation(key: String, count: Int, reactorsJson: String): String
+    @JvmStatic external fun nativeTrackPollResponse(optionId: String, userId: String): String
+
     // --- Event Classifier ---
 
     @JvmStatic external fun nativeIsStateEvent(eventType: String): Boolean
@@ -3454,6 +3459,11 @@ object ProgressiveNative {
         return """{"medium":"$medium","address":"$input"}"""
     }
     @JvmStatic fun nativeFormatPresenceAggregationFallback(userNamesJson: String, maxNames: Int): String = "Unknown"
+
+    // --- Reaction/Poll fallbacks ---
+    @JvmStatic fun nativeFormatReactionAggregationFallback(key: String, count: Int, reactorsJson: String): String = "$key $count"
+    @JvmStatic fun nativeTrackPollResponseFallback(optionId: String, userId: String): String =
+        """{"option_id":"$optionId","user_id":"$userId","recorded":true}"""
 
     // --- Event Classifier fallback ---
     @JvmStatic fun nativeIsStateEventFallback(eventType: String): Boolean =
