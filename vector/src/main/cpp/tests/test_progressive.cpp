@@ -26,6 +26,9 @@
 #include "progressive/sas_verification.hpp"
 #include "progressive/membership_utils.hpp"
 #include "progressive/url_tools.hpp"
+#include "progressive/sso_utils.hpp"
+#include "progressive/connection_monitor.hpp"
+#include "progressive/date_utils.hpp"
 #include <cstring>
 
 // ==== SHA-256 verification (E2EE foundation) ====
@@ -453,6 +456,38 @@ static void test_extract_room_id_from_permalink() {
     ASSERT_TRUE(roomId.find("!abc") != std::string::npos);
 }
 
+// ==== SSO callback detection ====
+static void test_is_sso_callback_url() {
+    ASSERT_TRUE(progressive::isSsoCallbackUrl("https://app.element.io/?loginToken=abc123"));
+    ASSERT_FALSE(progressive::isSsoCallbackUrl("https://app.element.io/welcome"));
+}
+
+// ==== Connection monitor ====
+static void test_format_downtime() {
+    auto result = progressive::ConnectionMonitor::formatDowntime(1000);
+    ASSERT_TRUE(!result.empty());
+    auto result2 = progressive::ConnectionMonitor::formatDowntime(3600000);
+    ASSERT_TRUE(!result2.empty());
+}
+
+static void test_get_banner_color() {
+    auto green = progressive::ConnectionMonitor::getBannerColor(0);
+    ASSERT_TRUE(!green.empty());
+    auto red = progressive::ConnectionMonitor::getBannerColor(600000);
+    ASSERT_TRUE(!red.empty());
+}
+
+// ==== Date/time formatting ====
+static void test_format_duration_seconds() {
+    auto result = progressive::formatDuration(5000);
+    ASSERT_TRUE(result.find("5") != std::string::npos);
+}
+
+static void test_format_duration_minutes() {
+    auto result = progressive::formatDuration(120000);
+    ASSERT_TRUE(result.find("2") != std::string::npos);
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -552,6 +587,15 @@ int main() {
     ADD_TEST(runner, test_is_active_member);
     ADD_TEST(runner, test_is_matrix_to_permalink);
     ADD_TEST(runner, test_extract_room_id_from_permalink);
+    
+    printf("\n-- SSO & Connection --\n");
+    ADD_TEST(runner, test_is_sso_callback_url);
+    ADD_TEST(runner, test_format_downtime);
+    ADD_TEST(runner, test_get_banner_color);
+    
+    printf("\n-- Date/Time --\n");
+    ADD_TEST(runner, test_format_duration_seconds);
+    ADD_TEST(runner, test_format_duration_minutes);
     
     return runner.summary();
 }
