@@ -38,7 +38,7 @@ enum class ServerRoomVersionCap {
 
 struct ServerRoomVersionCapInfo {
     std::string version;       // e.g. "9", "10"
-    RoomVersionCap status = ServerRoomVersionCap::Stable;
+    ServerRoomVersionCap status = ServerRoomVersionCap::Stable;
 };
 
 struct ServerFeatureInfo {
@@ -48,8 +48,8 @@ struct ServerFeatureInfo {
 
 struct ServerRoomVersionCapabilities {
     std::string defaultVersion;                  // default room version
-    std::vector<RoomVersionCapInfo> supportedVersion; // available room versions
-    std::map<std::string, FeatureInfo> capabilities; // feature → version mapping
+    std::vector<ServerRoomVersionCapInfo> supportedVersion; // available room versions
+    std::map<std::string, ServerFeatureInfo> capabilities; // feature → version mapping
 };
 
 struct ServerHomeServerCapabilities {
