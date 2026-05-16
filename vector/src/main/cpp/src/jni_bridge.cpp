@@ -166,6 +166,7 @@
 #include "progressive/room_state_manager.hpp"
 #include "progressive/terms_manager.hpp"
 #include "progressive/transparent_overlay.hpp"
+#include "progressive/composer_manager.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -6542,6 +6543,63 @@ JNI_FUNC(jboolean, nativeOverlayIsTouchAllowed)(JNIEnv*, jclass, jint jAction) {
 
 JNI_FUNC(jstring, nativeOverlaySafetyToJson)(JNIEnv* env, jclass) {
     return env->NewStringUTF(getOverlayEngine()->safetyToJson().c_str());
+}
+
+// ============================================================
+// Message Composer Manager
+// ============================================================
+
+static std::unique_ptr<progressive::ComposerManager> g_composerMgr;
+
+static progressive::ComposerManager* getComposerMgr() {
+    if (!g_composerMgr) g_composerMgr.reset(new progressive::ComposerManager());
+    return g_composerMgr.get();
+}
+
+JNI_FUNC(void, nativeComposerSetText)(JNIEnv* env, jclass, jstring jText) {
+    getComposerMgr()->setText(jStr(env, jText));
+}
+
+JNI_FUNC(jstring, nativeComposerGetState)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(getComposerMgr()->stateToJson().c_str());
+}
+
+JNI_FUNC(void, nativeComposerEnterRegular)(JNIEnv*, jclass) { getComposerMgr()->enterRegularMode(); }
+JNI_FUNC(void, nativeComposerEnterEdit)(JNIEnv* env, jclass, jstring jEvtId) { getComposerMgr()->enterEditMode(jStr(env, jEvtId)); }
+JNI_FUNC(void, nativeComposerEnterQuote)(JNIEnv* env, jclass, jstring jEvtId) { getComposerMgr()->enterQuoteMode(jStr(env, jEvtId)); }
+JNI_FUNC(void, nativeComposerEnterReply)(JNIEnv* env, jclass, jstring jEvtId) { getComposerMgr()->enterReplyMode(jStr(env, jEvtId)); }
+
+JNI_FUNC(jstring, nativeComposerApplyBold)(JNIEnv* env, jclass, jstring jText, jint jStart, jint jEnd) {
+    return env->NewStringUTF(getComposerMgr()->applyBold(jStr(env, jText), jStart, jEnd).c_str());
+}
+
+JNI_FUNC(jstring, nativeComposerApplyItalic)(JNIEnv* env, jclass, jstring jText, jint jStart, jint jEnd) {
+    return env->NewStringUTF(getComposerMgr()->applyItalic(jStr(env, jText), jStart, jEnd).c_str());
+}
+
+JNI_FUNC(jstring, nativeComposerBuildQuoted)(JNIEnv* env, jclass, jstring jQuoted, jstring jReply, jstring jSender) {
+    return env->NewStringUTF(progressive::buildQuotedBody(jStr(env, jQuoted), jStr(env, jReply), jStr(env, jSender)).c_str());
+}
+
+JNI_FUNC(jstring, nativeComposerAutoEmoji)(JNIEnv* env, jclass, jstring jText) {
+    return env->NewStringUTF(progressive::autoReplaceEmojis(jStr(env, jText)).c_str());
+}
+
+JNI_FUNC(jstring, nativeComposerExtractMention)(JNIEnv* env, jclass, jstring jText, jint jCursor) {
+    return env->NewStringUTF(progressive::extractMentionQuery(jStr(env, jText), jCursor).c_str());
+}
+
+JNI_FUNC(jstring, nativeComposerValidate)(JNIEnv* env, jclass, jstring jText, jint jMaxLen) {
+    auto v = progressive::validateMessage(jStr(env, jText), jMaxLen);
+    std::ostringstream os;
+    os << R"({"valid":)" << (v.valid ? "true" : "false")
+       << R"(,"isEmpty":)" << (v.isEmpty ? "true" : "false")
+       << R"(,"is_too_long":)" << (v.isTooLong ? "true" : "false")
+       << R"(,"length":)" << v.currentLength
+       << R"(,"max_length":)" << v.maxLength
+       << R"(,"error":")" << v.errorMessage << R"(")";
+    os << "}";
+    return env->NewStringUTF(os.str().c_str());
 }
 
 } // extern "C"

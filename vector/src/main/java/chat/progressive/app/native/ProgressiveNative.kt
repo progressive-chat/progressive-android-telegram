@@ -1674,6 +1674,21 @@ object ProgressiveNative {
     @JvmStatic external fun nativeOverlayIsTouchAllowed(action: Int): Boolean
     @JvmStatic external fun nativeOverlaySafetyToJson(): String
 
+    // --- Message Composer ---
+
+    @JvmStatic external fun nativeComposerSetText(text: String)
+    @JvmStatic external fun nativeComposerGetState(): String
+    @JvmStatic external fun nativeComposerEnterRegular()
+    @JvmStatic external fun nativeComposerEnterEdit(eventId: String)
+    @JvmStatic external fun nativeComposerEnterQuote(eventId: String)
+    @JvmStatic external fun nativeComposerEnterReply(eventId: String)
+    @JvmStatic external fun nativeComposerApplyBold(text: String, selStart: Int, selEnd: Int): String
+    @JvmStatic external fun nativeComposerApplyItalic(text: String, selStart: Int, selEnd: Int): String
+    @JvmStatic external fun nativeComposerBuildQuoted(quotedText: String, replyText: String, quotedSender: String): String
+    @JvmStatic external fun nativeComposerAutoEmoji(text: String): String
+    @JvmStatic external fun nativeComposerExtractMention(text: String, cursorPos: Int): String
+    @JvmStatic external fun nativeComposerValidate(text: String, maxLength: Int): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4748,6 +4763,27 @@ object ProgressiveNative {
     @JvmStatic fun nativeOverlayIsTouchAllowedFallback(action: Int): Boolean = true
     @JvmStatic fun nativeOverlaySafetyToJsonFallback(): String =
         """{"mode":0,"mode_label":"Full access","allow_tap":true,"allow_scroll":true,"allow_long_press":true,"allow_text_input":true,"allow_navigation":true,"show_sensitive":true,"allowed":["Tap","Scroll","Long press","Text input","Navigation","Media control"]}"""
+
+    // --- Message Composer fallbacks ---
+    @JvmStatic fun nativeComposerSetTextFallback(text: String) {}
+    @JvmStatic fun nativeComposerGetStateFallback(): String =
+        """{"send_mode":0,"send_mode_name":"regular","text":"","linked_event_id":"","can_send":"allowed","is_fullscreen":false,"text_length":0}"""
+    @JvmStatic fun nativeComposerEnterRegularFallback() {}
+    @JvmStatic fun nativeComposerEnterEditFallback(eventId: String) {}
+    @JvmStatic fun nativeComposerEnterQuoteFallback(eventId: String) {}
+    @JvmStatic fun nativeComposerEnterReplyFallback(eventId: String) {}
+    @JvmStatic fun nativeComposerApplyBoldFallback(text: String, selStart: Int, selEnd: Int): String =
+        text.substring(0, selStart) + "**" + text.substring(selStart, selEnd) + "**" + text.substring(selEnd)
+    @JvmStatic fun nativeComposerApplyItalicFallback(text: String, selStart: Int, selEnd: Int): String =
+        text.substring(0, selStart) + "*" + text.substring(selStart, selEnd) + "*" + text.substring(selEnd)
+    @JvmStatic fun nativeComposerBuildQuotedFallback(quotedText: String, replyText: String, quotedSender: String): String =
+        "> " + quotedText.replace("\n", "\n> ") + "\n\n" + replyText
+    @JvmStatic fun nativeComposerAutoEmojiFallback(text: String): String = text
+    @JvmStatic fun nativeComposerExtractMentionFallback(text: String, cursorPos: Int): String = ""
+    @JvmStatic fun nativeComposerValidateFallback(text: String, maxLength: Int): String {
+        val isEmpty = text.isBlank(); val tooLong = text.length > maxLength
+        return """{"valid":${!isEmpty && !tooLong},"isEmpty":$isEmpty,"is_too_long":$tooLong,"length":${text.length},"max_length":$maxLength,"error":"${if (isEmpty) "Message is empty" else if (tooLong) "Too long" else ""}"}"""
+    }
 
     @JvmStatic fun nativeSessionCountFallback(): Int = 0
 
