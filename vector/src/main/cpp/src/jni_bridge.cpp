@@ -3334,6 +3334,13 @@ JNI_FUNC(jstring, nativeFormatRelationDescription)(JNIEnv* env, jclass, jstring 
     auto result = progressive::formatRelationDescription(rel);
     return env->NewStringUTF(result.c_str());
 }
+
+// --- Content Scanner ---
+
+JNI_FUNC(jstring, nativeBuildScanRequestBody)(JNIEnv* env, jclass, jstring jMxcUri) {
+    auto result = progressive::buildScanRequestBody(jStr(env, jMxcUri));
+    return env->NewStringUTF(result.c_str());
+}
     auto result = progressive::threadSummaryToJson(summary);
     return env->NewStringUTF(result.c_str());
 }

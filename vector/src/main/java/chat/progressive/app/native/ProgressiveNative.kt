@@ -332,6 +332,10 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeFormatRelationDescription(relType: String, eventId: String, key: String): String
 
+    // --- Content Scanner ---
+
+    @JvmStatic external fun nativeBuildScanRequestBody(mxcUri: String): String
+
     // --- Poll Validation ---
 
     @JvmStatic external fun nativeIsValidPollQuestion(question: String): Boolean
@@ -3286,12 +3290,13 @@ object ProgressiveNative {
     // --- Relation Description fallback ---
     @JvmStatic fun nativeFormatRelationDescriptionFallback(relType: String, eventId: String, key: String): String =
         when(relType) {
-            "m.replace" -> "edited"
-            "m.annotation" -> "reacted $key"
-            "m.in_reply_to" -> "replied"
-            "m.thread" -> "threaded"
-            else -> relType
+            "m.replace" -> "edited"; "m.annotation" -> "reacted $key"
+            "m.in_reply_to" -> "replied"; "m.thread" -> "threaded"; else -> relType
         }
+
+    // --- Content Scanner fallback ---
+    @JvmStatic fun nativeBuildScanRequestBodyFallback(mxcUri: String): String =
+        """{"mxc_uri":"$mxcUri"}"""
 
     // --- Poll fallback ---
     @JvmStatic fun nativeIsValidPollQuestionFallback(question: String): Boolean =
