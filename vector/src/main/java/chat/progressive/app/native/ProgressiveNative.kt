@@ -381,6 +381,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeAgentExtractTextAnswer(llmResponse: String): String
     @JvmStatic external fun nativeAgentGetToolsSchema(): String
 
+    // --- Notification Formatting ---
+
+    @JvmStatic external fun nativeFormatThreadNotificationCount(threadCount: Int, highlightCount: Int): String
+    @JvmStatic external fun nativeFormatUnreadCounter(count: Int): String
+
     // --- Member / Call Notices ---
 
     @JvmStatic external fun nativeFormatMemberNotice(membership: String, prevMembership: String, senderId: String, senderName: String, targetId: String, targetName: String, reason: String, isDirect: Boolean, sentBySelf: Boolean): String
@@ -3401,6 +3406,12 @@ object ProgressiveNative {
     @JvmStatic fun nativeAgentHasToolCallsFallback(llmResponse: String): Boolean = llmResponse.contains("\"tool_calls\"")
     @JvmStatic fun nativeAgentExtractTextAnswerFallback(llmResponse: String): String = llmResponse
     @JvmStatic fun nativeAgentGetToolsSchemaFallback(): String = "[]"
+
+    // --- Notification Formatting fallbacks ---
+    @JvmStatic fun nativeFormatThreadNotificationCountFallback(threadCount: Int, highlightCount: Int): String =
+        if (threadCount > 99) "99+" else if (threadCount > 0) "$threadCount" else ""
+    @JvmStatic fun nativeFormatUnreadCounterFallback(count: Int): String =
+        if (count > 99) "99+" else if (count > 0) "$count" else ""
 
     // --- Member/Call/Edit fallbacks ---
     @JvmStatic fun nativeFormatMemberNoticeFallback(membership: String, prevMembership: String, senderId: String, senderName: String, targetId: String, targetName: String, reason: String, isDirect: Boolean, sentBySelf: Boolean): String {

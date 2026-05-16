@@ -3566,6 +3566,18 @@ JNI_FUNC(jstring, nativeAgentGetToolsSchema)(JNIEnv* env, jclass) {
     auto result = progressive::getAgentToolsSchema();
     return env->NewStringUTF(result.c_str());
 }
+
+// --- Notification Formatting ---
+
+JNI_FUNC(jstring, nativeFormatThreadNotificationCount)(JNIEnv* env, jclass, jint jCount, jint jHighlight) {
+    auto result = progressive::formatThreadNotificationCount(jCount, jHighlight);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatUnreadCounter)(JNIEnv* env, jclass, jint jCount) {
+    auto result = progressive::formatUnreadCounter(jCount);
+    return env->NewStringUTF(result.c_str());
+}
     }
     result.isEnded = json.find("\"closed\":true") != std::string::npos;
 
