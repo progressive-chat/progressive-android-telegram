@@ -1630,6 +1630,16 @@ object ProgressiveNative {
     @JvmStatic external fun nativeDraftAutoSave(roomId: String, text: String): Boolean
     @JvmStatic external fun nativeDraftStripPrefix(text: String): String
 
+    // --- Room History Visibility ---
+
+    @JvmStatic external fun nativeRoomStateParseVisibility(contentJson: String): String
+    @JvmStatic external fun nativeRoomStateParseJoinRules(contentJson: String): String
+    @JvmStatic external fun nativeRoomStateShouldShare(contentJson: String): Boolean
+    @JvmStatic external fun nativeRoomStateIsPublic(roomId: String): Boolean
+    @JvmStatic external fun nativeRoomStateIsInviteOnly(roomId: String): Boolean
+    @JvmStatic external fun nativeRoomStateSetVisibility(roomId: String, visibility: Int)
+    @JvmStatic external fun nativeRoomStateSetJoinRule(roomId: String, joinRule: Int)
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4645,6 +4655,21 @@ object ProgressiveNative {
     @JvmStatic fun nativeDraftHasDraftFallback(roomId: String): Boolean = false
     @JvmStatic fun nativeDraftAutoSaveFallback(roomId: String, text: String): Boolean = false
     @JvmStatic fun nativeDraftStripPrefixFallback(text: String): String = text.removePrefix("draft: ")
+
+    // --- Room History Visibility fallbacks ---
+    @JvmStatic fun nativeRoomStateParseVisibilityFallback(contentJson: String): String =
+        if ("world_readable" in contentJson) "world_readable"
+        else if ("invited" in contentJson) "invited"
+        else if ("joined" in contentJson) "joined"
+        else "shared"
+    @JvmStatic fun nativeRoomStateParseJoinRulesFallback(contentJson: String): String =
+        if ("public" in contentJson) "public" else "invite"
+    @JvmStatic fun nativeRoomStateShouldShareFallback(contentJson: String): Boolean =
+        "world_readable" in contentJson || "shared" in contentJson
+    @JvmStatic fun nativeRoomStateIsPublicFallback(roomId: String): Boolean = false
+    @JvmStatic fun nativeRoomStateIsInviteOnlyFallback(roomId: String): Boolean = true
+    @JvmStatic fun nativeRoomStateSetVisibilityFallback(roomId: String, visibility: Int) {}
+    @JvmStatic fun nativeRoomStateSetJoinRuleFallback(roomId: String, joinRule: Int) {}
 
     @JvmStatic fun nativeSessionCountFallback(): Int = 0
 

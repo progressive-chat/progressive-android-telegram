@@ -163,6 +163,7 @@
 #include "progressive/event_relations_manager.hpp"
 #include "progressive/cross_signing_manager.hpp"
 #include "progressive/draft_manager_full.hpp"
+#include "progressive/room_state_manager.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -6331,6 +6332,48 @@ JNI_FUNC(jboolean, nativeDraftAutoSave)(JNIEnv* env, jclass, jstring jRoomId, js
 
 JNI_FUNC(jstring, nativeDraftStripPrefix)(JNIEnv* env, jclass, jstring jText) {
     return env->NewStringUTF(getDraftMgr()->stripDraftPrefix(jStr(env, jText)).c_str());
+}
+
+// ============================================================
+// Room History Visibility Manager
+// ============================================================
+
+static std::unique_ptr<progressive::RoomStateManager> g_roomStateMgr;
+
+static progressive::RoomStateManager* getRoomStateMgr() {
+    if (!g_roomStateMgr) g_roomStateMgr.reset(new progressive::RoomStateManager());
+    return g_roomStateMgr.get();
+}
+
+JNI_FUNC(jstring, nativeRoomStateParseVisibility)(JNIEnv* env, jclass, jstring jContent) {
+    auto vis = progressive::parseHistoryVisibility(jStr(env, jContent));
+    return env->NewStringUTF(progressive::historyVisibilityToString(vis));
+}
+
+JNI_FUNC(jstring, nativeRoomStateParseJoinRules)(JNIEnv* env, jclass, jstring jContent) {
+    auto rule = progressive::parseJoinRules(jStr(env, jContent));
+    return env->NewStringUTF(progressive::joinRuleToString(rule));
+}
+
+JNI_FUNC(jboolean, nativeRoomStateShouldShare)(JNIEnv* env, jclass, jstring jContent) {
+    auto vis = progressive::parseHistoryVisibility(jStr(env, jContent));
+    return progressive::shouldShareHistory(vis) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeRoomStateIsPublic)(JNIEnv* env, jclass, jstring jRoomId) {
+    return getRoomStateMgr()->isPublicRoom(jStr(env, jRoomId)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeRoomStateIsInviteOnly)(JNIEnv* env, jclass, jstring jRoomId) {
+    return getRoomStateMgr()->isInviteOnly(jStr(env, jRoomId)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(void, nativeRoomStateSetVisibility)(JNIEnv* env, jclass, jstring jRoomId, jint jVis) {
+    getRoomStateMgr()->setHistoryVisibility(jStr(env, jRoomId), static_cast<progressive::RoomHistoryVisibility>(jVis));
+}
+
+JNI_FUNC(void, nativeRoomStateSetJoinRule)(JNIEnv* env, jclass, jstring jRoomId, jint jRule) {
+    getRoomStateMgr()->setJoinRule(jStr(env, jRoomId), static_cast<progressive::RoomJoinRule>(jRule));
 }
 
 } // extern "C"

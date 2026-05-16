@@ -2100,6 +2100,42 @@ static void test_draft_strip_prefix() {
     ASSERT_STREQ(mgr.stripDraftPrefix("No prefix").c_str(), "No prefix");
 }
 
+// ==== Room History Visibility (Element Android sources) ====
+
+#include "progressive/room_state_manager.hpp"
+
+static void test_room_visibility_parse() {
+    ASSERT_TRUE(progressive::parseHistoryVisibility(R"({"history_visibility":"world_readable"})") == progressive::RoomHistoryVisibility::WORLD_READABLE);
+    ASSERT_TRUE(progressive::parseHistoryVisibility(R"({"history_visibility":"joined"})") == progressive::RoomHistoryVisibility::JOINED);
+}
+
+static void test_room_visibility_should_share() {
+    ASSERT_TRUE(progressive::shouldShareHistory(progressive::RoomHistoryVisibility::WORLD_READABLE));
+    ASSERT_TRUE(progressive::shouldShareHistory(progressive::RoomHistoryVisibility::SHARED));
+    ASSERT_FALSE(progressive::shouldShareHistory(progressive::RoomHistoryVisibility::INVITED));
+}
+
+static void test_room_visibility_can_see() {
+    ASSERT_TRUE(progressive::canSeeEvent(progressive::RoomHistoryVisibility::WORLD_READABLE,
+        progressive::MembershipState::NONE, progressive::MembershipState::NONE));
+    ASSERT_FALSE(progressive::canSeeEvent(progressive::RoomHistoryVisibility::JOINED,
+        progressive::MembershipState::LEAVE, progressive::MembershipState::NONE));
+}
+
+static void test_room_visibility_join_rules() {
+    ASSERT_STREQ(progressive::joinRuleToString(progressive::parseJoinRules(R"({"join_rule":"public"})")), "public");
+    ASSERT_STREQ(progressive::joinRuleToString(progressive::parseJoinRules(R"({"join_rule":"knock"})")), "knock");
+}
+
+static void test_room_visibility_manager() {
+    progressive::RoomStateManager mgr;
+    mgr.setHistoryVisibility("!room:org", progressive::RoomHistoryVisibility::SHARED);
+    mgr.setJoinRule("!room:org", progressive::RoomJoinRule::PUBLIC);
+    ASSERT_TRUE(mgr.isPublicRoom("!room:org"));
+    ASSERT_TRUE(mgr.canShareRoomHistory("!room:org"));
+    ASSERT_FALSE(mgr.isInviteOnly("!room:org"));
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -2462,6 +2498,13 @@ int main() {
     ADD_TEST(runner, test_draft_types);
     ADD_TEST(runner, test_draft_auto_save);
     ADD_TEST(runner, test_draft_strip_prefix);
+    
+    printf("\n-- Room History Visibility (Element Android) --\n");
+    ADD_TEST(runner, test_room_visibility_parse);
+    ADD_TEST(runner, test_room_visibility_should_share);
+    ADD_TEST(runner, test_room_visibility_can_see);
+    ADD_TEST(runner, test_room_visibility_join_rules);
+    ADD_TEST(runner, test_room_visibility_manager);
     
     return runner.summary();
 }
