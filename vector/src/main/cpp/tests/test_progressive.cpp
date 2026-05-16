@@ -2136,6 +2136,41 @@ static void test_room_visibility_manager() {
     ASSERT_FALSE(mgr.isInviteOnly("!room:org"));
 }
 
+// ==== Terms Manager (Element Android sources) ====
+
+#include "progressive/terms_manager.hpp"
+
+static void test_terms_parse() {
+    progressive::TermsManager mgr;
+    auto resp = mgr.parseTermsResponse(R"({"policies":{"privacy_policy":{"version":"1.0","en":{"name":"Privacy Policy","url":"https://example.org/privacy"}}}})");
+    ASSERT_TRUE(resp.hasPolicies);
+    ASSERT_EQ(resp.policyCount, 1);
+    ASSERT_STREQ(resp.policies[0].policyName.c_str(), "privacy_policy");
+}
+
+static void test_terms_required() {
+    progressive::TermsManager mgr;
+    ASSERT_TRUE(mgr.areTermsRequired(R"({"errcode":"M_TERMS_NOT_SIGNED"})"));
+    ASSERT_FALSE(mgr.areTermsRequired(R"({"errcode":"M_FORBIDDEN"})"));
+}
+
+static void test_terms_pending() {
+    progressive::TermsManager mgr;
+    auto resp = mgr.parseTermsResponse(R"({"policies":{"privacy":{"version":"1.0","en":{"name":"Privacy","url":"https://example.org/privacy"}},"tos":{"version":"2.0","en":{"name":"TOS","url":"https://example.org/tos"}}}})");
+    auto pending = mgr.getPendingPolicies(resp, {"https://example.org/privacy"});
+    ASSERT_EQ(static_cast<int>(pending.size()), 1);
+    ASSERT_STREQ(pending[0].c_str(), "https://example.org/tos");
+}
+
+static void test_terms_build_agree() {
+    progressive::TermsManager mgr;
+    progressive::TermsAgreementRequest req;
+    req.agreedUrls = {"https://example.org/privacy", "https://example.org/tos"};
+    auto json = mgr.buildAgreeRequest(req);
+    ASSERT_TRUE(json.find("https://example.org/privacy") != std::string::npos);
+    ASSERT_TRUE(json.find("user_accepts") != std::string::npos);
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -2505,6 +2540,12 @@ int main() {
     ADD_TEST(runner, test_room_visibility_can_see);
     ADD_TEST(runner, test_room_visibility_join_rules);
     ADD_TEST(runner, test_room_visibility_manager);
+    
+    printf("\n-- Terms Manager (Element Android) --\n");
+    ADD_TEST(runner, test_terms_parse);
+    ADD_TEST(runner, test_terms_required);
+    ADD_TEST(runner, test_terms_pending);
+    ADD_TEST(runner, test_terms_build_agree);
     
     return runner.summary();
 }

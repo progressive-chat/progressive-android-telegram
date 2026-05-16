@@ -1640,6 +1640,13 @@ object ProgressiveNative {
     @JvmStatic external fun nativeRoomStateSetVisibility(roomId: String, visibility: Int)
     @JvmStatic external fun nativeRoomStateSetJoinRule(roomId: String, joinRule: Int)
 
+    // --- Terms/Consent Manager ---
+
+    @JvmStatic external fun nativeTermsParse(json: String): String
+    @JvmStatic external fun nativeTermsBuildAgree(urlsJson: String): String
+    @JvmStatic external fun nativeTermsAreRequired(errorJson: String): Boolean
+    @JvmStatic external fun nativeTermsGetPending(responseJson: String, agreedJson: String): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4670,6 +4677,15 @@ object ProgressiveNative {
     @JvmStatic fun nativeRoomStateIsInviteOnlyFallback(roomId: String): Boolean = true
     @JvmStatic fun nativeRoomStateSetVisibilityFallback(roomId: String, visibility: Int) {}
     @JvmStatic fun nativeRoomStateSetJoinRuleFallback(roomId: String, joinRule: Int) {}
+
+    // --- Terms/Consent fallbacks ---
+    @JvmStatic fun nativeTermsParseFallback(json: String): String =
+        """{"has_policies":false,"count":0,"policies":[]}"""
+    @JvmStatic fun nativeTermsBuildAgreeFallback(urlsJson: String): String =
+        """{"user_accepts":$urlsJson}"""
+    @JvmStatic fun nativeTermsAreRequiredFallback(errorJson: String): Boolean =
+        "M_TERMS_NOT_SIGNED" in errorJson || "M_CONSENT_NOT_GIVEN" in errorJson
+    @JvmStatic fun nativeTermsGetPendingFallback(responseJson: String, agreedJson: String): String = "[]"
 
     @JvmStatic fun nativeSessionCountFallback(): Int = 0
 

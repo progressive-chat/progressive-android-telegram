@@ -164,6 +164,7 @@
 #include "progressive/cross_signing_manager.hpp"
 #include "progressive/draft_manager_full.hpp"
 #include "progressive/room_state_manager.hpp"
+#include "progressive/terms_manager.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -6374,6 +6375,59 @@ JNI_FUNC(void, nativeRoomStateSetVisibility)(JNIEnv* env, jclass, jstring jRoomI
 
 JNI_FUNC(void, nativeRoomStateSetJoinRule)(JNIEnv* env, jclass, jstring jRoomId, jint jRule) {
     getRoomStateMgr()->setJoinRule(jStr(env, jRoomId), static_cast<progressive::RoomJoinRule>(jRule));
+}
+
+// ============================================================
+// Terms/Consent Manager
+// ============================================================
+
+static std::unique_ptr<progressive::TermsManager> g_termsMgr;
+
+static progressive::TermsManager* getTermsMgr() {
+    if (!g_termsMgr) g_termsMgr.reset(new progressive::TermsManager());
+    return g_termsMgr.get();
+}
+
+JNI_FUNC(jstring, nativeTermsParse)(JNIEnv* env, jclass, jstring jJson) {
+    auto resp = getTermsMgr()->parseTermsResponse(jStr(env, jJson));
+    return env->NewStringUTF(getTermsMgr()->responseToJson(resp).c_str());
+}
+
+JNI_FUNC(jstring, nativeTermsBuildAgree)(JNIEnv* env, jclass, jstring jUrlsJson) {
+    progressive::TermsAgreementRequest req;
+    auto json = jStr(env, jUrlsJson);
+    size_t p = 0;
+    while ((p = json.find("\"", p)) != std::string::npos) {
+        p++; size_t e = p;
+        while (e < json.size() && json[e] != '"') e++;
+        std::string url = json.substr(p, e - p);
+        if (!url.empty() && url != "[" && url != "]" && url != ",") req.agreedUrls.push_back(url);
+        p = e + 1;
+    }
+    return env->NewStringUTF(getTermsMgr()->buildAgreeRequest(req).c_str());
+}
+
+JNI_FUNC(jboolean, nativeTermsAreRequired)(JNIEnv* env, jclass, jstring jErrorJson) {
+    return getTermsMgr()->areTermsRequired(jStr(env, jErrorJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeTermsGetPending)(JNIEnv* env, jclass, jstring jResponseJson, jstring jAgreedJson) {
+    auto resp = getTermsMgr()->parseTermsResponse(jStr(env, jResponseJson));
+    std::vector<std::string> agreed;
+    auto json = jStr(env, jAgreedJson);
+    size_t p = 0;
+    while ((p = json.find("\"", p)) != std::string::npos) {
+        p++; size_t e = p;
+        while (e < json.size() && json[e] != '"') e++;
+        std::string url = json.substr(p, e - p);
+        if (!url.empty() && url != "[" && url != "]" && url != ",") agreed.push_back(url);
+        p = e + 1;
+    }
+    auto pending = getTermsMgr()->getPendingPolicies(resp, agreed);
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < pending.size(); i++) { if (i > 0) os << ","; os << "\"" << pending[i] << "\""; }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
 }
 
 } // extern "C"
