@@ -2774,6 +2774,61 @@ JNI_FUNC(jstring, nativeParseDeviceName)(JNIEnv* env, jclass, jstring jUserAgent
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Matrix ID Extraction ---
+
+JNI_FUNC(jstring, nativeExtractMatrixIds)(JNIEnv* env, jclass, jstring jText) {
+    auto ids = progressive::extractMatrixIds(jStr(env, jText));
+    std::ostringstream os; os << R"({"user_ids":[)";
+    for (size_t i = 0; i < ids.userIds.size(); i++) {
+        if (i > 0) os << ","; os << R"(")" << ids.userIds[i] << R"(")";
+    }
+    os << R"(],"room_ids":[)";
+    for (size_t i = 0; i < ids.roomIds.size(); i++) {
+        if (i > 0) os << ","; os << R"(")" << ids.roomIds[i] << R"(")";
+    }
+    os << R"(],"room_aliases":[)";
+    for (size_t i = 0; i < ids.roomAliases.size(); i++) {
+        if (i > 0) os << ","; os << R"(")" << ids.roomAliases[i] << R"(")";
+    }
+    os << R"(],"event_ids":[)";
+    for (size_t i = 0; i < ids.eventIds.size(); i++) {
+        if (i > 0) os << ","; os << R"(")" << ids.eventIds[i] << R"(")";
+    }
+    os << "]}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeParseMatrixToPermalink)(JNIEnv* env, jclass, jstring jUrl) {
+    auto info = progressive::parseMatrixToPermalink(jStr(env, jUrl));
+    std::ostringstream os;
+    os << R"({"type":")" << info.type
+       << R"(","user_id":")" << info.userId
+       << R"(","room_id":")" << info.roomId
+       << R"(","event_id":")" << info.eventId
+       << R"(,"valid":)" << (info.valid ? "true" : "false") << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Login Flows ---
+
+JNI_FUNC(jstring, nativeParseLoginFlowsList)(JNIEnv* env, jclass, jstring jJson) {
+    auto flows = progressive::parseLoginFlowsList(jStr(env, jJson));
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < flows.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"type":")" << flows[i].type
+           << R"(","description":")" << flows[i].description
+           << R"(,"supported":)" << (flows[i].isSupported ? "true" : "false") << "}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeBuildUserIdentifier)(JNIEnv* env, jclass, jstring jUserId) {
+    auto result = progressive::buildUserIdentifier(jStr(env, jUserId));
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 

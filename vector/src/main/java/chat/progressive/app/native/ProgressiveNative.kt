@@ -917,6 +917,16 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeParseDeviceName(userAgent: String): String
 
+    // --- Matrix ID Extraction ---
+
+    @JvmStatic external fun nativeExtractMatrixIds(text: String): String
+    @JvmStatic external fun nativeParseMatrixToPermalink(url: String): String
+
+    // --- Login Flows ---
+
+    @JvmStatic external fun nativeParseLoginFlowsList(apiResponseJson: String): String
+    @JvmStatic external fun nativeBuildUserIdentifier(userId: String): String
+
     // --- Megolm Decryptor ---
 
     @JvmStatic external fun nativeMegolmAddSession(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean
@@ -2901,6 +2911,20 @@ object ProgressiveNative {
 
     // --- Device Name fallback ---
     @JvmStatic fun nativeParseDeviceNameFallback(userAgent: String): String = userAgent
+
+    // --- Matrix ID fallbacks ---
+    @JvmStatic fun nativeExtractMatrixIdsFallback(text: String): String {
+        val users = Regex("@[^\\s:]+:[^\\s]+").findAll(text).map { it.value }.toList()
+        val rooms = Regex("![^\\s:]+:[^\\s]+").findAll(text).map { it.value }.toList()
+        return """{"user_ids":${users.joinToString(","){ "\"$it\"" }},"room_ids":${rooms.joinToString(","){ "\"$it\"" }},"room_aliases":[],"event_ids":[]}"""
+    }
+    @JvmStatic fun nativeParseMatrixToPermalinkFallback(url: String): String =
+        """{"type":"","user_id":"","room_id":"","event_id":"","valid":false}"""
+
+    // --- Login fallbacks ---
+    @JvmStatic fun nativeParseLoginFlowsListFallback(apiResponseJson: String): String = """[{"type":"m.login.password","description":"Password","supported":true}]"""
+    @JvmStatic fun nativeBuildUserIdentifierFallback(userId: String): String =
+        """{"type":"m.id.user","user":"$userId"}"""
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false
