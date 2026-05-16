@@ -692,6 +692,191 @@ static void test_parse_three_pid_email() {
     ASSERT_TRUE(pid.valid);
 }
 
+// ==== Widget Manager ====
+
+#include "progressive/widget_manager.hpp"
+
+static void test_widget_manager_init() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    ASSERT_EQ(mgr.widgetCount(), 0);
+}
+
+static void test_widget_url_template() {
+    progressive::WidgetUrlTemplate tpl;
+    tpl.userId = "@alice:example.org";
+    tpl.roomId = "!room:example.org";
+    tpl.widgetId = "widget_1";
+    tpl.displayName = "Alice";
+    tpl.clientId = "chat.progressive.app";
+    tpl.clientTheme = "dark";
+
+    std::string url = "https://widget.example.com/?userId=$matrix_user_id&roomId=$matrix_room_id&widgetId=$matrix_widget_id&theme=$matrix_client_theme";
+    auto result = progressive::applyWidgetUrlTemplate(url, tpl);
+    ASSERT_TRUE(result.find("@alice:example.org") != std::string::npos);
+    ASSERT_TRUE(result.find("!room:example.org") != std::string::npos);
+    ASSERT_TRUE(result.find("widget_1") != std::string::npos);
+    ASSERT_TRUE(result.find("theme=dark") != std::string::npos);
+    ASSERT_TRUE(result.find("$matrix_user_id") == std::string::npos);
+}
+
+static void test_widget_security_valid() {
+    auto policy = progressive::defaultWidgetSecurityPolicy();
+    std::string reason;
+    ASSERT_TRUE(progressive::validateWidgetSecurity("https://safe.example.com/widget.html", policy, reason));
+    ASSERT_STREQ(reason.c_str(), "");
+}
+
+static void test_widget_security_blocked_domain() {
+    auto policy = progressive::defaultWidgetSecurityPolicy();
+    policy.blockedDomains.insert("evil.example.com");
+    std::string reason;
+    ASSERT_FALSE(progressive::validateWidgetSecurity("https://evil.example.com/widget.html", policy, reason));
+    ASSERT_TRUE(!reason.empty());
+}
+
+static void test_widget_security_blocked_scheme() {
+    auto policy = progressive::defaultWidgetSecurityPolicy();
+    std::string reason;
+    ASSERT_FALSE(progressive::validateWidgetSecurity("http://insecure.example.com/widget.html", policy, reason));
+}
+
+static void test_widget_security_data_url() {
+    auto policy = progressive::defaultWidgetSecurityPolicy();
+    std::string reason;
+    ASSERT_FALSE(progressive::validateWidgetSecurity("data:text/html,<h1>hello</h1>", policy, reason));
+}
+
+static void test_widget_security_max_length() {
+    auto policy = progressive::defaultWidgetSecurityPolicy();
+    policy.maxUrlLength = 20;
+    std::string reason;
+    ASSERT_FALSE(progressive::validateWidgetSecurity("https://very-long-url.example.com/too/long", policy, reason));
+}
+
+static void test_widget_classification() {
+    ASSERT_EQ(static_cast<int>(progressive::classifyWidgetType("m.jitsi")),
+              static_cast<int>(progressive::WidgetType::JITSI));
+    ASSERT_EQ(static_cast<int>(progressive::classifyWidgetType("m.etherpad")),
+              static_cast<int>(progressive::WidgetType::ETHERPAD));
+    ASSERT_EQ(static_cast<int>(progressive::classifyWidgetType("m.custom")),
+              static_cast<int>(progressive::WidgetType::CUSTOM));
+    ASSERT_EQ(static_cast<int>(progressive::classifyWidgetType("m.stickerpicker")),
+              static_cast<int>(progressive::WidgetType::STICKERPICKER));
+    ASSERT_EQ(static_cast<int>(progressive::classifyWidgetType("unknown_type")),
+              static_cast<int>(progressive::WidgetType::UNKNOWN));
+}
+
+static void test_widget_manager_create() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string error;
+    auto result = mgr.createWidget("widget_1", "m.custom", "https://safe.example.org/w", "Test Widget", false, error);
+    ASSERT_TRUE(!result.empty());
+    ASSERT_STREQ(error.c_str(), "");
+    ASSERT_EQ(mgr.widgetCount(), 1);
+
+    progressive::WidgetInfo w;
+    ASSERT_TRUE(mgr.getWidget("widget_1", w));
+    ASSERT_STREQ(w.widgetId.c_str(), "widget_1");
+    ASSERT_STREQ(w.name.c_str(), "Test Widget");
+}
+
+static void test_widget_manager_duplicate() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string error;
+    mgr.createWidget("widget_1", "m.custom", "https://safe.example.org/w", "First", false, error);
+    auto result = mgr.createWidget("widget_1", "m.custom", "https://safe.example.org/w", "Second", false, error);
+    ASSERT_TRUE(result.empty());
+    ASSERT_TRUE(error.find("already exists") != std::string::npos);
+    ASSERT_EQ(mgr.widgetCount(), 1);
+}
+
+static void test_widget_manager_remove() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string error;
+    mgr.createWidget("widget_1", "m.custom", "https://safe.example.org/w", "Test", false, error);
+    ASSERT_EQ(mgr.widgetCount(), 1);
+    mgr.removeWidget("widget_1");
+    ASSERT_EQ(mgr.widgetCount(), 0);
+}
+
+static void test_widget_manager_resize() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string error;
+    mgr.createWidget("widget_1", "m.jitsi", "https://safe.example.org/w", "Jitsi", false, error);
+    auto result = mgr.resizeWidget("widget_1", 800, 600, error);
+    ASSERT_TRUE(result.find("800") != std::string::npos);
+    ASSERT_STREQ(error.c_str(), "");
+}
+
+static void test_widget_manager_minimized() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string error;
+    mgr.createWidget("widget_1", "m.jitsi", "https://safe.example.org/w", "Jitsi", false, error);
+
+    progressive::WidgetInfo w;
+    mgr.getWidget("widget_1", w);
+    ASSERT_FALSE(w.isMinimized);
+
+    mgr.setWidgetMinimized("widget_1", true);
+    mgr.getWidget("widget_1", w);
+    ASSERT_TRUE(w.isMinimized);
+    ASSERT_FALSE(w.isMaximized); // minimize should un-maximize
+}
+
+static void test_widget_capability_auto_approve() {
+    ASSERT_TRUE(progressive::isAutoApprovedCapability(
+        progressive::WidgetCapability::CAMERA, "m.jitsi"));
+    ASSERT_TRUE(progressive::isAutoApprovedCapability(
+        progressive::WidgetCapability::STICKER, "m.stickerpicker"));
+    ASSERT_FALSE(progressive::isAutoApprovedCapability(
+        progressive::WidgetCapability::SCREENSHARE, "m.custom"));
+}
+
+static void test_widget_postmessage_build() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    auto msg = mgr.buildWidgetPostMessage("widget_1", "content_loaded", R"({"ready":true})");
+    ASSERT_TRUE(msg.find("fromWidget") != std::string::npos);
+    ASSERT_TRUE(msg.find("widget_1") != std::string::npos);
+    ASSERT_TRUE(msg.find("content_loaded") != std::string::npos);
+    ASSERT_TRUE(msg.find("\"ready\":true") != std::string::npos);
+}
+
+static void test_widget_postmessage_parse() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string msg = R"({"api":"toWidget","action":"set_always_on_screen","widgetId":"w1","data":{"value":true}})";
+    std::string action, widgetId, data;
+    auto api = mgr.parseWidgetPostMessage(msg, action, widgetId, data);
+    ASSERT_STREQ(api.c_str(), "toWidget");
+    ASSERT_STREQ(action.c_str(), "set_always_on_screen");
+    ASSERT_STREQ(widgetId.c_str(), "w1");
+    ASSERT_TRUE(data.find("true") != std::string::npos);
+}
+
+static void test_widget_pip_support() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string error;
+    mgr.createWidget("jitsi_1", "m.jitsi", "https://safe.example.org/j", "Jitsi", false, error);
+    ASSERT_TRUE(mgr.supportsPiP("jitsi_1"));
+
+    mgr.createWidget("custom_1", "m.custom", "https://safe.example.org/c", "Custom", false, error);
+    ASSERT_FALSE(mgr.supportsPiP("custom_1"));
+}
+
+static void test_widget_by_type() {
+    progressive::WidgetManager mgr("!room:example.org", "@alice:example.org", "Alice", "");
+    std::string error;
+    mgr.createWidget("j1", "m.jitsi", "https://safe.example.org/j1", "Jitsi1", false, error);
+    mgr.createWidget("j2", "m.jitsi", "https://safe.example.org/j2", "Jitsi2", false, error);
+    mgr.createWidget("c1", "m.custom", "https://safe.example.org/c1", "Custom1", false, error);
+
+    auto jitsi = mgr.getWidgetsByType("m.jitsi");
+    ASSERT_EQ(static_cast<int>(jitsi.size()), 2);
+    ASSERT_STREQ(jitsi[0].name.c_str(), "Jitsi1");
+    ASSERT_STREQ(jitsi[1].name.c_str(), "Jitsi2");
+
+    ASSERT_EQ(mgr.widgetCount(), 3);
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -846,6 +1031,26 @@ int main() {
     printf("\n-- Audio & 3PID --\n");
     ADD_TEST(runner, test_is_supported_audio_type);
     ADD_TEST(runner, test_parse_three_pid_email);
+    
+    printf("\n-- Widget Manager --\n");
+    ADD_TEST(runner, test_widget_manager_init);
+    ADD_TEST(runner, test_widget_url_template);
+    ADD_TEST(runner, test_widget_security_valid);
+    ADD_TEST(runner, test_widget_security_blocked_domain);
+    ADD_TEST(runner, test_widget_security_blocked_scheme);
+    ADD_TEST(runner, test_widget_security_data_url);
+    ADD_TEST(runner, test_widget_security_max_length);
+    ADD_TEST(runner, test_widget_classification);
+    ADD_TEST(runner, test_widget_manager_create);
+    ADD_TEST(runner, test_widget_manager_duplicate);
+    ADD_TEST(runner, test_widget_manager_remove);
+    ADD_TEST(runner, test_widget_manager_resize);
+    ADD_TEST(runner, test_widget_manager_minimized);
+    ADD_TEST(runner, test_widget_capability_auto_approve);
+    ADD_TEST(runner, test_widget_postmessage_build);
+    ADD_TEST(runner, test_widget_postmessage_parse);
+    ADD_TEST(runner, test_widget_pip_support);
+    ADD_TEST(runner, test_widget_by_type);
     
     return runner.summary();
 }

@@ -627,6 +627,12 @@
 
     <im.vector.app.core.preference.VectorSwitchPreference
         android:defaultValue="false"
+        android:key="SETTINGS_LABS_NATIVE_WIDGET_MANAGER_KEY"
+        android:summary="Use C++ WidgetManager for widget lifecycle (create/remove/resize/capabilities/CSP). Restart required."
+        android:title="Native Widget Manager (experimental)" />
+
+    <im.vector.app.core.preference.VectorSwitchPreference
+        android:defaultValue="false"
         android:key="SETTINGS_LABS_FULL_AVATAR_KEY"
         android:summary="Show full avatars (square/rectangle) instead of circles for rooms and users"
         android:title="Full-size avatars (not circles)" />
