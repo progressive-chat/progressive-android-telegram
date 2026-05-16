@@ -1621,6 +1621,15 @@ object ProgressiveNative {
     @JvmStatic external fun nativeCrossSigningImportKeys(mskPrivate: String, uskPrivate: String, sskPrivate: String): String
     @JvmStatic external fun nativeCrossSigningTrustMaster()
 
+    // --- Draft Manager ---
+
+    @JvmStatic external fun nativeDraftSave(roomId: String, content: String, type: Int, linkedEventId: String)
+    @JvmStatic external fun nativeDraftGet(roomId: String): String
+    @JvmStatic external fun nativeDraftDelete(roomId: String)
+    @JvmStatic external fun nativeDraftHasDraft(roomId: String): Boolean
+    @JvmStatic external fun nativeDraftAutoSave(roomId: String, text: String): Boolean
+    @JvmStatic external fun nativeDraftStripPrefix(text: String): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4628,6 +4637,14 @@ object ProgressiveNative {
     @JvmStatic fun nativeCrossSigningImportKeysFallback(mskPrivate: String, uskPrivate: String, sskPrivate: String): String =
         """{"is_trusted":true,"cross_signing_verified":true,"locally_verified":true}"""
     @JvmStatic fun nativeCrossSigningTrustMasterFallback() {}
+
+    // --- Draft Manager fallbacks ---
+    @JvmStatic fun nativeDraftSaveFallback(roomId: String, content: String, type: Int, linkedEventId: String) {}
+    @JvmStatic fun nativeDraftGetFallback(roomId: String): String = "{}"
+    @JvmStatic fun nativeDraftDeleteFallback(roomId: String) {}
+    @JvmStatic fun nativeDraftHasDraftFallback(roomId: String): Boolean = false
+    @JvmStatic fun nativeDraftAutoSaveFallback(roomId: String, text: String): Boolean = false
+    @JvmStatic fun nativeDraftStripPrefixFallback(text: String): String = text.removePrefix("draft: ")
 
     @JvmStatic fun nativeSessionCountFallback(): Int = 0
 

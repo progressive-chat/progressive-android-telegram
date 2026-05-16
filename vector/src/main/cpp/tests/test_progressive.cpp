@@ -2048,6 +2048,58 @@ static void test_crosssigning_key_usage() {
     ASSERT_TRUE(progressive::keyUsageFromString("user_signing") == progressive::KeyUsage::USER_SIGNING);
 }
 
+// ==== Draft Manager (Element Android sources) ====
+
+#include "progressive/draft_manager_full.hpp"
+
+static void test_draft_save_get() {
+    progressive::DraftManager mgr;
+    auto draft = progressive::DraftManager::buildRegular("Hello, world!");
+    mgr.saveDraft("!room:org", draft);
+    ASSERT_TRUE(mgr.hasDraft("!room:org"));
+
+    progressive::UserDraft loaded;
+    ASSERT_TRUE(mgr.getDraft("!room:org", loaded));
+    ASSERT_STREQ(loaded.content.c_str(), "Hello, world!");
+    ASSERT_TRUE(loaded.type == progressive::DraftType::REGULAR);
+}
+
+static void test_draft_delete() {
+    progressive::DraftManager mgr;
+    mgr.saveDraft("!room:org", progressive::DraftManager::buildRegular("test"));
+    ASSERT_TRUE(mgr.hasDraft("!room:org"));
+    mgr.deleteDraft("!room:org");
+    ASSERT_FALSE(mgr.hasDraft("!room:org"));
+}
+
+static void test_draft_types() {
+    auto q = progressive::DraftManager::buildQuote("$evt1", "quoted reply");
+    ASSERT_TRUE(q.type == progressive::DraftType::QUOTE);
+    ASSERT_STREQ(q.linkedEventId.c_str(), "$evt1");
+
+    auto e = progressive::DraftManager::buildEdit("$evt2", "edited text");
+    ASSERT_TRUE(e.type == progressive::DraftType::EDIT);
+    ASSERT_STREQ(e.linkedEventId.c_str(), "$evt2");
+}
+
+static void test_draft_auto_save() {
+    progressive::DraftManager mgr;
+    progressive::LiveDraftConfig cfg;
+    cfg.enabled = true;
+    cfg.characterThreshold = 5;
+    mgr.setLiveDraftConfig(cfg);
+
+    ASSERT_FALSE(mgr.autoSaveIfQualified("!room:org", "ab")); // Too short
+    ASSERT_TRUE(mgr.autoSaveIfQualified("!room:org", "Hello world")); // 10 chars + space
+}
+
+static void test_draft_strip_prefix() {
+    progressive::DraftManager mgr;
+    std::string text = "draft: Hello everyone";
+    ASSERT_STREQ(mgr.stripDraftPrefix(text).c_str(), " Hello everyone");
+    ASSERT_STREQ(mgr.stripDraftPrefix("No prefix").c_str(), "No prefix");
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -2403,6 +2455,13 @@ int main() {
     ADD_TEST(runner, test_crosssigning_trust);
     ADD_TEST(runner, test_crosssigning_import_keys);
     ADD_TEST(runner, test_crosssigning_key_usage);
+    
+    printf("\n-- Draft Manager (Element Android) --\n");
+    ADD_TEST(runner, test_draft_save_get);
+    ADD_TEST(runner, test_draft_delete);
+    ADD_TEST(runner, test_draft_types);
+    ADD_TEST(runner, test_draft_auto_save);
+    ADD_TEST(runner, test_draft_strip_prefix);
     
     return runner.summary();
 }

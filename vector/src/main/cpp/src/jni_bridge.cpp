@@ -162,6 +162,7 @@
 #include "progressive/identity_server_manager.hpp"
 #include "progressive/event_relations_manager.hpp"
 #include "progressive/cross_signing_manager.hpp"
+#include "progressive/draft_manager_full.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -6286,6 +6287,50 @@ JNI_FUNC(jstring, nativeCrossSigningImportKeys)(JNIEnv* env, jclass, jstring jMs
 
 JNI_FUNC(void, nativeCrossSigningTrustMaster)(JNIEnv*, jclass) {
     getCrossSigningMgr()->markMyMasterKeyAsTrusted();
+}
+
+// ============================================================
+// Draft Manager
+// ============================================================
+
+static std::unique_ptr<progressive::DraftManager> g_draftMgr;
+
+static progressive::DraftManager* getDraftMgr() {
+    if (!g_draftMgr) g_draftMgr.reset(new progressive::DraftManager());
+    return g_draftMgr.get();
+}
+
+JNI_FUNC(void, nativeDraftSave)(JNIEnv* env, jclass, jstring jRoomId, jstring jContent, jint jType, jstring jLinkedId) {
+    progressive::UserDraft draft;
+    draft.type = static_cast<progressive::DraftType>(jType);
+    draft.content = jStr(env, jContent);
+    draft.roomId = jStr(env, jRoomId);
+    draft.linkedEventId = jStr(env, jLinkedId);
+    draft.isValid = true;
+    getDraftMgr()->saveDraft(jStr(env, jRoomId), draft);
+}
+
+JNI_FUNC(jstring, nativeDraftGet)(JNIEnv* env, jclass, jstring jRoomId) {
+    progressive::UserDraft draft;
+    if (getDraftMgr()->getDraft(jStr(env, jRoomId), draft))
+        return env->NewStringUTF(getDraftMgr()->draftToJson(draft).c_str());
+    return env->NewStringUTF("{}");
+}
+
+JNI_FUNC(void, nativeDraftDelete)(JNIEnv* env, jclass, jstring jRoomId) {
+    getDraftMgr()->deleteDraft(jStr(env, jRoomId));
+}
+
+JNI_FUNC(jboolean, nativeDraftHasDraft)(JNIEnv* env, jclass, jstring jRoomId) {
+    return getDraftMgr()->hasDraft(jStr(env, jRoomId)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeDraftAutoSave)(JNIEnv* env, jclass, jstring jRoomId, jstring jText) {
+    return getDraftMgr()->autoSaveIfQualified(jStr(env, jRoomId), jStr(env, jText)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeDraftStripPrefix)(JNIEnv* env, jclass, jstring jText) {
+    return env->NewStringUTF(getDraftMgr()->stripDraftPrefix(jStr(env, jText)).c_str());
 }
 
 } // extern "C"
