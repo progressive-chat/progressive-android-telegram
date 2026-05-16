@@ -3436,6 +3436,13 @@ JNI_FUNC(jint, nativeSuggestChunkSizeMb)(JNIEnv* env, jclass, jlong jFileSize) {
     return progressive::ChunkedUploader::suggestChunkSizeMb(jFileSize);
 }
 
+// --- Thread List Builder ---
+
+JNI_FUNC(jstring, nativeBuildThreadListJson)(JNIEnv* env, jclass, jstring jEventsJson) {
+    auto result = progressive::buildThreadListJson(jStr(env, jEventsJson));
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Member Notice / Call Notice / Edit Annotation ---
 
 JNI_FUNC(jstring, nativeFormatMemberNotice)(JNIEnv* env, jclass, jstring jMembership, jstring jPrevMembership, jstring jSenderId, jstring jSenderName, jstring jTargetId, jstring jTargetName, jstring jReason, jboolean jDirect, jboolean jSelf) {

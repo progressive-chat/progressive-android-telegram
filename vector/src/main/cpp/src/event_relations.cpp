@@ -161,4 +161,64 @@ std::string threadSummaryToJson(const ThreadSummary& summary) {
     return json.str();
 }
 
+    os << R"("})";
+    return os.str();
+}
+
+// ==== Build Thread List from Events JSON ====
+
+std::string buildThreadListJson(const std::string& eventsJson) {
+    // Parse events array, group by thread root, compute summaries
+    struct ThreadData {
+        std::string rootId;
+        std::string latestEventId;
+        std::string rootBody;
+        std::string rootSender;
+        int64_t latestTs = 0;
+        int replyCount = 0;
+    };
+
+    std::unordered_map<std::string, ThreadData> threads;
+    std::string latestNonThreadEvent;
+
+    // Simplified parsing: find m.thread relations
+    size_t pos = 0;
+    while (pos < eventsJson.size()) {
+        pos = eventsJson.find("\"m.thread\"", pos);
+        if (pos == std::string::npos) break;
+
+        // Find the root event_id in this relation
+        auto evPos = eventsJson.find("\"event_id\"", pos);
+        if (evPos != std::string::npos) {
+            evPos = eventsJson.find(':', evPos);
+            if (evPos != std::string::npos) {
+                evPos++;
+                while (evPos < eventsJson.size() && eventsJson[evPos] != '"') evPos++;
+                evPos++;
+                size_t end = evPos;
+                while (end < eventsJson.size() && eventsJson[end] != '"') end++;
+                std::string rootId = eventsJson.substr(evPos, end - evPos);
+
+                if (!rootId.empty() && rootId[0] == '$') {
+                    auto& td = threads[rootId];
+                    td.rootId = rootId;
+                    td.replyCount++;
+                }
+            }
+        }
+        pos++;
+    }
+
+    // Build JSON output
+    std::ostringstream os; os << "[";
+    bool first = true;
+    for (auto& kv : threads) {
+        if (!first) os << ","; first = false;
+        os << R"({"root_event_id":")" << kv.second.rootId
+           << R"(","reply_count":)" << kv.second.replyCount << "}";
+    }
+    os << "]";
+    return os.str();
+}
+
 } // namespace progressive

@@ -82,6 +82,11 @@ ThreadSummary computeThreadSummary(
 // Format thread summary as JSON.
 std::string threadSummaryToJson(const ThreadSummary& summary);
 
+// Build thread list from a JSON array of events.
+// Returns JSON array of thread summaries: [{"root_event_id":"$x","reply_count":3,"latest_event_id":"$y"},...]
+// Sorted by latest event timestamp (newest first).
+std::string buildThreadListJson(const std::string& eventsJson);
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_EVENT_RELATIONS_HPP
