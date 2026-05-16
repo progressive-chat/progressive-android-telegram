@@ -3550,6 +3550,22 @@ JNI_FUNC(jstring, nativeLocationExportJson)(JNIEnv* env, jclass) {
     auto result = g_locationSharing.exportJson();
     return env->NewStringUTF(result.c_str());
 }
+
+// --- AI Agent ---
+
+JNI_FUNC(jboolean, nativeAgentHasToolCalls)(JNIEnv* env, jclass, jstring jResponse) {
+    return progressive::hasToolCalls(jStr(env, jResponse)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeAgentExtractTextAnswer)(JNIEnv* env, jclass, jstring jResponse) {
+    auto result = progressive::extractTextAnswer(jStr(env, jResponse));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeAgentGetToolsSchema)(JNIEnv* env, jclass) {
+    auto result = progressive::getAgentToolsSchema();
+    return env->NewStringUTF(result.c_str());
+}
     }
     result.isEnded = json.find("\"closed\":true") != std::string::npos;
 

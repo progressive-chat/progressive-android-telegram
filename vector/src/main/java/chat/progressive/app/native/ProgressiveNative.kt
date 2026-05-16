@@ -375,6 +375,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeLocationIsDue(sessionId: String): Boolean
     @JvmStatic external fun nativeLocationExportJson(): String
 
+    // --- AI Agent ---
+
+    @JvmStatic external fun nativeAgentHasToolCalls(llmResponse: String): Boolean
+    @JvmStatic external fun nativeAgentExtractTextAnswer(llmResponse: String): String
+    @JvmStatic external fun nativeAgentGetToolsSchema(): String
+
     // --- Member / Call Notices ---
 
     @JvmStatic external fun nativeFormatMemberNotice(membership: String, prevMembership: String, senderId: String, senderName: String, targetId: String, targetName: String, reason: String, isDirect: Boolean, sentBySelf: Boolean): String
@@ -3390,6 +3396,11 @@ object ProgressiveNative {
     @JvmStatic fun nativeLocationStopSessionFallback(sessionId: String) {}
     @JvmStatic fun nativeLocationIsDueFallback(sessionId: String): Boolean = false
     @JvmStatic fun nativeLocationExportJsonFallback(): String = "[]"
+
+    // --- AI Agent fallbacks ---
+    @JvmStatic fun nativeAgentHasToolCallsFallback(llmResponse: String): Boolean = llmResponse.contains("\"tool_calls\"")
+    @JvmStatic fun nativeAgentExtractTextAnswerFallback(llmResponse: String): String = llmResponse
+    @JvmStatic fun nativeAgentGetToolsSchemaFallback(): String = "[]"
 
     // --- Member/Call/Edit fallbacks ---
     @JvmStatic fun nativeFormatMemberNoticeFallback(membership: String, prevMembership: String, senderId: String, senderName: String, targetId: String, targetName: String, reason: String, isDirect: Boolean, sentBySelf: Boolean): String {
