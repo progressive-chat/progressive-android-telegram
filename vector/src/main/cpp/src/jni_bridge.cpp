@@ -2952,6 +2952,29 @@ JNI_FUNC(jstring, nativeGetEditedTargetEventId)(JNIEnv* env, jclass, jstring jCo
     return env->NewStringUTF(result.c_str());
 }
 
+// --- User Status ---
+
+JNI_FUNC(jstring, nativeBuildUserStatusJson)(JNIEnv* env, jclass, jstring jStatus, jstring jEmoji, jlong jNowMs) {
+    auto result = progressive::buildUserStatusJson(jStr(env, jStatus), jStr(env, jEmoji), jNowMs);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeGetPresenceStatusText)(JNIEnv* env, jclass, jboolean jOnline, jlong jLastActiveMs) {
+    auto result = progressive::getPresenceStatusText(jOnline, jLastActiveMs);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeGetStatusSuggestions)(JNIEnv* env, jclass) {
+    auto suggestions = progressive::getStatusSuggestions();
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < suggestions.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"(")" << suggestions[i] << R"(")";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 

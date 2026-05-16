@@ -968,6 +968,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeGetLatestEditEventId(editSummaryJson: String, originalEventId: String): String
     @JvmStatic external fun nativeGetEditedTargetEventId(contentJson: String): String
 
+    // --- User Status ---
+
+    @JvmStatic external fun nativeBuildUserStatusJson(status: String, emoji: String, nowMs: Long): String
+    @JvmStatic external fun nativeGetPresenceStatusText(isOnline: Boolean, lastActiveMs: Long): String
+    @JvmStatic external fun nativeGetStatusSuggestions(): String
+
     // --- Megolm Decryptor ---
 
     @JvmStatic external fun nativeMegolmAddSession(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean
@@ -3023,6 +3029,14 @@ object ProgressiveNative {
         formattedBody.replace(Regex("<span[^>]*>"), "").replace("</span>", "")
     @JvmStatic fun nativeGetLatestEditEventIdFallback(editSummaryJson: String, originalEventId: String): String = originalEventId
     @JvmStatic fun nativeGetEditedTargetEventIdFallback(contentJson: String): String = ""
+
+    // --- User Status fallbacks ---
+    @JvmStatic fun nativeBuildUserStatusJsonFallback(status: String, emoji: String, nowMs: Long): String =
+        """{"status":"$status","emoji":"$emoji","timestamp_ms":$nowMs}"""
+    @JvmStatic fun nativeGetPresenceStatusTextFallback(isOnline: Boolean, lastActiveMs: Long): String =
+        if (isOnline) "Online" else "Offline"
+    @JvmStatic fun nativeGetStatusSuggestionsFallback(): String =
+        """["In a meeting","On vacation","Working remotely","Available","Busy","Be right back"]"""
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false
