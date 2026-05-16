@@ -982,7 +982,7 @@ JNI_FUNC(jstring, nativeWrapWithRelation)(JNIEnv* env, jclass, jstring jContent,
 
 // --- Timeline Chunk (native pagination) ---
 JNI_FUNC(jint, nativeTimelineAddEvents)(JNIEnv* env, jclass, jstring jRoom, jstring jEvents, jstring jPrev, jstring jNext, jint jDir) {
-    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    static std::unordered_map<std::string, std::unique_ptr<progressive::TimelineChunkManager>> managers;
     auto room = jStr(env, jRoom);
     if (managers.find(room) == managers.end()) managers.emplace(std::piecewise_construct, std::forward_as_tuple(room), std::forward_as_tuple(room));
     auto& mgr = managers[room];
@@ -996,7 +996,7 @@ JNI_FUNC(jint, nativeTimelineAddEvents)(JNIEnv* env, jclass, jstring jRoom, jstr
 }
 
 JNI_FUNC(jstring, nativeTimelineGetEvents)(JNIEnv* env, jclass, jstring jRoom) {
-    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    static std::unordered_map<std::string, std::unique_ptr<progressive::TimelineChunkManager>> managers;
     auto room = jStr(env, jRoom);
     if (managers.find(room) == managers.end()) managers.emplace(std::piecewise_construct, std::forward_as_tuple(room), std::forward_as_tuple(room));
     auto& mgr = managers[room];
@@ -1015,7 +1015,7 @@ JNI_FUNC(jstring, nativeTimelineGetEvent)(JNIEnv* env, jclass, jstring jId) {
 }
 
 JNI_FUNC(void, nativeTimelineClear)(JNIEnv* env, jclass, jstring jRoom) {
-    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    static std::unordered_map<std::string, std::unique_ptr<progressive::TimelineChunkManager>> managers;
     auto room = jStr(env, jRoom);
     auto it = managers.find(room);
     if (it != managers.end()) it->second.clear();
@@ -1113,7 +1113,7 @@ JNI_FUNC(jstring, nativeCalculateThumbnailSize)(JNIEnv* env, jclass, jint jOw, j
 // Controlled by Labs: SETTINGS_LABS_NATIVE_DB
 
 static progressive::EventDatabase g_eventDb;
-static std::unordered_map<std::string, progressive::SqliteDB> g_sqliteDbs;
+static std::unordered_map<std::string, std::unique_ptr<progressive::SqliteDB>> g_sqliteDbs;
 
 // EventDatabase JNI (existing Kotlin signatures)
 JNI_FUNC(jboolean, nativeDbOpen)(JNIEnv* env, jclass, jstring jPath) {
@@ -1164,7 +1164,7 @@ JNI_FUNC(jboolean, nativeSqliteDbOpen)(JNIEnv* env, jclass, jstring jPath, jstri
     auto db = progressive::SqliteDB::open(jStr(env, jPath));
     if (!db.isOpen()) return JNI_FALSE;
     db.createTimelineSchema();
-    g_sqliteDbs[jStr(env, jKey)] = std::move(db);
+    g_sqliteDbs.at(jStr(env, jKey)) = std::move(db);
     return JNI_TRUE;
 }
 
@@ -1359,8 +1359,8 @@ JNI_FUNC(jint, nativeCountEventsInSync)(JNIEnv* env, jclass, jstring jJson) {
     total += response.presence.events.size();
     total += response.toDevice.events.size();
     for (auto& kv : response.rooms.join) {
-        total += kv.second.state.events.size();
-        total += kv.second.timeline.events.size();
+        total += kv.second->state.events.size();
+        total += kv.second->timeline.events.size();
     }
     return total;
 }
@@ -1404,8 +1404,8 @@ JNI_FUNC(jstring, nativeApiSync)(JNIEnv* env, jclass, jstring jFilter, jstring j
        << R"(,"rooms_left":)" << response.rooms.leave.size()
        << R"(,"events_total_timeline":)";
     int totalTimeline = 0;
-    for (auto& kv : response.rooms.join) totalTimeline += kv.second.timeline.events.size();
-    for (auto& kv : response.rooms.leave) totalTimeline += kv.second.timeline.events.size();
+    for (auto& kv : response.rooms.join) totalTimeline += kv.second->timeline.events.size();
+    for (auto& kv : response.rooms.leave) totalTimeline += kv.second->timeline.events.size();
     os << totalTimeline << "}";
     return env->NewStringUTF(os.str().c_str());
 }
