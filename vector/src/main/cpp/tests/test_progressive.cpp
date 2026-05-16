@@ -1998,6 +1998,56 @@ static void test_relations_validate_edit() {
     ASSERT_STREQ(error.c_str(), "");
 }
 
+// ==== Cross-Signing (Element Android sources) ====
+
+#include "progressive/cross_signing_manager.hpp"
+
+static void test_crosssigning_build_keys() {
+    auto msk = progressive::CrossSigningManager::buildMasterKey("@alice:org", "msk_pub_key");
+    auto usk = progressive::CrossSigningManager::buildUserSigningKey("@alice:org", "usk_pub_key");
+    auto ssk = progressive::CrossSigningManager::buildSelfSigningKey("@alice:org", "ssk_pub_key");
+    ASSERT_TRUE(msk.isMasterKey());
+    ASSERT_TRUE(usk.isUserKey());
+    ASSERT_TRUE(ssk.isSelfSigningKey());
+    ASSERT_STREQ(msk.getPublicKey().c_str(), "msk_pub_key");
+}
+
+static void test_crosssigning_info() {
+    auto msk = progressive::CrossSigningManager::buildMasterKey("@alice:org", "msk");
+    auto usk = progressive::CrossSigningManager::buildUserSigningKey("@alice:org", "usk");
+    auto ssk = progressive::CrossSigningManager::buildSelfSigningKey("@alice:org", "ssk");
+    auto info = progressive::CrossSigningManager::buildCrossSigningInfo("@alice:org", msk, usk, ssk);
+    ASSERT_TRUE(info.valid);
+    ASSERT_TRUE(info.masterKey() != nullptr);
+    ASSERT_TRUE(info.userKey() != nullptr);
+    ASSERT_TRUE(info.selfSigningKey() != nullptr);
+    ASSERT_FALSE(info.isTrusted());
+}
+
+static void test_crosssigning_trust() {
+    progressive::CrossSigningManager mgr;
+    auto msk = progressive::CrossSigningManager::buildMasterKey("@alice:org", "msk");
+    auto usk = progressive::CrossSigningManager::buildUserSigningKey("@alice:org", "usk");
+    auto ssk = progressive::CrossSigningManager::buildSelfSigningKey("@alice:org", "ssk");
+    mgr.setMyKeys(progressive::CrossSigningManager::buildCrossSigningInfo("@alice:org", msk, usk, ssk));
+    ASSERT_TRUE(mgr.isInitialized());
+    ASSERT_FALSE(mgr.isVerified());
+    mgr.markMyMasterKeyAsTrusted();
+    ASSERT_TRUE(mgr.isVerified());
+}
+
+static void test_crosssigning_import_keys() {
+    progressive::CrossSigningManager mgr;
+    auto result = mgr.importPrivateKeys("msk_priv", "usk_priv", "ssk_priv");
+    ASSERT_TRUE(result.isTrusted);
+    ASSERT_TRUE(mgr.canCrossSign());
+}
+
+static void test_crosssigning_key_usage() {
+    ASSERT_STREQ(progressive::keyUsageToString(progressive::KeyUsage::MASTER), "master");
+    ASSERT_TRUE(progressive::keyUsageFromString("user_signing") == progressive::KeyUsage::USER_SIGNING);
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -2346,6 +2396,13 @@ int main() {
     ADD_TEST(runner, test_relations_build_edit);
     ADD_TEST(runner, test_relations_build_annotation);
     ADD_TEST(runner, test_relations_validate_edit);
+    
+    printf("\n-- Cross-Signing (Element Android) --\n");
+    ADD_TEST(runner, test_crosssigning_build_keys);
+    ADD_TEST(runner, test_crosssigning_info);
+    ADD_TEST(runner, test_crosssigning_trust);
+    ADD_TEST(runner, test_crosssigning_import_keys);
+    ADD_TEST(runner, test_crosssigning_key_usage);
     
     return runner.summary();
 }

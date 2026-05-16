@@ -1612,6 +1612,15 @@ object ProgressiveNative {
     @JvmStatic external fun nativeRelationBuildThread(eventId: String, replyToId: String): String
     @JvmStatic external fun nativeRelationBuildAnnotation(eventId: String, key: String): String
 
+    // --- Cross-Signing ---
+
+    @JvmStatic external fun nativeCrossSigningIsInit(): Boolean
+    @JvmStatic external fun nativeCrossSigningCanSign(): Boolean
+    @JvmStatic external fun nativeCrossSigningBuildKeys(userId: String, mskPublic: String, uskPublic: String, sskPublic: String): String
+    @JvmStatic external fun nativeCrossSigningCheckSelf(): String
+    @JvmStatic external fun nativeCrossSigningImportKeys(mskPrivate: String, uskPrivate: String, sskPrivate: String): String
+    @JvmStatic external fun nativeCrossSigningTrustMaster()
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4608,6 +4617,17 @@ object ProgressiveNative {
         """{"m.relates_to":{"rel_type":"m.thread","event_id":"$eventId"}}"""
     @JvmStatic fun nativeRelationBuildAnnotationFallback(eventId: String, key: String): String =
         """{"m.relates_to":{"rel_type":"m.annotation","event_id":"$eventId","key":"$key"}}"""
+
+    // --- Cross-Signing fallbacks ---
+    @JvmStatic fun nativeCrossSigningIsInitFallback(): Boolean = false
+    @JvmStatic fun nativeCrossSigningCanSignFallback(): Boolean = false
+    @JvmStatic fun nativeCrossSigningBuildKeysFallback(userId: String, mskPublic: String, uskPublic: String, sskPublic: String): String =
+        """{"user_id":"$userId","is_trusted":false,"was_trusted_once":false,"key_count":3,"has_msk":true,"has_usk":true,"has_ssk":true}"""
+    @JvmStatic fun nativeCrossSigningCheckSelfFallback(): String =
+        """{"is_trusted":false,"cross_signing_verified":false,"locally_verified":false}"""
+    @JvmStatic fun nativeCrossSigningImportKeysFallback(mskPrivate: String, uskPrivate: String, sskPrivate: String): String =
+        """{"is_trusted":true,"cross_signing_verified":true,"locally_verified":true}"""
+    @JvmStatic fun nativeCrossSigningTrustMasterFallback() {}
 
     @JvmStatic fun nativeSessionCountFallback(): Int = 0
 

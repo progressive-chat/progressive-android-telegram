@@ -161,6 +161,7 @@
 #include "progressive/media_upload_manager.hpp"
 #include "progressive/identity_server_manager.hpp"
 #include "progressive/event_relations_manager.hpp"
+#include "progressive/cross_signing_manager.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -6244,6 +6245,47 @@ JNI_FUNC(jstring, nativeRelationBuildThread)(JNIEnv* env, jclass, jstring jEvent
 
 JNI_FUNC(jstring, nativeRelationBuildAnnotation)(JNIEnv* env, jclass, jstring jEventId, jstring jKey) {
     return env->NewStringUTF(getRelationsMgr()->buildAnnotationRelation(jStr(env, jEventId), jStr(env, jKey)).c_str());
+}
+
+// ============================================================
+// Cross-Signing Manager
+// ============================================================
+
+static std::unique_ptr<progressive::CrossSigningManager> g_crossSigningMgr;
+
+static progressive::CrossSigningManager* getCrossSigningMgr() {
+    if (!g_crossSigningMgr) g_crossSigningMgr.reset(new progressive::CrossSigningManager());
+    return g_crossSigningMgr.get();
+}
+
+JNI_FUNC(jboolean, nativeCrossSigningIsInit)(JNIEnv*, jclass) {
+    return getCrossSigningMgr()->isInitialized() ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeCrossSigningCanSign)(JNIEnv*, jclass) {
+    return getCrossSigningMgr()->canCrossSign() ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeCrossSigningBuildKeys)(JNIEnv* env, jclass, jstring jUserId, jstring jMsk, jstring jUsk, jstring jSsk) {
+    auto msk = progressive::CrossSigningManager::buildMasterKey(jStr(env, jUserId), jStr(env, jMsk));
+    auto usk = progressive::CrossSigningManager::buildUserSigningKey(jStr(env, jUserId), jStr(env, jUsk));
+    auto ssk = progressive::CrossSigningManager::buildSelfSigningKey(jStr(env, jUserId), jStr(env, jSsk));
+    auto info = progressive::CrossSigningManager::buildCrossSigningInfo(jStr(env, jUserId), msk, usk, ssk);
+    return env->NewStringUTF(getCrossSigningMgr()->crossSigningInfoToJson(info).c_str());
+}
+
+JNI_FUNC(jstring, nativeCrossSigningCheckSelf)(JNIEnv* env, jclass) {
+    auto result = getCrossSigningMgr()->checkSelfTrust();
+    return env->NewStringUTF(getCrossSigningMgr()->trustResultToJson(result).c_str());
+}
+
+JNI_FUNC(jstring, nativeCrossSigningImportKeys)(JNIEnv* env, jclass, jstring jMsk, jstring jUsk, jstring jSsk) {
+    auto result = getCrossSigningMgr()->importPrivateKeys(jStr(env, jMsk), jStr(env, jUsk), jStr(env, jSsk));
+    return env->NewStringUTF(getCrossSigningMgr()->trustResultToJson(result).c_str());
+}
+
+JNI_FUNC(void, nativeCrossSigningTrustMaster)(JNIEnv*, jclass) {
+    getCrossSigningMgr()->markMyMasterKeyAsTrusted();
 }
 
 } // extern "C"
