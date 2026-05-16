@@ -4411,4 +4411,195 @@ JNI_FUNC(void, nativeSasDestroy)(JNIEnv*, jclass) {
     progressive::sasDestroy(g_sas);
 }
 
+// --- JSON Parser ---
+
+JNI_FUNC(jstring, nativeParseJsonStringValue)(JNIEnv* env, jclass, jstring jJson, jstring jKey) {
+    auto r = progressive::parseJsonStringValue(jStr(env, jJson), jStr(env, jKey));
+    return env->NewStringUTF(r.c_str());
+}
+
+// --- Federation Version ---
+
+JNI_FUNC(jstring, nativeFederationVersionToJson)(JNIEnv* env, jclass, jstring jVersionJson) {
+    auto v = progressive::parseFederationVersion(jStr(env, jVersionJson));
+    auto r = progressive::federationVersionToJson(v);
+    return env->NewStringUTF(r.c_str());
+}
+
+// --- Auth Models ---
+
+JNI_FUNC(jstring, nativePresenceEnumToString)(JNIEnv* env, jclass, jint jPresence) {
+    auto r = progressive::presenceEnumToString(static_cast<progressive::PresenceEnum>(jPresence));
+    return env->NewStringUTF(r);
+}
+
+JNI_FUNC(jstring, nativeCredentialsToJson)(JNIEnv* env, jclass, jstring jCredsJson) {
+    auto json = jStr(env, jCredsJson);
+    progressive::Credentials c;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    c.userId = es("user_id"); c.accessToken = es("access_token"); c.refreshToken = es("refresh_token");
+    c.homeServer = es("home_server"); c.deviceId = es("device_id");
+    auto r = progressive::credentialsToJson(c);
+    return env->NewStringUTF(r.c_str());
+}
+
+// --- Call Models ---
+
+JNI_FUNC(jstring, nativeSdpTypeToString)(JNIEnv* env, jclass, jint jType) {
+    auto r = progressive::sdpTypeToString(static_cast<progressive::SdpType>(jType));
+    return env->NewStringUTF(r);
+}
+
+JNI_FUNC(jstring, nativeEndCallReasonToString)(JNIEnv* env, jclass, jint jReason) {
+    auto r = progressive::endCallReasonToString(static_cast<progressive::EndCallReason>(jReason));
+    return env->NewStringUTF(r);
+}
+
+// --- Message Content (struct→json roundtrip) ---
+
+JNI_FUNC(jstring, nativeMessageTextToJson)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto json = jStr(env, jContentJson);
+    progressive::MessageTextContent m;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    auto eb = [&](const std::string& k) -> bool {
+        return json.find("\"" + k + "\":true") != std::string::npos;
+    };
+    m.msgtype = es("msgtype"); m.body = es("body"); m.formattedBody = es("formatted_body");
+    m.format = es("format"); m.relatesTo = es("m.relates_to");
+    m.isFallback = eb("is_fallback");
+    auto r = progressive::messageTextToJson(m);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMessageNoticeToJson)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto json = jStr(env, jContentJson);
+    progressive::MessageNoticeContent m;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    m.body = es("body"); m.msgtype = es("msgtype");
+    auto r = progressive::messageNoticeToJson(m);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMessageEmoteToJson)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto json = jStr(env, jContentJson);
+    progressive::MessageEmoteContent m;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    m.body = es("body"); m.msgtype = es("msgtype");
+    m.formattedBody = es("formatted_body"); m.format = es("format");
+    auto r = progressive::messageEmoteToJson(m);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMessageImageToJson)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto json = jStr(env, jContentJson);
+    progressive::MessageImageContent m;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    auto ei = [&](const std::string& k) -> int64_t {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return 0;
+        pp = json.find(':', pp); if (pp == std::string::npos) return 0;
+        pp++; while (pp < json.size() && (json[pp] == ' ' || json[pp] == '\t')) pp++;
+        int64_t v = 0; while (pp < json.size() && json[pp] >= '0' && json[pp] <= '9') { v=v*10+(json[pp]-'0'); pp++; }
+        return v;
+    };
+    m.url = es("url"); m.thumbnailUrl = es("thumbnail_url"); m.thumbnailInfo = es("thumbnail_info");
+    m.mimetype = es("mimetype"); m.filename = es("filename"); m.body = es("body");
+    m.width = static_cast<int>(ei("w")); m.height = static_cast<int>(ei("h"));
+    m.size = static_cast<int>(ei("size"));
+    auto r = progressive::messageImageToJson(m);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMessageVideoToJson)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto json = jStr(env, jContentJson);
+    progressive::MessageVideoContent m;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    auto ei = [&](const std::string& k) -> int64_t {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return 0;
+        pp = json.find(':', pp); if (pp == std::string::npos) return 0;
+        pp++; while (pp < json.size() && (json[pp] == ' ' || json[pp] == '\t')) pp++;
+        int64_t v = 0; while (pp < json.size() && json[pp] >= '0' && json[pp] <= '9') { v=v*10+(json[pp]-'0'); pp++; }
+        return v;
+    };
+    m.url = es("url"); m.thumbnailUrl = es("thumbnail_url"); m.mimetype = es("mimetype");
+    m.filename = es("filename"); m.body = es("body"); m.duration = ei("duration");
+    m.width = static_cast<int>(ei("w")); m.height = static_cast<int>(ei("h"));
+    m.size = static_cast<int>(ei("size"));
+    auto r = progressive::messageVideoToJson(m);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMessageAudioToJson)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto json = jStr(env, jContentJson);
+    progressive::MessageAudioContent m;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    auto ei = [&](const std::string& k) -> int64_t {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return 0;
+        pp = json.find(':', pp); if (pp == std::string::npos) return 0;
+        pp++; while (pp < json.size() && (json[pp] == ' ' || json[pp] == '\t')) pp++;
+        int64_t v = 0; while (pp < json.size() && json[pp] >= '0' && json[pp] <= '9') { v=v*10+(json[pp]-'0'); pp++; }
+        return v;
+    };
+    m.url = es("url"); m.mimetype = es("mimetype"); m.filename = es("filename");
+    m.body = es("body"); m.duration = ei("duration"); m.size = static_cast<int>(ei("size"));
+    auto r = progressive::messageAudioToJson(m);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeMessageFileToJson)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto json = jStr(env, jContentJson);
+    progressive::MessageFileContent m;
+    auto es = [&](const std::string& k) -> std::string {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return "";
+        pp = json.find('"', pp + k.size() + 2); if (pp == std::string::npos) return "";
+        pp++; size_t e = pp; while (e < json.size() && json[e] != '"') e++;
+        return json.substr(pp, e - pp);
+    };
+    auto ei = [&](const std::string& k) -> int64_t {
+        auto pp = json.find("\"" + k + "\""); if (pp == std::string::npos) return 0;
+        pp = json.find(':', pp); if (pp == std::string::npos) return 0;
+        pp++; while (pp < json.size() && (json[pp] == ' ' || json[pp] == '\t')) pp++;
+        int64_t v = 0; while (pp < json.size() && json[pp] >= '0' && json[pp] <= '9') { v=v*10+(json[pp]-'0'); pp++; }
+        return v;
+    };
+    m.url = es("url"); m.mimetype = es("mimetype"); m.filename = es("filename");
+    m.body = es("body"); m.size = static_cast<int>(ei("size"));
+    auto r = progressive::messageFileToJson(m);
+    return env->NewStringUTF(r.c_str());
+}
+
 } // extern "C"

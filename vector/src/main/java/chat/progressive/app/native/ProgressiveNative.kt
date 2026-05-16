@@ -1303,6 +1303,34 @@ object ProgressiveNative {
     @JvmStatic external fun nativeSasVerifyMac(theirMac: String, input: String, info: String): Boolean
     @JvmStatic external fun nativeSasDestroy()
 
+    // --- JSON Parser ---
+
+    @JvmStatic external fun nativeParseJsonStringValue(json: String, key: String): String
+
+    // --- Federation Version ---
+
+    @JvmStatic external fun nativeFederationVersionToJson(versionJson: String): String
+
+    // --- Auth Models ---
+
+    @JvmStatic external fun nativePresenceEnumToString(presence: Int): String
+    @JvmStatic external fun nativeCredentialsToJson(credentialsJson: String): String
+
+    // --- Call Models ---
+
+    @JvmStatic external fun nativeSdpTypeToString(type: Int): String
+    @JvmStatic external fun nativeEndCallReasonToString(reason: Int): String
+
+    // --- Message Content ---
+
+    @JvmStatic external fun nativeMessageTextToJson(contentJson: String): String
+    @JvmStatic external fun nativeMessageNoticeToJson(contentJson: String): String
+    @JvmStatic external fun nativeMessageEmoteToJson(contentJson: String): String
+    @JvmStatic external fun nativeMessageImageToJson(contentJson: String): String
+    @JvmStatic external fun nativeMessageVideoToJson(contentJson: String): String
+    @JvmStatic external fun nativeMessageAudioToJson(contentJson: String): String
+    @JvmStatic external fun nativeMessageFileToJson(contentJson: String): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -3781,6 +3809,33 @@ object ProgressiveNative {
     @JvmStatic fun nativeSasCalculateMacFallback(input: String, info: String): String = ""
     @JvmStatic fun nativeSasVerifyMacFallback(theirMac: String, input: String, info: String): Boolean = false
     @JvmStatic fun nativeSasDestroyFallback() {}
+
+    // --- JSON Parser fallback ---
+    @JvmStatic fun nativeParseJsonStringValueFallback(json: String, key: String): String =
+        Regex(""""$key":"([^"]*)"""").find(json)?.groupValues?.getOrNull(1) ?: ""
+
+    // --- Federation Version fallback ---
+    @JvmStatic fun nativeFederationVersionToJsonFallback(versionJson: String): String = versionJson
+
+    // --- Auth Models fallbacks ---
+    @JvmStatic fun nativePresenceEnumToStringFallback(presence: Int): String = when(presence) {
+        0 -> "offline"; 1 -> "online"; 2 -> "unavailable"; else -> "offline" }
+    @JvmStatic fun nativeCredentialsToJsonFallback(credsJson: String): String = credsJson
+
+    // --- Call Models fallbacks ---
+    @JvmStatic fun nativeSdpTypeToStringFallback(type: Int): String = when(type) {
+        0 -> "offer"; 1 -> "answer"; else -> "offer" }
+    @JvmStatic fun nativeEndCallReasonToStringFallback(reason: Int): String = when(reason) {
+        0 -> "user_hung_up"; 1 -> "invite_timeout"; 2 -> "ice_failed"; 3 -> "unknown_error"; else -> "unknown" }
+
+    // --- Message Content fallbacks ---
+    @JvmStatic fun nativeMessageTextToJsonFallback(contentJson: String): String = contentJson
+    @JvmStatic fun nativeMessageNoticeToJsonFallback(contentJson: String): String = contentJson
+    @JvmStatic fun nativeMessageEmoteToJsonFallback(contentJson: String): String = contentJson
+    @JvmStatic fun nativeMessageImageToJsonFallback(contentJson: String): String = contentJson
+    @JvmStatic fun nativeMessageVideoToJsonFallback(contentJson: String): String = contentJson
+    @JvmStatic fun nativeMessageAudioToJsonFallback(contentJson: String): String = contentJson
+    @JvmStatic fun nativeMessageFileToJsonFallback(contentJson: String): String = contentJson
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")
