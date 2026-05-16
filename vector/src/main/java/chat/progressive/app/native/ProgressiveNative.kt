@@ -1198,6 +1198,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeOlmPickleAccount(): String
     @JvmStatic external fun nativeOlmUnpickleAccount(pickled: String, userId: String, deviceId: String): Boolean
 
+    // --- Event Signing ---
+
+    @JvmStatic external fun nativeSignEvent(eventJson: String): String
+    @JvmStatic external fun nativeVerifyEventSignature(eventJson: String, signKeyB64: String): Boolean
+
     // --- Device Verification ---
 
     @JvmStatic external fun nativeVerifyDeviceSignature(deviceKeysJson: String, userId: String, deviceId: String, signKeyB64: String, signatureB64: String): Boolean
@@ -3538,6 +3543,10 @@ object ProgressiveNative {
     @JvmStatic fun nativeOlmDecryptMessageFallback(senderKey: String, sessionId: String, ciphertext: String): String = ""
     @JvmStatic fun nativeOlmPickleAccountFallback(): String = ""
     @JvmStatic fun nativeOlmUnpickleAccountFallback(pickled: String, userId: String, deviceId: String): Boolean = false
+
+    // --- Event Signing fallbacks ---
+    @JvmStatic fun nativeSignEventFallback(eventJson: String): String = eventJson
+    @JvmStatic fun nativeVerifyEventSignatureFallback(eventJson: String, signKeyB64: String): Boolean = false
 
     // --- Device Verification fallbacks ---
     @JvmStatic fun nativeVerifyDeviceSignatureFallback(deviceKeysJson: String, userId: String, deviceId: String, signKeyB64: String, signatureB64: String): Boolean = false

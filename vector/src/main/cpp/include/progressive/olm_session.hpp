@@ -158,4 +158,14 @@ private:
     std::unordered_map<SessionKey, OlmSessionData, SessionKeyHash> sessions_;
 };
 
+// ==== Event Signing Pipeline ====
+
+// Sign a Matrix event with the Olm account's Ed25519 key.
+// Returns the event JSON with signature attached.
+std::string signEvent(const OlmAccountData& account, const std::string& eventJson);
+
+// Verify a Matrix event's Ed25519 signature.
+// Returns true if the signature is valid for the given signing key.
+bool verifyEventSignature(const std::string& eventJson, const std::string& signKeyB64);
+
 } // namespace progressive

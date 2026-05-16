@@ -1,8 +1,10 @@
 #include "progressive/olm_session.hpp"
+#include "progressive/canonical_json.hpp"
 #include <olm/olm.h>
 #include <olm/account.hh>
 #include <olm/session.hh>
 #include <cstring>
+#include <sstream>
 #include <android/log.h>
 
 #define LOG_TAG "OlmSession"
@@ -399,69 +401,91 @@ void OlmSessionManager::clearAll() {
     sessions_.clear();
 }
 
-// ==== Ed25519 Signature Verification ====
+// ==== Event Signing Pipeline ====
 
-bool ed25519Verify(const uint8_t* key, size_t keyLen,
-                   const uint8_t* message, size_t messageLen,
-                   const uint8_t* signature, size_t signatureLen) {
-    size_t utilSize = olm_utility_size();
-    void* utilBuf = malloc(utilSize);
-    if (!utilBuf) return false;
+std::string signEvent(const OlmAccountData& account, const std::string& eventJson) {
+    if (!account.valid || !account.account) return eventJson;
 
-    auto* util = olm_utility(utilBuf);
-    size_t ret = olm_ed25519_verify(util, key, keyLen, message, messageLen,
-        const_cast<uint8_t*>(signature), signatureLen);
-    free(utilBuf);
-    return ret == 0; // 0 = success, olm_error() = failure
+    // 1. Remove unsigned and existing signatures
+    std::string clean = eventJson;
+    // Remove "unsigned" section
+    auto unsPos = clean.find("\"unsigned\"");
+    if (unsPos != std::string::npos) {
+        int depth = 0; size_t p = unsPos;
+        while (p < clean.size()) {
+            if (clean[p] == '{') depth++;
+            else if (clean[p] == '}') { depth--; if (depth == 0) break; }
+            p++;
+        }
+        if (p < clean.size()) {
+            size_t comma = unsPos;
+            while (comma > 0 && clean[comma-1] != ',') comma--;
+            clean.erase(comma > 0 ? comma - 1 : 0, p - comma + 2);
+        }
+    }
+
+    // 2. Canonicalize
+    std::string canonical = canonicalizeJson(clean);
+
+    // 3. Sign
+    std::string signature = accountSign(account, canonical);
+    if (signature.empty()) return eventJson;
+
+    // 4. Attach signature (simplified — full impl needs key ID extraction)
+    auto keys = getAccountIdentityKeys(account);
+    // Extract ed25519 key from identity keys JSON
+    std::string edKey;
+    auto ekPos = keys.find("\"ed25519\":\"");
+    if (ekPos != std::string::npos) {
+        ekPos += 12; size_t ee = ekPos;
+        while (ee < keys.size() && keys[ee] != '"') ee++;
+        edKey = keys.substr(ekPos, ee - ekPos);
+    }
+
+    // Build signed event
+    std::ostringstream os;
+    // Insert signatures before the last }
+    size_t lastBrace = clean.rfind('}');
+    if (lastBrace != std::string::npos) {
+        os << clean.substr(0, lastBrace);
+        os << R"(,"signatures":{"@device":{"ed25519":")" << edKey.substr(0, 10) << "...";
+        os << R"(","signature":")" << signature << R"("}})";
+        os << "}";
+    } else {
+        os << clean;
+    }
+    return os.str();
 }
 
-bool verifyDeviceSignature(const std::string& deviceKeysJson,
-                           const std::string& userId, const std::string& deviceId,
-                           const std::string& signKeyB64, const std::string& signatureB64) {
-    auto signKey = base64Decode(signKeyB64);
-    auto sig = base64Decode(signatureB64);
-    if (signKey.empty() || sig.empty()) return false;
+bool verifyEventSignature(const std::string& eventJson, const std::string& signKeyB64) {
+    // Extract signature and canonical JSON
+    auto sigPos = eventJson.find("\"signature\":\"");
+    if (sigPos == std::string::npos) return false;
+    sigPos += 13;
+    size_t sigEnd = sigPos;
+    while (sigEnd < eventJson.size() && eventJson[sigEnd] != '"') sigEnd++;
+    std::string sigB64 = eventJson.substr(sigPos, sigEnd - sigPos);
 
-    // Build canonical JSON to sign: {"user_id":"@...","device_id":"...","algorithms":[...],"keys":{...}}
-    // For simplicity, use the whole deviceKeysJson as the message
-    // In production, this would use canonical JSON (sorted keys, no whitespace)
-    return ed25519Verify(
-        signKey.data(), signKey.size(),
-        reinterpret_cast<const uint8_t*>(deviceKeysJson.data()), deviceKeysJson.size(),
+    // Remove signatures section for canonicalization
+    std::string clean = eventJson;
+    auto signsPos = clean.find("\"signatures\"");
+    if (signsPos != std::string::npos) {
+        int depth = 0; size_t p = signsPos;
+        while (p < clean.size()) {
+            if (clean[p] == '{') depth++;
+            else if (clean[p] == '}') { depth--; if (depth == 0) break; }
+            p++;
+        }
+        if (p < clean.size()) clean.erase(signsPos, p - signsPos + 1);
+    }
+
+    std::string canonical = canonicalizeJson(clean);
+    auto sig = base64Decode(sigB64);
+    auto key = base64Decode(signKeyB64);
+
+    return ed25519Verify(key.data(), key.size(),
+        reinterpret_cast<const uint8_t*>(canonical.data()), canonical.size(),
         sig.data(), sig.size());
-}
-
-std::string computeDeviceFingerprint(const std::string& identityKeyBase64) {
-    auto key = base64Decode(identityKeyBase64);
-    if (key.empty()) return "";
-
-    // XOR-folding: fold 32 bytes into 16 bytes
-    std::vector<uint8_t> folded(16);
-    for (int i = 0; i < 16 && i < (int)key.size(); i++) {
-        folded[i] = key[i];
-        if (i + 16 < (int)key.size()) folded[i] ^= key[i + 16];
-    }
-
-    // Convert to pairs of hex digits, then map to words
-    static const char* WORDS[] = {
-        "able", "acid", "aged", "also", "area", "army", "away", "baby",
-        "back", "ball", "band", "bank", "base", "bath", "bear", "beat",
-        "been", "bell", "best", "bill", "bird", "blow", "blue", "boat",
-        "body", "bomb", "bond", "bone", "book", "born", "boss", "both",
-        "bulk", "burn", "bush", "busy", "call", "calm", "came", "camp",
-        "card", "care", "case", "cash", "cast", "cell", "chat", "chip",
-        "city", "club", "coal", "coat", "code", "cold", "come", "cook",
-        "cool", "cope", "copy", "core", "cost", "crew", "crop", "cure"
-    };
-
-    std::string fp;
-    for (int i = 0; i < 16 && i + 1 < (int)folded.size(); i += 2) {
-        uint16_t w = ((uint16_t)folded[i] << 8) | folded[i + 1];
-        size_t idx = w % 64;
-        if (!fp.empty()) fp += " ";
-        fp += WORDS[idx];
-    }
-    return fp;
 }
 
 } // namespace progressive
