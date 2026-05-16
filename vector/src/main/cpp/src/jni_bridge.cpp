@@ -2623,6 +2623,23 @@ JNI_FUNC(jstring, nativeGetAllErrorCodes)(JNIEnv* env, jclass) {
     return env->NewStringUTF(os.str().c_str());
 }
 
+// --- Call Content Builders ---
+
+JNI_FUNC(jstring, nativeBuildCallInviteContent)(JNIEnv* env, jclass, jstring jCallId, jboolean jVideo, jstring jSdp, jint jLifetime) {
+    auto result = progressive::buildCallInviteContent(jStr(env, jCallId), jVideo, jStr(env, jSdp), jLifetime);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeBuildCallAnswerContent)(JNIEnv* env, jclass, jstring jCallId, jstring jSdp) {
+    auto result = progressive::buildCallAnswerContent(jStr(env, jCallId), jStr(env, jSdp));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeGetCallState)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto result = progressive::getCallState(jStr(env, jContentJson));
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 
