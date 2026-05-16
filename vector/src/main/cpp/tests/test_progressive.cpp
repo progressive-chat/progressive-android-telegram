@@ -22,6 +22,8 @@
 #include "progressive/report_utils.hpp"
 #include "progressive/permalink.hpp"
 #include "progressive/well_known.hpp"
+#include "progressive/olm_session.hpp"
+#include "progressive/sas_verification.hpp"
 #include <cstring>
 
 // ==== SHA-256 verification (E2EE foundation) ====
@@ -382,6 +384,52 @@ static void test_needs_well_known_discovery() {
     ASSERT_FALSE(progressive::needsWellKnownDiscovery("https://matrix-client.matrix.org"));
 }
 
+// ==== Olm account (identity keys) ====
+static void test_olm_account_create() {
+    auto account = progressive::createOlmAccount("@alice:matrix.org", "DEVICE1");
+    ASSERT_TRUE(account.valid);
+    ASSERT_TRUE(!account.identityKeysJson.empty());
+    progressive::destroyOlmAccount(account);
+}
+
+static void test_olm_account_pickle_roundtrip() {
+    auto account = progressive::createOlmAccount("@bob:matrix.org", "DEV2");
+    ASSERT_TRUE(account.valid);
+    auto pickled = progressive::pickleOlmAccount(account);
+    ASSERT_TRUE(!pickled.empty());
+    auto restored = progressive::unpickleOlmAccount(pickled, "@bob:matrix.org", "DEV2");
+    ASSERT_TRUE(restored.valid);
+    progressive::destroyOlmAccount(account);
+    progressive::destroyOlmAccount(restored);
+}
+
+// ==== SAS verification ====
+static void test_sas_create() {
+    auto sas = progressive::sasCreate();
+    ASSERT_TRUE(sas.valid);
+    ASSERT_TRUE(!sas.ourPubkey.empty());
+    progressive::sasDestroy(sas);
+}
+
+static void test_sas_emoji_table() {
+    for (int i = 0; i < 64; i++) {
+        auto emoji = progressive::sasEmojiForIndex(i);
+        ASSERT_TRUE(emoji.emoji != nullptr);
+        ASSERT_TRUE(emoji.description != nullptr);
+    }
+}
+
+// ==== Device fingerprint ====
+static void test_compute_device_fingerprint() {
+    // Base64 of 32 zero bytes = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    auto fp = progressive::computeDeviceFingerprint("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
+    ASSERT_TRUE(!fp.empty());
+    // Should have 8 words separated by spaces
+    int spaces = 0;
+    for (char c : fp) if (c == ' ') spaces++;
+    ASSERT_TRUE(spaces >= 6); // 7+ spaces for 8 words
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -468,6 +516,13 @@ int main() {
     ADD_TEST(runner, test_build_event_permalink);
     ADD_TEST(runner, test_build_room_permalink);
     ADD_TEST(runner, test_needs_well_known_discovery);
+    
+    printf("\n-- Olm & SAS --\n");
+    ADD_TEST(runner, test_olm_account_create);
+    ADD_TEST(runner, test_olm_account_pickle_roundtrip);
+    ADD_TEST(runner, test_sas_create);
+    ADD_TEST(runner, test_sas_emoji_table);
+    ADD_TEST(runner, test_compute_device_fingerprint);
     
     return runner.summary();
 }
