@@ -1535,6 +1535,54 @@ static void test_media_type_detect() {
     ASSERT_TRUE(progressive::detectMediaType("application/pdf") == progressive::MediaType::FILE);
 }
 
+// ==== OIDC/SSO Login ====
+
+#include "progressive/oidc_manager.hpp"
+
+static void test_oidc_parse_metadata() {
+    std::string json = R"({"issuer":"https://auth.example.org","authorization_endpoint":"https://auth.example.org/auth","token_endpoint":"https://auth.example.org/token"})";
+    auto meta = progressive::parseOidcMetadata(json);
+    ASSERT_TRUE(meta.valid);
+    ASSERT_STREQ(meta.issuer.c_str(), "https://auth.example.org");
+}
+
+static void test_oidc_parse_token() {
+    std::string json = R"({"access_token":"abc123","refresh_token":"ref456","expires_in":3600,"token_type":"Bearer"})";
+    auto resp = progressive::parseTokenResponse(json);
+    ASSERT_TRUE(resp.success);
+    ASSERT_STREQ(resp.accessToken.c_str(), "abc123");
+    ASSERT_STREQ(resp.refreshToken.c_str(), "ref456");
+}
+
+static void test_oidc_callback() {
+    ASSERT_TRUE(progressive::isSsoCallbackUrl("https://app.example.org/oauth/callback?code=xyz789&state=abc"));
+    ASSERT_FALSE(progressive::isSsoCallbackUrl("https://app.example.org/welcome"));
+    ASSERT_STREQ(progressive::extractAuthCodeFromCallback("https://app.example.org/callback?code=xyz789&state=abc").c_str(), "xyz789");
+}
+
+static void test_oidc_login_types() {
+    ASSERT_STREQ(progressive::loginTypeToString(progressive::LoginType::PASSWORD), "m.login.password");
+    ASSERT_STREQ(progressive::loginTypeToString(progressive::LoginType::SSO), "m.login.sso");
+    ASSERT_EQ(static_cast<int>(progressive::loginTypeFromString("m.login.oidc")), static_cast<int>(progressive::LoginType::OIDC));
+}
+
+static void test_oidc_password_login_request() {
+    progressive::LoginCredentials creds;
+    creds.userId = "@alice:example.org";
+    creds.password = "secret";
+    auto json = progressive::buildPasswordLoginRequest(creds);
+    ASSERT_TRUE(json.find("m.login.password") != std::string::npos);
+    ASSERT_TRUE(json.find("@alice:example.org") != std::string::npos);
+    ASSERT_TRUE(json.find("secret") != std::string::npos);
+}
+
+static void test_oidc_well_known() {
+    auto wk = progressive::parseWellKnown(R"({"base_url":"https://matrix.org"})");
+    ASSERT_STREQ(wk.baseUrl.c_str(), "https://matrix.org");
+    ASSERT_FALSE(wk.supportsOidc);
+    ASSERT_FALSE(progressive::requiresOidc(wk));
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -1811,6 +1859,14 @@ int main() {
     ADD_TEST(runner, test_media_exif_rotation);
     ADD_TEST(runner, test_media_mxc_resolve);
     ADD_TEST(runner, test_media_type_detect);
+    
+    printf("\n-- OIDC/SSO Login --\n");
+    ADD_TEST(runner, test_oidc_parse_metadata);
+    ADD_TEST(runner, test_oidc_parse_token);
+    ADD_TEST(runner, test_oidc_callback);
+    ADD_TEST(runner, test_oidc_login_types);
+    ADD_TEST(runner, test_oidc_password_login_request);
+    ADD_TEST(runner, test_oidc_well_known);
     
     return runner.summary();
 }

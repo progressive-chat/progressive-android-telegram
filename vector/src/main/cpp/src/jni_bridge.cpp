@@ -151,6 +151,7 @@
 #include "progressive/space_graph.hpp"
 #include "progressive/pin_manager.hpp"
 #include "progressive/media_viewer.hpp"
+#include "progressive/oidc_manager.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -5639,6 +5640,126 @@ JNI_FUNC(jint, nativeMediaViewerExifRotation)(JNIEnv*, jclass, jint jRaw) {
 
 JNI_FUNC(jboolean, nativeMediaViewerCanThumbnail)(JNIEnv* env, jclass, jstring jMime) {
     return progressive::canGenerateThumbnail(jStr(env, jMime)) ? JNI_TRUE : JNI_FALSE;
+}
+
+// ============================================================
+// OIDC/SSO Login Manager
+// ============================================================
+
+JNI_FUNC(jstring, nativeOidcParseMetadata)(JNIEnv* env, jclass, jstring jJson) {
+    auto meta = progressive::parseOidcMetadata(jStr(env, jJson));
+    std::ostringstream os;
+    os << R"({"issuer":")" << meta.issuer
+       << R"(","auth_endpoint":")" << meta.authorizationEndpoint
+       << R"(","token_endpoint":")" << meta.tokenEndpoint
+       << R"(","userinfo_endpoint":")" << meta.userinfoEndpoint
+       << R"(","reg_endpoint":")" << meta.registrationEndpoint
+       << R"(","supports_registration":)" << (meta.supportsDynamicRegistration ? "true" : "false")
+       << R"(,"valid":)" << (meta.valid ? "true" : "false")
+       << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcBuildRegistration)(JNIEnv* env, jclass, jstring jConfigJson) {
+    progressive::OidcConfig cfg;
+    auto json = jStr(env, jConfigJson);
+    cfg.clientName = jExtractStr(json, "client_name");
+    if (cfg.clientName.empty()) cfg.clientName = "Progressive Chat";
+    cfg.redirectUri = jExtractStr(json, "redirect_uri");
+    cfg.clientUri = jExtractStr(json, "client_uri");
+    cfg.logoUri = jExtractStr(json, "logo_uri");
+    auto r = progressive::buildClientRegistrationRequest(cfg);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcParseRegistration)(JNIEnv* env, jclass, jstring jJson) {
+    auto reg = progressive::parseClientRegistration(jStr(env, jJson));
+    std::ostringstream os;
+    os << R"({"client_id":")" << reg.clientId
+       << R"(","client_secret":")" << reg.clientSecret
+       << R"(,"valid":)" << (reg.valid ? "true" : "false")
+       << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcBuildAuthorization)(JNIEnv* env, jclass, jstring jMetaJson, jstring jRegJson, jstring jConfigJson) {
+    auto meta = progressive::parseOidcMetadata(jStr(env, jMetaJson));
+    auto reg = progressive::parseClientRegistration(jStr(env, jRegJson));
+    progressive::OidcConfig cfg;
+    auto json = jStr(env, jConfigJson);
+    cfg.redirectUri = jExtractStr(json, "redirect_uri");
+    cfg.clientName = jExtractStr(json, "client_name");
+    auto auth = progressive::buildOidcAuthorization(meta, reg, cfg);
+    std::ostringstream os;
+    os << R"({"url":")" << auth.authorizationUrl
+       << R"(","state":")" << auth.state
+       << R"(","nonce":")" << auth.nonce
+       << R"(,"code_verifier":")" << auth.pkce.codeVerifier
+       << R"(,"code_challenge":")" << auth.pkce.codeChallenge
+       << R"(,"valid":)" << (auth.valid ? "true" : "false")
+       << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcParseToken)(JNIEnv* env, jclass, jstring jJson) {
+    auto resp = progressive::parseTokenResponse(jStr(env, jJson));
+    std::ostringstream os;
+    os << R"({"access_token":")" << resp.accessToken
+       << R"(","refresh_token":")" << resp.refreshToken
+       << R"(","expires_in":)" << resp.expiresIn
+       << R"(,"success":)" << (resp.success ? "true" : "false");
+    if (!resp.errorMessage.empty()) os << R"(,"error":")" << resp.errorMessage << R"(")";
+    os << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcBuildRefresh)(JNIEnv* env, jclass, jstring jRefreshToken, jstring jClientId) {
+    progressive::OidcRefreshRequest req;
+    req.refreshToken = jStr(env, jRefreshToken);
+    req.clientId = jStr(env, jClientId);
+    auto r = progressive::buildTokenRefreshRequest(req);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcParseWhoami)(JNIEnv* env, jclass, jstring jJson) {
+    auto val = progressive::parseWhoamiResponse(jStr(env, jJson));
+    std::ostringstream os;
+    os << R"({"user_id":")" << val.userId
+       << R"(","device_id":")" << val.deviceId
+       << R"(","valid":)" << (val.valid ? "true" : "false");
+    if (!val.error.empty()) os << R"(,"error":")" << val.error << R"(")";
+    os << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcParseWellKnown)(JNIEnv* env, jclass, jstring jJson) {
+    auto wk = progressive::parseWellKnown(jStr(env, jJson));
+    std::ostringstream os;
+    os << R"({"base_url":")" << wk.baseUrl
+       << R"(","oidc_issuer":")" << wk.oidcIssuer
+       << R"(,"supports_oidc":)" << (wk.supportsOidc ? "true" : "false")
+       << R"(,"supports_password":)" << (wk.supportsPassword ? "true" : "false")
+       << R"(,"requires_oidc":)" << (progressive::requiresOidc(wk) ? "true" : "false")
+       << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jboolean, nativeOidcIsCallback)(JNIEnv* env, jclass, jstring jUrl) {
+    return progressive::isSsoCallbackUrl(jStr(env, jUrl)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeOidcExtractCode)(JNIEnv* env, jclass, jstring jUrl) {
+    return env->NewStringUTF(progressive::extractAuthCodeFromCallback(jStr(env, jUrl)).c_str());
+}
+
+JNI_FUNC(jstring, nativeOidcBuildPasswordLogin)(JNIEnv* env, jclass, jstring jUser, jstring jPass, jstring jDevId, jstring jDevName) {
+    progressive::LoginCredentials creds;
+    creds.userId = jStr(env, jUser);
+    creds.password = jStr(env, jPass);
+    creds.deviceId = jStr(env, jDevId);
+    creds.initialDeviceDisplayName = jStr(env, jDevName);
+    auto r = progressive::buildPasswordLoginRequest(creds);
+    return env->NewStringUTF(r.c_str());
 }
 
 } // extern "C"

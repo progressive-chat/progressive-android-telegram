@@ -1501,6 +1501,20 @@ object ProgressiveNative {
     @JvmStatic external fun nativeMediaViewerExifRotation(rawExif: Int): Int
     @JvmStatic external fun nativeMediaViewerCanThumbnail(mimeType: String): Boolean
 
+    // --- OIDC/SSO Login ---
+
+    @JvmStatic external fun nativeOidcParseMetadata(json: String): String
+    @JvmStatic external fun nativeOidcBuildRegistration(configJson: String): String
+    @JvmStatic external fun nativeOidcParseRegistration(json: String): String
+    @JvmStatic external fun nativeOidcBuildAuthorization(metadataJson: String, registrationJson: String, configJson: String): String
+    @JvmStatic external fun nativeOidcParseToken(json: String): String
+    @JvmStatic external fun nativeOidcBuildRefresh(refreshToken: String, clientId: String): String
+    @JvmStatic external fun nativeOidcParseWhoami(json: String): String
+    @JvmStatic external fun nativeOidcParseWellKnown(json: String): String
+    @JvmStatic external fun nativeOidcIsCallback(url: String): Boolean
+    @JvmStatic external fun nativeOidcExtractCode(callbackUrl: String): String
+    @JvmStatic external fun nativeOidcBuildPasswordLogin(userId: String, password: String, deviceId: String, deviceName: String): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4296,6 +4310,32 @@ object ProgressiveNative {
         3 -> 180; 6 -> 90; 8 -> 270; else -> 0 }
     @JvmStatic fun nativeMediaViewerCanThumbnailFallback(mimeType: String): Boolean =
         mimeType.startsWith("image/") || mimeType.startsWith("video/")
+
+    // --- OIDC/SSO Login fallbacks ---
+    @JvmStatic fun nativeOidcParseMetadataFallback(json: String): String =
+        """{"issuer":"","auth_endpoint":"","token_endpoint":"","userinfo_endpoint":"","reg_endpoint":"","supports_registration":false,"valid":false}"""
+    @JvmStatic fun nativeOidcBuildRegistrationFallback(configJson: String): String =
+        """{"client_name":"Progressive Chat","redirect_uris":["chat.progressive.app:/"],"application_type":"native","grant_types":["authorization_code","refresh_token"],"response_types":["code"],"token_endpoint_auth_method":"none"}"""
+    @JvmStatic fun nativeOidcParseRegistrationFallback(json: String): String =
+        """{"client_id":"","client_secret":"","valid":false}"""
+    @JvmStatic fun nativeOidcBuildAuthorizationFallback(metadataJson: String, registrationJson: String, configJson: String): String =
+        """{"url":"https://auth.example.org/authorize","state":"state123","nonce":"nonce456","code_verifier":"verifier","code_challenge":"challenge","valid":false}"""
+    @JvmStatic fun nativeOidcParseTokenFallback(json: String): String {
+        val at = Regex(""""access_token":"([^"]+)"""").find(json)?.groupValues?.getOrNull(1) ?: ""
+        return """{"access_token":"$at","refresh_token":"","expires_in":3600,"success":${at.isNotEmpty()}}"""
+    }
+    @JvmStatic fun nativeOidcBuildRefreshFallback(refreshToken: String, clientId: String): String =
+        "grant_type=refresh_token&refresh_token=$refreshToken&client_id=$clientId"
+    @JvmStatic fun nativeOidcParseWhoamiFallback(json: String): String =
+        """{"user_id":"","device_id":"","valid":false}"""
+    @JvmStatic fun nativeOidcParseWellKnownFallback(json: String): String =
+        """{"base_url":"","oidc_issuer":"","supports_oidc":false,"supports_password":true,"requires_oidc":false}"""
+    @JvmStatic fun nativeOidcIsCallbackFallback(url: String): Boolean =
+        url.contains("code=") || url.contains("login/sso/redirect")
+    @JvmStatic fun nativeOidcExtractCodeFallback(callbackUrl: String): String =
+        Regex("""[?&]code=([^&]+)""").find(callbackUrl)?.groupValues?.getOrNull(1) ?: ""
+    @JvmStatic fun nativeOidcBuildPasswordLoginFallback(userId: String, password: String, deviceId: String, deviceName: String): String =
+        """{"type":"m.login.password","identifier":{"type":"m.id.user","user":"$userId"},"password":"$password"}"""
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")
