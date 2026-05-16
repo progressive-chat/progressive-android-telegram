@@ -3171,6 +3171,38 @@ JNI_FUNC(jstring, nativeSuggestAliases)(JNIEnv* env, jclass, jstring jRoomName) 
     return env->NewStringUTF(os.str().c_str());
 }
 
+// --- Presence Info (JSON round-trip) ---
+
+JNI_FUNC(jstring, nativeParsePresenceInfo)(JNIEnv* env, jclass, jstring jUserId, jstring jJson) {
+    auto info = progressive::parsePresence(jStr(env, jUserId), jStr(env, jJson));
+    auto line = progressive::formatPresenceLine(info);
+    return env->NewStringUTF(line.c_str());
+}
+
+// --- Backup Info (JSON round-trip) ---
+
+JNI_FUNC(jstring, nativeParseBackupInfo)(JNIEnv* env, jclass, jstring jJson) {
+    auto info = progressive::parseBackupInfo(jStr(env, jJson));
+    auto result = progressive::formatBackupStats(info);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Cross-Signing Status (JSON round-trip) ---
+
+JNI_FUNC(jstring, nativeParseCrossSigningStatus)(JNIEnv* env, jclass, jstring jJson, jstring jUserId) {
+    auto status = progressive::parseCrossSigningStatus(jStr(env, jJson), jStr(env, jUserId));
+    auto result = progressive::formatCrossSigningStatus(status);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Key Backup Version (JSON round-trip) ---
+
+JNI_FUNC(jstring, nativeParseKeyBackupVersion)(JNIEnv* env, jclass, jstring jJson) {
+    auto backup = progressive::parseKeyBackupVersion(jStr(env, jJson));
+    auto result = progressive::keyBackupVersionToJson(backup);
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Poll Validation ---
 
 JNI_FUNC(jboolean, nativeIsValidPollQuestion)(JNIEnv* env, jclass, jstring jQuestion) {

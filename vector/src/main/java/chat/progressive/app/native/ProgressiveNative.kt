@@ -284,6 +284,13 @@ object ProgressiveNative {
     @JvmStatic external fun nativeIsCanonicalAlias(alias: String, expectedRoomId: String): Boolean
     @JvmStatic external fun nativeSuggestAliases(roomName: String): String
 
+    // --- Presence / Backup / Cross-Signing (JSON round-trip) ---
+
+    @JvmStatic external fun nativeParsePresenceInfo(userId: String, apiResponseJson: String): String
+    @JvmStatic external fun nativeParseBackupInfo(apiResponseJson: String): String
+    @JvmStatic external fun nativeParseCrossSigningStatus(accountDataJson: String, userId: String): String
+    @JvmStatic external fun nativeParseKeyBackupVersion(json: String): String
+
     // --- Poll Validation ---
 
     @JvmStatic external fun nativeIsValidPollQuestion(question: String): Boolean
@@ -3201,6 +3208,12 @@ object ProgressiveNative {
         val clean = roomName.lowercase().replace(" ", "-").take(20)
         return """["#$clean"]"""
     }
+
+    // --- Presence/Backup/CrossSigning fallbacks ---
+    @JvmStatic fun nativeParsePresenceInfoFallback(userId: String, apiResponseJson: String): String = "unknown"
+    @JvmStatic fun nativeParseBackupInfoFallback(apiResponseJson: String): String = "No backup"
+    @JvmStatic fun nativeParseCrossSigningStatusFallback(accountDataJson: String, userId: String): String = "Not set up"
+    @JvmStatic fun nativeParseKeyBackupVersionFallback(json: String): String = "{}"
 
     // --- Poll fallback ---
     @JvmStatic fun nativeIsValidPollQuestionFallback(question: String): Boolean =
