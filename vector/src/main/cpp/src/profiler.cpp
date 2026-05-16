@@ -337,4 +337,226 @@ int Profiler::getActiveCount() const {
     return count;
 }
 
+// ====== User Action Timing ======
+
+int Profiler::startAction(const std::string& actionName, const std::string& context, bool isCold) {
+    UserActionMeasurement m;
+    m.actionName = actionName;
+    m.startNs = nowNs();
+    m.context = context;
+    m.isCold = isCold;
+    m.withinBudget = true;
+
+    // Find matching budget
+    for (const auto& b : budgets_) {
+        if (actionName == b.actionPattern ||
+            (b.actionPattern.back() == '*' && actionName.rfind(b.actionPattern.substr(0, b.actionPattern.size()-1), 0) == 0)) {
+            m.budgetNs = b.budgetNs;
+            break;
+        }
+    }
+
+    actions_.push_back(m);
+    return static_cast<int>(actions_.size()) - 1;
+}
+
+int64_t Profiler::stopAction(int actionIndex) {
+    if (actionIndex < 0 || actionIndex >= static_cast<int>(actions_.size())) return 0;
+
+    auto& m = actions_[actionIndex];
+    if (m.completed) return m.durationNs;
+
+    m.endNs = nowNs();
+    m.durationNs = m.endNs - m.startNs - overheadNs_;
+    m.completed = true;
+    m.withinBudget = (m.durationNs <= m.budgetNs);
+
+    // Update action stats
+    auto& stats = actionStats_[m.actionName];
+    stats.actionName = m.actionName;
+    stats.budgetNs = m.budgetNs;
+    stats.runCount++;
+    stats.totalNs += m.durationNs;
+    if (m.durationNs < stats.minNs) stats.minNs = m.durationNs;
+    if (m.durationNs > stats.maxNs) stats.maxNs = m.durationNs;
+    stats.avgNs = stats.totalNs / stats.runCount;
+    if (!m.withinBudget) stats.overBudgetCount++;
+
+    // Store in history (up to 100 entries)
+    stats.history.push_back(m.durationNs);
+    if (static_cast<int>(stats.history.size()) > 100) {
+        stats.history.erase(stats.history.begin());
+    }
+
+    // Cold measurement
+    if (m.isCold) {
+        stats.hasColdMeasurement = true;
+        stats.coldDurationNs = m.durationNs;
+    }
+
+    // Compute percentiles
+    computePercentiles(stats);
+
+    return m.durationNs;
+}
+
+int64_t Profiler::measureAction(const std::string& actionName, int64_t startNs) {
+    int idx = startAction(actionName);
+    // Override start time
+    if (idx >= 0 && idx < static_cast<int>(actions_.size())) {
+        actions_[idx].startNs = startNs;
+    }
+    return stopAction(idx);
+}
+
+void Profiler::setActionBudget(const std::string& actionPattern, int64_t budgetNs) {
+    ActionBudget b;
+    b.actionPattern = actionPattern;
+    b.budgetNs = budgetNs;
+    budgets_.push_back(b);
+}
+
+bool Profiler::lastActionWithinBudget(const std::string& actionName) const {
+    for (auto it = actions_.rbegin(); it != actions_.rend(); ++it) {
+        if (it->actionName == actionName) return it->withinBudget;
+    }
+    return true; // No measurement = no violation
+}
+
+void Profiler::computePercentiles(ActionStats& stats) {
+    if (stats.history.empty()) return;
+
+    auto sorted = stats.history;
+    std::sort(sorted.begin(), sorted.end());
+    size_t n = sorted.size();
+
+    stats.p50Ns = sorted[n * 50 / 100];
+    stats.p90Ns = sorted[n * 90 / 100];
+    stats.p95Ns = sorted[n * 95 / 100];
+    stats.p99Ns = sorted[n * 99 / 100];
+}
+
+ActionStats Profiler::getActionStats(const std::string& actionName) const {
+    auto it = actionStats_.find(actionName);
+    if (it != actionStats_.end()) return it->second;
+    ActionStats empty;
+    empty.actionName = actionName;
+    return empty;
+}
+
+std::vector<ActionStats> Profiler::getAllActionStats() const {
+    std::vector<ActionStats> result;
+    for (const auto& [name, stats] : actionStats_) result.push_back(stats);
+    std::sort(result.begin(), result.end(), [](const ActionStats& a, const ActionStats& b) {
+        return a.avgNs > b.avgNs; // Slowest first
+    });
+    return result;
+}
+
+// ====== Frame Timing ======
+
+int Profiler::startFrame() {
+    FrameTiming f;
+    f.frameNumber = ++frameCount_;
+    f.frameStartNs = nowNs();
+    frames_.push_back(f);
+    if (frames_.size() > 600) frames_.erase(frames_.begin()); // Keep last 10 sec @ 60fps
+    return static_cast<int>(frames_.size()) - 1;
+}
+
+int64_t Profiler::endFrame(int frameIndex) {
+    if (frameIndex < 0 || frameIndex >= static_cast<int>(frames_.size())) return 0;
+    auto& f = frames_[frameIndex];
+    f.frameEndNs = nowNs();
+    f.frameDurationNs = f.frameEndNs - f.frameStartNs;
+    f.dropped = (f.frameDurationNs > 16666667LL); // > 16.67ms = 60fps threshold
+    return f.frameDurationNs;
+}
+
+std::vector<FrameTiming> Profiler::getFrameTimings(int lastN) const {
+    std::vector<FrameTiming> result;
+    int start = std::max(0, static_cast<int>(frames_.size()) - lastN);
+    for (int i = start; i < static_cast<int>(frames_.size()); i++) result.push_back(frames_[i]);
+    return result;
+}
+
+double Profiler::getCurrentFps() const {
+    if (frames_.size() < 2) return 0.0;
+    // Use last 60 frames
+    int count = std::min(120, static_cast<int>(frames_.size()));
+    auto first = frames_[frames_.size() - count];
+    auto last = frames_.back();
+    if (last.frameEndNs <= first.frameStartNs) return 0.0;
+    double elapsedSec = (last.frameEndNs - first.frameStartNs) / 1e9;
+    return count / elapsedSec;
+}
+
+// ====== Action Reporting ======
+
+std::string Profiler::actionReportToJson() const {
+    auto stats = getAllActionStats();
+    std::ostringstream os;
+    os << R"({"actions":[)";
+    for (size_t i = 0; i < stats.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"name":")" << stats[i].actionName
+           << R"(","runs":)" << stats[i].runCount
+           << R"(,"avg_ms":)" << (stats[i].avgNs / 1000000.0)
+           << R"(,"p50_ms":)" << (stats[i].p50Ns / 1000000.0)
+           << R"(,"p90_ms":)" << (stats[i].p90Ns / 1000000.0)
+           << R"(,"p99_ms":)" << (stats[i].p99Ns / 1000000.0)
+           << R"(,"min_ms":)" << (stats[i].minNs / 1000000.0)
+           << R"(,"max_ms":)" << (stats[i].maxNs / 1000000.0)
+           << R"(,"over_budget":)" << stats[i].overBudgetCount
+           << R"(,"budget_ms":)" << (stats[i].budgetNs / 1000000.0);
+        if (stats[i].hasColdMeasurement)
+            os << R"(,"cold_ms":)" << (stats[i].coldDurationNs / 1000000.0);
+        os << "}";
+    }
+    os << R"(],"frame_fps":)" << getCurrentFps()
+       << R"(,"frame_count":)" << static_cast<int>(frames_.size())
+       << "}";
+    return os.str();
+}
+
+std::string Profiler::actionReportToText() const {
+    auto stats = getAllActionStats();
+    std::ostringstream os;
+    os << "=== User Action Performance ===\n\n";
+
+    if (stats.empty()) {
+        os << "No actions measured yet.\n";
+        os << "Usage: Profiler::startAction(\"back_to_menu\"); ... Profiler::stopAction(idx);\n";
+    } else {
+        os << "ACTION                  RUNS   AVG      P50      P90      P99      BUDGET   VIOLATIONS\n";
+        os << "------                  ----   ---      ---      ---      ---      ------   ----------\n";
+        for (const auto& s : stats) {
+            std::string name = s.actionName;
+            if (name.size() > 22) name = name.substr(0, 19) + "...";
+            while (name.size() < 22) name += ' ';
+
+            os << name
+               << std::setw(6) << s.runCount << " "
+               << std::setw(8) << formatNs(s.avgNs) << " "
+               << std::setw(8) << formatNs(s.p50Ns) << " "
+               << std::setw(8) << formatNs(s.p90Ns) << " "
+               << std::setw(8) << formatNs(s.p99Ns) << " "
+               << std::setw(8) << formatNs(s.budgetNs) << " ";
+            if (s.overBudgetCount > 0) {
+                os << "\033[31m" << s.overBudgetCount << " !!\033[0m";
+            } else {
+                os << "OK";
+            }
+            os << "\n";
+        }
+    }
+
+    // Frame stats
+    double fps = getCurrentFps();
+    os << "\nFrame rate: " << std::fixed << std::setprecision(1) << fps << " FPS";
+    if (fps < 55.0) os << " \033[31m(LAG!)\033[0m";
+
+    return os.str();
+}
+
 } // namespace progressive

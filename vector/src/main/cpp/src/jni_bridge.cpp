@@ -5854,6 +5854,28 @@ JNI_FUNC(jstring, nativeProfileMemory)(JNIEnv* env, jclass) {
     return env->NewStringUTF(os.str().c_str());
 }
 
+// --- New: User Action Timing ---
+
+JNI_FUNC(jint, nativeProfileStartAction)(JNIEnv* env, jclass, jstring jName, jboolean jCold) {
+    return progressive::Profiler::instance().startAction(jStr(env, jName), "", jCold);
+}
+
+JNI_FUNC(jlong, nativeProfileStopAction)(JNIEnv*, jclass, jint jIdx) {
+    return progressive::Profiler::instance().stopAction(jIdx);
+}
+
+JNI_FUNC(void, nativeProfileSetBudget)(JNIEnv* env, jclass, jstring jPattern, jlong jBudgetNs) {
+    progressive::Profiler::instance().setActionBudget(jStr(env, jPattern), jBudgetNs);
+}
+
+JNI_FUNC(jstring, nativeProfileActionReport)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(progressive::Profiler::instance().actionReportToJson().c_str());
+}
+
+JNI_FUNC(jstring, nativeProfileActionReportText)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(progressive::Profiler::instance().actionReportToText().c_str());
+}
+
 // ============================================================
 // Device Manager Full
 // ============================================================

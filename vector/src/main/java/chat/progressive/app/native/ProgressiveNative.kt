@@ -1534,6 +1534,13 @@ object ProgressiveNative {
     @JvmStatic external fun nativeProfileGetSummary(name: String): String
     @JvmStatic external fun nativeProfileMemory(): String
 
+    // --- Profiler: User Action Timing ---
+    @JvmStatic external fun nativeProfileStartAction(actionName: String, isCold: Boolean): Int
+    @JvmStatic external fun nativeProfileStopAction(actionIndex: Int): Long
+    @JvmStatic external fun nativeProfileSetBudget(actionPattern: String, budgetNs: Long)
+    @JvmStatic external fun nativeProfileActionReport(): String
+    @JvmStatic external fun nativeProfileActionReportText(): String
+
     // --- Device Manager Full ---
 
     @JvmStatic external fun nativeDeviceParseList(json: String): String
@@ -4490,6 +4497,21 @@ object ProgressiveNative {
     @JvmStatic fun nativeProfileReportTextFallback(): String = "Profiler not available (native lib not loaded)"
     @JvmStatic fun nativeProfileGetSummaryFallback(name: String): String = """{"name":"$name","calls":0,"total_ns":0,"avg_ns":0,"min_ns":0,"max_ns":0}"""
     @JvmStatic fun nativeProfileMemoryFallback(): String = """{"bytes":0,"alloc_count":0,"dealloc_count":0,"ts":0}"""
+
+    @JvmStatic fun nativeProfileStartActionFallback(actionName: String, isCold: Boolean): Int {
+        val start = System.nanoTime()
+        _actionTimers[actionName] = start
+        return 0
+    }
+    @JvmStatic fun nativeProfileStopActionFallback(actionIndex: Int): Long {
+        return 0L
+    }
+    @JvmStatic fun nativeProfileSetBudgetFallback(actionPattern: String, budgetNs: Long) {}
+    @JvmStatic fun nativeProfileActionReportFallback(): String =
+        """{"actions":[],"frame_fps":0,"frame_count":0}"""
+    @JvmStatic fun nativeProfileActionReportTextFallback(): String = "Action profiler not available (native lib not loaded)"
+
+    private val _actionTimers = mutableMapOf<String, Long>()
 
     // --- Device Manager Full fallbacks ---
     @JvmStatic fun nativeDeviceParseListFallback(json: String): String = "[]"

@@ -72,6 +72,62 @@ struct MemorySnapshot {
     std::string label;
 };
 
+// ---- User Action Measurement ----
+// Measures real-world UX: "back_to_menu", "open_room", "send_message", etc.
+// Answers: "How long did the user wait after pressing Back?"
+
+struct UserActionMeasurement {
+    std::string actionName;          // "back_to_menu", "open_room", "send_message"
+    int64_t startNs = 0;
+    int64_t endNs = 0;
+    int64_t durationNs = 0;          // Total wait time for user
+    bool completed = false;
+    bool withinBudget = true;        // Within threshold
+    int64_t budgetNs = 200000000LL;   // Default: 200ms
+    std::string context;             // "room_id:!abc:org" or extra info
+    bool isCold = false;             // Cold start (first time)
+};
+
+// ---- Action Stats (percentiles over last N runs) ----
+
+struct ActionStats {
+    std::string actionName;
+    int runCount = 0;
+    int64_t budgetNs = 200000000LL;   // 200ms default
+    int overBudgetCount = 0;         // How many times exceeded budget
+    int64_t totalNs = 0;
+    int64_t minNs = INT64_MAX;
+    int64_t maxNs = 0;
+    int64_t avgNs = 0;
+    int64_t p50Ns = 0;               // Median (50th percentile)
+    int64_t p90Ns = 0;               // 90th percentile
+    int64_t p95Ns = 0;
+    int64_t p99Ns = 0;
+    std::vector<int64_t> history;    // Last N measurements (max 100)
+    bool hasColdMeasurement = false;
+    int64_t coldDurationNs = 0;      // First-run duration
+};
+
+// ---- Frame Timing (for animation smoothness) ----
+
+struct FrameTiming {
+    int frameNumber = 0;
+    int64_t frameStartNs = 0;
+    int64_t frameEndNs = 0;
+    int64_t frameDurationNs = 0;     // Should be < 16.67ms for 60fps
+    bool dropped = false;            // > 16.67ms = dropped frame
+    int consecutiveDrops = 0;        // Consecutive dropped frames
+};
+
+// ---- Action Budget Config ----
+
+struct ActionBudget {
+    std::string actionPattern;       // "back_to_*", "*_menu", exact name, or regex-like
+    int64_t budgetNs = 200000000LL;  // Default: 200ms
+    bool reportOnViolation = true;   // Auto-log when exceeded
+    int sampleSize = 100;            // Max history entries
+};
+
 // ---- Profiler ----
 
 class Profiler {
@@ -80,34 +136,15 @@ public:
     static Profiler& instance();
 
     // ====== Lifecycle ======
-
-    // Start profiling.
     void startProfiling();
-
-    // Stop profiling.
     void stopProfiling();
-
-    // Reset all data.
     void reset();
-
-    // Check if profiling is active.
     bool isProfiling() const { return profiling_; }
 
     // ====== Measurement ======
-
-    // Start timing a named entry.
-    // Returns the entry index (for stop-by-index).
     int start(const std::string& name);
-
-    // Stop timing by name. Returns duration in nanoseconds.
     int64_t stop(const std::string& name);
-
-    // Stop timing by entry index. Returns duration in nanoseconds.
     int64_t stop(int entryIndex);
-
-    // Time a scope (RAII style). Creates a ScopeTimer that auto-stops on destruction.
-    // Usage: auto timer = Profiler::scope("my_func");
-    // The timer stops when it goes out of scope.
 
     // ====== Scoped Timer (RAII) ======
     class ScopeTimer {
@@ -120,43 +157,70 @@ public:
         int64_t startNs_;
         bool stopped_ = false;
     };
-
-    // Convenience: creates a ScopeTimer.
     static ScopeTimer scope(const std::string& name) { return ScopeTimer(name); }
 
+    // ====== User Action Timing (UX measurement) ======
+
+    // Start measuring a user action (e.g. "back_to_menu").
+    // Returns action index for pairing with stopAction().
+    int startAction(const std::string& actionName, const std::string& context = "",
+                     bool isCold = false);
+
+    // Stop measuring. Returns duration in nanoseconds.
+    // Checks budget (default: 200ms) and records violation if exceeded.
+    int64_t stopAction(int actionIndex);
+
+    // Convenience: start+stop in one. Returns duration.
+    int64_t measureAction(const std::string& actionName, int64_t startNs);
+
+    // Set a budget for a specific action pattern.
+    void setActionBudget(const std::string& actionPattern, int64_t budgetNs);
+
+    // Check if last measurement was within budget.
+    bool lastActionWithinBudget(const std::string& actionName) const;
+
+    // Get detailed stats for an action (with percentiles).
+    ActionStats getActionStats(const std::string& actionName) const;
+
+    // Get all action stats.
+    std::vector<ActionStats> getAllActionStats() const;
+
+    // ====== Frame Timing ======
+
+    // Start a new frame measurement.
+    int startFrame();
+
+    // End frame measurement. Returns duration in nanoseconds.
+    int64_t endFrame(int frameIndex);
+
+    // Get frame timing stats (last N frames).
+    std::vector<FrameTiming> getFrameTimings(int lastN = 120) const;
+
+    // Check if current frame rate is smooth.
+    double getCurrentFps() const;
+
     // ====== Memory Tracking ======
-
-    // Record a memory allocation.
     void recordAlloc(int64_t bytes);
-
-    // Record a memory deallocation.
     void recordDealloc(int64_t bytes);
-
-    // Take a memory snapshot.
     MemorySnapshot takeMemorySnapshot(const std::string& label = "");
-
-    // Get current tracked memory.
     int64_t currentTrackedMemory() const { return trackedMemory_; }
 
     // ====== Reporting ======
-
-    // Generate a full profile report.
     ProfileReport generateReport() const;
-
-    // Format report as JSON string.
     std::string reportToJson() const;
-
-    // Format report as human-readable text.
     std::string reportToText() const;
-
-    // Format a single summary entry.
     std::string summaryToJson(const ProfileSummary& s) const;
-
-    // Get summary for a specific entry name.
     ProfileSummary getSummary(const std::string& name) const;
 
-    // ====== Stats ======
+    // ====== Action Reporting ======
 
+    // Generate a user-action-focused report (JSON).
+    std::string actionReportToJson() const;
+
+    // Generate action report as text (for /profile action slash command).
+    std::string actionReportToText() const;
+
+    // ====== Stats ======
     int totalEntries() const { return static_cast<int>(entries_.size()); }
     int totalSummaries() const { return static_cast<int>(summaries_.size()); }
     int64_t totalProfiledTime() const;
@@ -169,21 +233,32 @@ private:
     Profiler& operator=(const Profiler&) = delete;
 
     bool profiling_ = false;
-    std::vector<ProfileEntry> entries_;                          // Raw entries
-    std::unordered_map<std::string, ProfileSummary> summaries_;  // Aggregated
+    std::vector<ProfileEntry> entries_;
+    std::unordered_map<std::string, ProfileSummary> summaries_;
     std::vector<MemorySnapshot> memorySnapshots_;
-    int64_t trackedMemory_ = 0;                                  // Current tracked memory
+    int64_t trackedMemory_ = 0;
     int allocCount_ = 0;
     int deallocCount_ = 0;
 
-    // High-resolution timer.
-    static int64_t nowNs();
+    // User action measurements
+    std::vector<UserActionMeasurement> actions_;
+    std::unordered_map<std::string, ActionStats> actionStats_;
+    std::vector<ActionBudget> budgets_;
+    int actionSeq_ = 0;
 
-    // Overhead calibration.
+    // Frame timing
+    std::vector<FrameTiming> frames_;
+    int frameCount_ = 0;
+
+    // Helpers
+    static int64_t nowNs();
     int64_t measureOverhead();
     int64_t overheadNs_ = 0;
 
-    // Format nanoseconds as human-readable string.
+    // Compute percentiles from sorted history.
+    static void computePercentiles(ActionStats& stats);
+
+    // Format helpers
     static std::string formatNs(int64_t ns);
     static std::string formatBytes(int64_t bytes);
 };
