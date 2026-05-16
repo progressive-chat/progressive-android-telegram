@@ -253,3 +253,23 @@ set_source_files_properties(
     "${SQLITE3_DIR}/sqlite3.c"
     PROPERTIES COMPILE_FLAGS "-DSQLITE_THREADSAFE=1 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_DEFAULT_MEMSTATUS=0 -DSQLITE_DEFAULT_WAL_SYNCHRONOUS=1 -DSQLITE_LIKE_DOESNT_MATCH_BLOBS -DSQLITE_MAX_EXPR_DEPTH=0 -DSQLITE_OMIT_DECLTYPE -DSQLITE_OMIT_DEPRECATED -DSQLITE_OMIT_PROGRESS_CALLBACK -DSQLITE_OMIT_SHARED_CACHE -DSQLITE_USE_ALLOCA -Os"
 )
+
+# ==== Unit Tests ====
+add_executable(
+    test_progressive
+    tests/test_progressive.cpp
+    src/crypto_algorithms.cpp
+    src/timeline_chunk.cpp
+    src/markdown.cpp
+    src/olm.cpp
+)
+target_include_directories(test_progressive PUBLIC include tests)
+target_include_directories(test_progressive PUBLIC "${SQLITE3_DIR}")
+target_link_libraries(test_progressive ${log_lib} olm)
+target_compile_definitions(test_progressive PRIVATE PROGRESSIVE_HAS_OLM=1)
+# Also need sqlite3.c linked
+target_sources(test_progressive PRIVATE "${SQLITE3_DIR}/sqlite3.c")
+set_source_files_properties(
+    "${SQLITE3_DIR}/sqlite3.c"
+    PROPERTIES COMPILE_FLAGS "-DSQLITE_THREADSAFE=1 -DSQLITE_OMIT_LOAD_EXTENSION -Os"
+)
