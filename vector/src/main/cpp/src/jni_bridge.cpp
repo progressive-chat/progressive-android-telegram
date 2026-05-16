@@ -132,6 +132,7 @@
 #include "progressive/media_utils_extra.hpp"
 #include "progressive/account_data_utils.hpp"
 #include "progressive/room_tombstone.hpp"
+#include "progressive/openid_token.hpp"
 #include "progressive/event_utils.hpp"
 #include "progressive/content_builder.hpp"
 #include "progressive/displayname_utils.hpp"
