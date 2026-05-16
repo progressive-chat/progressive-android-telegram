@@ -887,6 +887,15 @@ object ProgressiveNative {
     @JvmStatic external fun nativeVerifyDeviceSignature(deviceKeysJson: String, userId: String, deviceId: String, signKeyB64: String, signatureB64: String): Boolean
     @JvmStatic external fun nativeComputeDeviceFingerprint(identityKeyBase64: String): String
 
+    // --- SAS Emoji Verification ---
+
+    @JvmStatic external fun nativeSasCreate(): String
+    @JvmStatic external fun nativeSasSetTheirKey(theirPubkey: String): Boolean
+    @JvmStatic external fun nativeSasGetEmojis(): String
+    @JvmStatic external fun nativeSasCalculateMac(input: String, info: String): String
+    @JvmStatic external fun nativeSasVerifyMac(theirMac: String, input: String, info: String): Boolean
+    @JvmStatic external fun nativeSasDestroy()
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -2801,6 +2810,14 @@ object ProgressiveNative {
     @JvmStatic fun nativeVerifyDeviceSignatureFallback(deviceKeysJson: String, userId: String, deviceId: String, signKeyB64: String, signatureB64: String): Boolean = false
     @JvmStatic fun nativeComputeDeviceFingerprintFallback(identityKeyBase64: String): String =
         identityKeyBase64.take(20).chunked(4).joinToString(" ") { it.uppercase() }
+
+    // --- SAS fallbacks ---
+    @JvmStatic fun nativeSasCreateFallback(): String = ""
+    @JvmStatic fun nativeSasSetTheirKeyFallback(theirPubkey: String): Boolean = false
+    @JvmStatic fun nativeSasGetEmojisFallback(): String = "[]"
+    @JvmStatic fun nativeSasCalculateMacFallback(input: String, info: String): String = ""
+    @JvmStatic fun nativeSasVerifyMacFallback(theirMac: String, input: String, info: String): Boolean = false
+    @JvmStatic fun nativeSasDestroyFallback() {}
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")

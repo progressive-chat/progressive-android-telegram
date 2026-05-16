@@ -135,6 +135,7 @@
 #include "progressive/openid_token.hpp"
 #include "progressive/megolm_decryptor.hpp"
 #include "progressive/olm_session.hpp"
+#include "progressive/sas_verification.hpp"
 #include "progressive/event_utils.hpp"
 #include "progressive/content_builder.hpp"
 #include "progressive/displayname_utils.hpp"
@@ -2688,6 +2689,36 @@ JNI_FUNC(jboolean, nativeVerifyDeviceSignature)(JNIEnv* env, jclass, jstring jDe
 JNI_FUNC(jstring, nativeComputeDeviceFingerprint)(JNIEnv* env, jclass, jstring jIdentityKeyB64) {
     auto result = progressive::computeDeviceFingerprint(jStr(env, jIdentityKeyB64));
     return env->NewStringUTF(result.c_str());
+}
+
+// --- SAS Emoji Verification ---
+static progressive::SasVerification g_sas;
+
+JNI_FUNC(jstring, nativeSasCreate)(JNIEnv* env, jclass) {
+    g_sas = progressive::sasCreate();
+    return env->NewStringUTF(g_sas.ourPubkey.c_str());
+}
+
+JNI_FUNC(jboolean, nativeSasSetTheirKey)(JNIEnv* env, jclass, jstring jTheirPubkey) {
+    return progressive::sasSetTheirKey(g_sas, jStr(env, jTheirPubkey)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeSasGetEmojis)(JNIEnv* env, jclass) {
+    auto result = progressive::sasGetEmojis(g_sas);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeSasCalculateMac)(JNIEnv* env, jclass, jstring jInput, jstring jInfo) {
+    auto result = progressive::sasCalculateMac(g_sas, jStr(env, jInput), jStr(env, jInfo));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jboolean, nativeSasVerifyMac)(JNIEnv* env, jclass, jstring jTheirMac, jstring jInput, jstring jInfo) {
+    return progressive::sasVerifyMac(g_sas, jStr(env, jTheirMac), jStr(env, jInput), jStr(env, jInfo)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(void, nativeSasDestroy)(JNIEnv*, jclass) {
+    progressive::sasDestroy(g_sas);
 }
 
 } // extern "C"
