@@ -6516,4 +6516,32 @@ JNI_FUNC(jstring, nativeOverlayGetState)(JNIEnv* env, jclass) {
     return env->NewStringUTF(getOverlayEngine()->stateToJson().c_str());
 }
 
+// --- Safety Mode ---
+
+JNI_FUNC(void, nativeOverlaySetSafetyMode)(JNIEnv*, jclass, jint jMode) {
+    getOverlayEngine()->setSafetyMode(static_cast<progressive::OverlaySafetyMode>(jMode));
+}
+
+JNI_FUNC(void, nativeOverlaySetSafetyPerms)(JNIEnv* env, jclass, jstring jJson) {
+    progressive::OverlaySafetyPermissions perms;
+    auto json = jStr(env, jJson);
+    perms.allowTap = jExtractBool(json, "allow_tap");
+    perms.allowScroll = jExtractBool(json, "allow_scroll");
+    perms.allowLongPress = jExtractBool(json, "allow_long_press");
+    perms.allowDoubleTap = jExtractBool(json, "allow_double_tap");
+    perms.allowTextInput = jExtractBool(json, "allow_text_input");
+    perms.allowNavigation = jExtractBool(json, "allow_navigation");
+    perms.allowMediaControl = jExtractBool(json, "allow_media");
+    perms.showSensitiveContent = jExtractBool(json, "show_sensitive");
+    getOverlayEngine()->setSafetyPermissions(perms);
+}
+
+JNI_FUNC(jboolean, nativeOverlayIsTouchAllowed)(JNIEnv*, jclass, jint jAction) {
+    return getOverlayEngine()->isTouchAllowed(static_cast<progressive::TouchAction>(jAction)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeOverlaySafetyToJson)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(getOverlayEngine()->safetyToJson().c_str());
+}
+
 } // extern "C"

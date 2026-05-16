@@ -45,31 +45,56 @@ enum class GestureType {
 
 // ---- Overlay Config (all adjustable via Labs) ----
 
+// ---- Safety Mode (what user can do with background) ----
+
+enum class OverlaySafetyMode {
+    FULL = 0,               // All interactions allowed
+    READ_ONLY = 1,          // View only, no touches pass through
+    SCROLL_ONLY = 2,        // Only scroll/swipe gestures
+    TAP_ONLY = 3,           // Only single taps
+    CUSTOM = 4,             // User-defined permission set
+};
+
+struct OverlaySafetyPermissions {
+    bool allowTap = false;           // Single taps
+    bool allowScroll = false;        // Swipe/scroll gestures
+    bool allowLongPress = false;     // Long press
+    bool allowDoubleTap = false;     // Double tap
+    bool allowTextInput = false;     // Keyboard input
+    bool allowNavigation = false;    // Back button, link clicks
+    bool allowMediaControl = false;  // Play/pause audio
+    bool showSensitiveContent = false; // Show message content vs blur
+};
+
 struct TransparentOverlayConfig {
     // One-finger pass-through (arm/disarm)
-    int oneFingerHoldMs = 200;         // How long one finger must stay still to arm
-    double oneFingerMovePx = 20.0;     // Max movement to be considered "still"
+    int oneFingerHoldMs = 200;
+    double oneFingerMovePx = 20.0;
 
     // Two-finger hold to switch foreground
-    int twoFingerHoldMs = 1000;        // How long two fingers must stay to switch
+    int twoFingerHoldMs = 1000;
 
     // Foreground temporary display
-    int foregroundDurationMs = 2000;   // How long background stays in foreground
-    int foregroundExtendedMs = 3000;   // Extended after user tap
+    int foregroundDurationMs = 2000;
+    int foregroundExtendedMs = 3000;
 
     // Return timing
-    int returnDurationMs = 500;        // How long return takes (for animation)
-    int quickReturnHoldMs = 500;       // Two-finger hold to return quickly
+    int returnDurationMs = 500;
+    int quickReturnHoldMs = 500;
 
     // Feature toggles
-    bool enableOneFingerPassThrough = true;  // Enable one-finger-hold + second-finger-interact
-    bool enableTwoFingerSwitch = true;       // Enable two-finger-hold to swap
-    bool enableBackButton = true;            // Enable back button to return
-    bool enableSwipeToReturn = true;         // Enable swipe down to return
+    bool enableOneFingerPassThrough = true;
+    bool enableTwoFingerSwitch = true;
+    bool enableBackButton = true;
+    bool enableSwipeToReturn = true;
 
     // Swipe detection
-    double swipeVelocityPxPerSec = 500.0;    // Min velocity for swipe detection
-    double swipeDistancePx = 100.0;          // Min distance for swipe detection
+    double swipeVelocityPxPerSec = 500.0;
+    double swipeDistancePx = 100.0;
+
+    // Safety mode
+    OverlaySafetyMode safetyMode = OverlaySafetyMode::READ_ONLY;
+    OverlaySafetyPermissions safetyPermissions;
 };
 
 // ---- Touch Point ----
@@ -129,6 +154,21 @@ public:
 
     TouchAction timerTick(int64_t timeNs);
 
+    // ====== Safety Mode ======
+
+    // Check if a specific touch action is allowed by safety mode.
+    bool isTouchAllowed(TouchAction action) const;
+
+    // Get human-readable description of current safety mode.
+    std::string getSafetyModeLabel() const;
+
+    // Get a list of what IS allowed (for UI display).
+    std::vector<std::string> getAllowedActions() const;
+
+    // Set safety mode.
+    void setSafetyMode(OverlaySafetyMode mode);
+    void setSafetyPermissions(const OverlaySafetyPermissions& perms);
+
     // ====== State ======
 
     OverlayState getState() const;
@@ -140,6 +180,7 @@ public:
 
     std::string stateToJson() const;
     std::string configToJson() const;
+    std::string safetyToJson() const;
 
 private:
     TransparentOverlayConfig config_;

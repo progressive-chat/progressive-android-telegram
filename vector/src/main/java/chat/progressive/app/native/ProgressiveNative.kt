@@ -1668,6 +1668,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeOverlayTick(timeNs: Long): Int
     @JvmStatic external fun nativeOverlayGetState(): String
 
+    // --- Transparent Overlay: Safety Mode ---
+    @JvmStatic external fun nativeOverlaySetSafetyMode(mode: Int)
+    @JvmStatic external fun nativeOverlaySetSafetyPerms(permissionsJson: String)
+    @JvmStatic external fun nativeOverlayIsTouchAllowed(action: Int): Boolean
+    @JvmStatic external fun nativeOverlaySafetyToJson(): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4736,6 +4742,12 @@ object ProgressiveNative {
     @JvmStatic fun nativeOverlayTickFallback(timeNs: Long): Int = 0
     @JvmStatic fun nativeOverlayGetStateFallback(): String =
         """{"gesture":0,"bg_is_fg":false,"one_finger_armed":false,"two_finger_waiting":false,"fg_until_ms":0,"pointers":0}"""
+
+    @JvmStatic fun nativeOverlaySetSafetyModeFallback(mode: Int) {}
+    @JvmStatic fun nativeOverlaySetSafetyPermsFallback(permissionsJson: String) {}
+    @JvmStatic fun nativeOverlayIsTouchAllowedFallback(action: Int): Boolean = true
+    @JvmStatic fun nativeOverlaySafetyToJsonFallback(): String =
+        """{"mode":0,"mode_label":"Full access","allow_tap":true,"allow_scroll":true,"allow_long_press":true,"allow_text_input":true,"allow_navigation":true,"show_sensitive":true,"allowed":["Tap","Scroll","Long press","Text input","Navigation","Media control"]}"""
 
     @JvmStatic fun nativeSessionCountFallback(): Int = 0
 

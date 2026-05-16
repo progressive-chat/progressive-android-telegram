@@ -287,4 +287,103 @@ std::string TransparentOverlayEngine::configToJson() const {
     return os.str();
 }
 
+// ====== Safety Mode ======
+
+bool TransparentOverlayEngine::isTouchAllowed(TouchAction action) const {
+    switch (config_.safetyMode) {
+        case OverlaySafetyMode::FULL:
+            return true;
+
+        case OverlaySafetyMode::READ_ONLY:
+            return false;
+
+        case OverlaySafetyMode::SCROLL_ONLY:
+            return action == TouchAction::ROUTE_TO_BACKGROUND; // Only swipe/scroll gestures
+
+        case OverlaySafetyMode::TAP_ONLY:
+            return action == TouchAction::EXTEND_TIMER; // Only single taps
+
+        case OverlaySafetyMode::CUSTOM:
+            switch (action) {
+                case TouchAction::ROUTE_TO_BACKGROUND:
+                    return config_.safetyPermissions.allowScroll || config_.safetyPermissions.allowTap;
+                case TouchAction::EXTEND_TIMER:
+                    return config_.safetyPermissions.allowTap;
+                case TouchAction::BRING_BACKGROUND_FOREGROUND:
+                    return config_.safetyPermissions.allowNavigation;
+                case TouchAction::RETURN_TO_FOREGROUND:
+                    return true; // Always allow return
+                default:
+                    return false;
+            }
+    }
+    return false;
+}
+
+void TransparentOverlayEngine::setSafetyMode(OverlaySafetyMode mode) {
+    config_.safetyMode = mode;
+}
+
+void TransparentOverlayEngine::setSafetyPermissions(const OverlaySafetyPermissions& perms) {
+    config_.safetyPermissions = perms;
+}
+
+std::string TransparentOverlayEngine::getSafetyModeLabel() const {
+    switch (config_.safetyMode) {
+        case OverlaySafetyMode::FULL: return "Full access — all interactions allowed";
+        case OverlaySafetyMode::READ_ONLY: return "Read only — no background interaction";
+        case OverlaySafetyMode::SCROLL_ONLY: return "Scroll only — swipe to scroll background";
+        case OverlaySafetyMode::TAP_ONLY: return "Tap only — single taps only";
+        case OverlaySafetyMode::CUSTOM: return "Custom permissions";
+    }
+    return "Unknown";
+}
+
+std::vector<std::string> TransparentOverlayEngine::getAllowedActions() const {
+    std::vector<std::string> actions;
+    switch (config_.safetyMode) {
+        case OverlaySafetyMode::FULL:
+            actions = {"Tap", "Scroll", "Long press", "Text input", "Navigation", "Media control"};
+            break;
+        case OverlaySafetyMode::READ_ONLY:
+            actions = {"(none)"};
+            break;
+        case OverlaySafetyMode::SCROLL_ONLY:
+            actions = {"Scroll"};
+            break;
+        case OverlaySafetyMode::TAP_ONLY:
+            actions = {"Tap"};
+            break;
+        case OverlaySafetyMode::CUSTOM:
+            if (config_.safetyPermissions.allowTap) actions.push_back("Tap");
+            if (config_.safetyPermissions.allowScroll) actions.push_back("Scroll");
+            if (config_.safetyPermissions.allowLongPress) actions.push_back("Long press");
+            if (config_.safetyPermissions.allowDoubleTap) actions.push_back("Double tap");
+            if (config_.safetyPermissions.allowTextInput) actions.push_back("Text input");
+            if (config_.safetyPermissions.allowNavigation) actions.push_back("Navigation");
+            if (config_.safetyPermissions.allowMediaControl) actions.push_back("Media control");
+            break;
+    }
+    return actions;
+}
+
+std::string TransparentOverlayEngine::safetyToJson() const {
+    std::ostringstream os;
+    os << R"({"mode":)" << static_cast<int>(config_.safetyMode)
+       << R"(,"mode_label":")" << getSafetyModeLabel() << R"(")"
+       << R"(,"allow_tap":)" << (config_.safetyPermissions.allowTap ? "true" : "false")
+       << R"(,"allow_scroll":)" << (config_.safetyPermissions.allowScroll ? "true" : "false")
+       << R"(,"allow_long_press":)" << (config_.safetyPermissions.allowLongPress ? "true" : "false")
+       << R"(,"allow_text_input":)" << (config_.safetyPermissions.allowTextInput ? "true" : "false")
+       << R"(,"allow_navigation":)" << (config_.safetyPermissions.allowNavigation ? "true" : "false")
+       << R"(,"show_sensitive":)" << (config_.safetyPermissions.showSensitiveContent ? "true" : "false")
+       << R"(,"allowed":[)";
+    auto allowed = getAllowedActions();
+    for (size_t i = 0; i < allowed.size(); i++) {
+        if (i > 0) os << ","; os << "\"" << allowed[i] << "\"";
+    }
+    os << "]}";
+    return os.str();
+}
+
 } // namespace progressive
