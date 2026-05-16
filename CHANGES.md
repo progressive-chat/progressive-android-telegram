@@ -12,6 +12,7 @@
 - **Cleanup**: 10 duplicate declarations removed from ProgressiveNative.kt, section headers consolidated
 
 ### Known issues
+- **Initial sync (account import) does not work** — the C++ native sync parser runs alongside Moshi for validation only. Full replacement in v0.2
 - Exodus tracker scan may fail (pre-existing, informational only)
 - Code quality checks (knit/ktlint/detekt) may fail (pre-existing, `continue-on-error`)
 - OpenSSL not linked — AES-CTR and PBKDF2-HMAC-SHA512 unavailable via libolm
