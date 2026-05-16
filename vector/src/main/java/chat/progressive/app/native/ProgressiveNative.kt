@@ -387,6 +387,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatReactionAggregation(key: String, count: Int, reactorsJson: String): String
     @JvmStatic external fun nativeTrackPollResponse(optionId: String, userId: String): String
 
+    // --- Audio / Voice ---
+
+    @JvmStatic external fun nativeIsSupportedAudioType(mimeType: String): Boolean
+    @JvmStatic external fun nativeFormatPositionInfo(positionMs: Long, durationMs: Long): String
+
     // --- Event Classifier ---
 
     @JvmStatic external fun nativeIsStateEvent(eventType: String): Boolean
@@ -3464,6 +3469,12 @@ object ProgressiveNative {
     @JvmStatic fun nativeFormatReactionAggregationFallback(key: String, count: Int, reactorsJson: String): String = "$key $count"
     @JvmStatic fun nativeTrackPollResponseFallback(optionId: String, userId: String): String =
         """{"option_id":"$optionId","user_id":"$userId","recorded":true}"""
+
+    // --- Audio fallbacks ---
+    @JvmStatic fun nativeIsSupportedAudioTypeFallback(mimeType: String): Boolean =
+        mimeType.startsWith("audio/") || mimeType == "application/ogg"
+    @JvmStatic fun nativeFormatPositionInfoFallback(positionMs: Long, durationMs: Long): String =
+        "${positionMs / 1000}s / ${durationMs / 1000}s"
 
     // --- Event Classifier fallback ---
     @JvmStatic fun nativeIsStateEventFallback(eventType: String): Boolean =

@@ -3590,12 +3590,22 @@ JNI_FUNC(jstring, nativeFormatReactionAggregation)(JNIEnv* env, jclass, jstring 
 // --- Poll Response Tracker ---
 
 JNI_FUNC(jstring, nativeTrackPollResponse)(JNIEnv* env, jclass, jstring jOptionId, jstring jUserId) {
-    // Simple: return JSON confirming the vote
     std::ostringstream os;
     os << R"({"option_id":")" << jStr(env, jOptionId)
        << R"(","user_id":")" << jStr(env, jUserId)
        << R"(","recorded":true})";
     return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Audio / Voice ---
+
+JNI_FUNC(jboolean, nativeIsSupportedAudioType)(JNIEnv* env, jclass, jstring jMime) {
+    return progressive::isSupportedAudioType(jStr(env, jMime)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeFormatPositionInfo)(JNIEnv* env, jclass, jlong jPos, jlong jDur) {
+    auto result = progressive::formatPositionInfo(jPos, jDur);
+    return env->NewStringUTF(result.c_str());
 }
     // Format: "Alice, Bob and 3 others online"
     std::ostringstream os;
