@@ -1889,6 +1889,7 @@ object ProgressiveNative {
     @JvmStatic external fun nativeTimelineGetSnapshot(roomId: String, limit: Int, offset: Int): String
     @JvmStatic external fun nativeTimelineEventsAvailable(roomId: String, direction: Int): Int
     @JvmStatic external fun nativeTimelineAttachDb(roomId: String, dbKey: String): Boolean
+    @JvmStatic external fun nativeTimelineAddSyncEvent(roomId: String, eventId: String, type: String, senderId: String, contentJson: String, originTs: Long, displayIndex: Int, stateKey: String, redacts: String, relType: String, relatesToId: String): Int
 
     // --- Event Utilities ---
 
@@ -2498,6 +2499,7 @@ object ProgressiveNative {
     @JvmStatic fun timelineGetSnapshotFallback(roomId: String, limit: Int, offset: Int): String = "[]"
     @JvmStatic fun timelineEventsAvailableFallback(roomId: String, direction: Int): Int = 0
     @JvmStatic fun timelineAttachDbFallback(roomId: String, dbKey: String): Boolean = false
+    @JvmStatic fun timelineAddSyncEventFallback(roomId: String, eventId: String, type: String, senderId: String, contentJson: String, originTs: Long, displayIndex: Int, stateKey: String, redacts: String, relType: String, relatesToId: String): Int = -1
     @JvmStatic fun timelineGetThreadEventsFallback(rootEventId: String): String = "[]"
 
     // --- Event Utils fallbacks ---

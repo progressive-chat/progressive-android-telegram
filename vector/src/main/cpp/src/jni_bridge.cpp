@@ -1072,6 +1072,31 @@ JNI_FUNC(jint, nativeTimelineEventsAvailable)(JNIEnv* env, jclass, jstring jRoom
     return it->second.eventsAvailable(dir);
 }
 
+// Store a single event from /sync into native timeline
+JNI_FUNC(jint, nativeTimelineAddSyncEvent)(JNIEnv* env, jclass, jstring jRoom, jstring jEventId, jstring jType, jstring jSenderId, jstring jContentJson, jlong jOriginTs, jint jDi, jstring jStateKey, jstring jRedacts, jstring jRelType, jstring jRelatesToId) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    auto room = jStr(env, jRoom);
+    auto it = managers.find(room);
+    if (it == managers.end()) {
+        managers.emplace(std::piecewise_construct, std::forward_as_tuple(room), std::forward_as_tuple(room));
+        it = managers.find(room);
+    }
+    progressive::TimelineEventData ev;
+    ev.eventId = jStr(env, jEventId);
+    ev.roomId = room;
+    ev.type = jStr(env, jType);
+    ev.senderId = jStr(env, jSenderId);
+    ev.contentJson = jStr(env, jContentJson);
+    ev.originServerTs = jOriginTs;
+    ev.displayIndex = jDi;
+    ev.stateKey = jStr(env, jStateKey);
+    ev.redacts = jStr(env, jRedacts);
+    ev.relationType = jStr(env, jRelType);
+    ev.relatesToEventId = jStr(env, jRelatesToId);
+    ev.ageLocalTs = static_cast<int64_t>(time(nullptr)) * 1000;
+    return it->second.addLiveEvent(ev);
+}
+
 JNI_FUNC(jboolean, nativeTimelineAttachDb)(JNIEnv* env, jclass, jstring jRoom, jstring jDbKey) {
     static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
     static std::unordered_map<std::string, std::unique_ptr<progressive::SqliteDB>> g_sqliteDbs;
