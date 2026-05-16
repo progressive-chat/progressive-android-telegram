@@ -89,8 +89,8 @@ OlmAccountData unpickleOlmAccount(const std::string& pickled, const std::string&
     if (!account) return result;
 
     auto* olmAcc = olm_account(account);
-    auto key = base64Decode(pickled);
-    size_t ret = olm_unpickle_account(olmAcc, key.data(), key.size());
+    auto raw = base64Decode(pickled);
+    size_t ret = olm_unpickle_account(olmAcc, nullptr, 0, raw.data(), raw.size());
     if (ret == olm_error()) {
         const char* err = olm_account_last_error(olmAcc);
         LOGW("olm_unpickle_account failed: %s", err ? err : "unknown");
@@ -109,11 +109,11 @@ std::string pickleOlmAccount(const OlmAccountData& account) {
 
     auto* olmAcc = olm_account(account.account);
     size_t len = olm_pickle_account_length(olmAcc);
-    std::string pickled(len, '\0');
-    size_t ret = olm_pickle_account(olmAcc, &pickled[0], len);
+    std::vector<uint8_t> pickled(len);
+    size_t ret = olm_pickle_account(olmAcc, nullptr, 0, pickled.data(), len);
     if (ret == olm_error()) return "";
     pickled.resize(ret);
-    return base64Encode(pickled);
+    return base64Encode(pickled.data(), pickled.size());
 }
 
 std::string getAccountIdentityKeys(const OlmAccountData& account) {
@@ -325,7 +325,7 @@ std::string pickleOlmSession(const OlmSessionData& session) {
     size_t ret = olm_pickle_session(olmSess, &pickled[0], len);
     if (ret == olm_error()) return "";
     pickled.resize(ret);
-    return base64Encode(pickled);
+    return base64Encode(pickled.data(), pickled.size());
 }
 
 OlmSessionData unpickleOlmSession(const std::string& pickled, OlmAccountData& account) {

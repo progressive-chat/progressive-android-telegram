@@ -1358,7 +1358,7 @@ class VectorPreferences @Inject constructor(
     }
 
     fun isJumpToDateEnabled(): Boolean {
-        return defaultPrefs.getBoolean(SETTINGS_LABS_JUMP_TO_DATE_KEY, false)
+        return defaultPrefs.getBoolean(SETTINGS_LABS_JUMP_TO_DATE_KEY, true)
     }
 
     fun isJumpToSourceEnabled(): Boolean {
