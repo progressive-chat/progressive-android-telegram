@@ -12,16 +12,30 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import im.vector.app.core.services.VectorSyncAndroidService
+import chat.progressive.app.native.ProgressiveNative
 import im.vector.app.features.session.VectorSessionStore
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysBackupState
+import org.matrix.android.sdk.internal.session.sync.parsing.InitialSyncResponseParser
 import timber.log.Timber
 
 fun Session.startSyncing(context: Context) {
     val applicationContext = context.applicationContext
 
-    // Progressive Chat: native sync parser deferred to v0.2
-    // (requires careful integration with Labs flag + file-size safety checks)
+    // Progressive Chat: lightweight native sync header validator
+    // Reads only first 64KB, extracts next_batch via C++ string search
+    // Skipped for files <1KB or >50MB. Moshi remains primary parser.
+    InitialSyncResponseParser.nativeHeaderValidator = { header ->
+        try {
+            ProgressiveNative.ensureLoaded()
+            val nextBatch = ProgressiveNative.nativeExtractNextBatchLight(header)
+            if (nextBatch.isNotEmpty()) {
+                Timber.i("PROGRESSIVE native sync: next_batch=$nextBatch")
+            }
+        } catch (e: Exception) {
+            Timber.w(e, "PROGRESSIVE native header validation skipped")
+        }
+    }
 
     if (!syncService().hasAlreadySynced()) {
         // initial sync is done as a service so it can continue below app lifecycle

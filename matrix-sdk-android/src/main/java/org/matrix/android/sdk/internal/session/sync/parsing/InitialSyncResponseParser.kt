@@ -26,14 +26,37 @@ import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
-internal class InitialSyncResponseParser @Inject constructor(
+class InitialSyncResponseParser @Inject constructor(
         private val moshi: Moshi,
         private val roomSyncEphemeralTemporaryStore: RoomSyncEphemeralTemporaryStore
 ) {
 
+    companion object {
+        /**
+         * Optional callback for Progressive Chat native validation.
+         * Called with the first 64KB of the sync JSON for lightweight
+         * next_batch extraction without reading the entire file.
+         */
+        var nativeHeaderValidator: ((String) -> Unit)? = null
+    }
+
     fun parse(syncStrategy: InitialSyncStrategy.Optimized, workingFile: File): SyncResponse {
-        val syncResponseLength = workingFile.length().toInt()
-        Timber.d("INIT_SYNC Sync file size is $syncResponseLength bytes")
+        val syncResponseLength = workingFile.length()
+
+        // Progressive Chat: lightweight native validation (first 64KB only)
+        val validator = nativeHeaderValidator
+        if (validator != null && syncResponseLength in 1024..50_000_000) {
+            try {
+                val headerBytes = ByteArray(minOf(syncResponseLength, 65536).toInt())
+                workingFile.inputStream().use { it.read(headerBytes) }
+                val header = String(headerBytes, Charsets.UTF_8)
+                validator(header)
+            } catch (e: Exception) {
+                Timber.w(e, "Native header validation skipped")
+            }
+        }
+
+        Timber.d("INIT_SYNC Sync file size is ${syncResponseLength.toInt()} bytes")
         val shouldSplit = syncResponseLength >= syncStrategy.minSizeToSplit
         Timber.d("INIT_SYNC should split in several files: $shouldSplit")
         return getMoshi(syncStrategy, shouldSplit)

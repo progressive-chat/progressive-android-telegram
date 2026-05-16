@@ -1424,6 +1424,20 @@ JNI_FUNC(jstring, nativeSyncResponseRoundtrip)(JNIEnv* env, jclass, jstring jJso
     return env->NewStringUTF(result.c_str());
 }
 
+// Lightweight: extract next_batch from partial JSON (first 64KB)
+JNI_FUNC(jstring, nativeExtractNextBatchLight)(JNIEnv* env, jclass, jstring jPartialJson) {
+    auto json = jStr(env, jPartialJson);
+    auto pos = json.find("\"next_batch\"");
+    if (pos == std::string::npos) return env->NewStringUTF("");
+    pos = json.find(':', pos);
+    if (pos == std::string::npos) return env->NewStringUTF("");
+    pos++;
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '"')) pos++;
+    size_t end = pos;
+    while (end < json.size() && json[end] != '"') { if (json[end] == '\\') end++; end++; }
+    return env->NewStringUTF(json.substr(pos, end - pos).c_str());
+}
+
 // --- Native Matrix API (login, sync, send) ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_HTTP
 
