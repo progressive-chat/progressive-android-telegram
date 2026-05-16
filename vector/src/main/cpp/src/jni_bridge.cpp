@@ -155,6 +155,7 @@
 #include "progressive/user_directory.hpp"
 #include "progressive/profiler.hpp"
 #include "progressive/device_manager_full.hpp"
+#include "progressive/room_directory_manager.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -5900,6 +5901,55 @@ JNI_FUNC(jboolean, nativeDeviceIsInactive)(JNIEnv*, jclass, jlong jTs, jint jDay
 
 JNI_FUNC(jboolean, nativeDeviceSatisfiesVersion)(JNIEnv* env, jclass, jstring jVer, jstring jMin) {
     return getDeviceMgr()->satisfiesMinVersion(jStr(env, jVer), jStr(env, jMin)) ? JNI_TRUE : JNI_FALSE;
+}
+
+// ============================================================
+// Room Directory Manager
+// ============================================================
+
+static std::unique_ptr<progressive::RoomDirectoryManager> g_roomDir;
+
+static progressive::RoomDirectoryManager* getRoomDir() {
+    if (!g_roomDir) g_roomDir.reset(new progressive::RoomDirectoryManager());
+    return g_roomDir.get();
+}
+
+JNI_FUNC(jstring, nativeRoomDirBuildSearch)(JNIEnv* env, jclass, jstring jTerm, jint jLimit, jstring jSince) {
+    progressive::PublicRoomsParams p;
+    p.filter.searchTerm = jStr(env, jTerm);
+    p.limit = jLimit;
+    p.since = jStr(env, jSince);
+    return env->NewStringUTF(getRoomDir()->buildPublicRoomsRequest(p).c_str());
+}
+
+JNI_FUNC(jstring, nativeRoomDirParseResponse)(JNIEnv* env, jclass, jstring jJson) {
+    auto resp = getRoomDir()->parsePublicRoomsResponse(jStr(env, jJson));
+    return env->NewStringUTF(getRoomDir()->responseToJson(resp).c_str());
+}
+
+JNI_FUNC(jstring, nativeRoomDirBuildVisibility)(JNIEnv* env, jclass, jint jVis) {
+    return env->NewStringUTF(getRoomDir()->buildVisibilityRequest(
+        static_cast<progressive::RoomDirectoryVisibility>(jVis)).c_str());
+}
+
+JNI_FUNC(jstring, nativeRoomDirParseVisibility)(JNIEnv* env, jclass, jstring jJson) {
+    auto vis = getRoomDir()->parseVisibilityResponse(jStr(env, jJson));
+    return env->NewStringUTF(progressive::visibilityToString(vis));
+}
+
+JNI_FUNC(jstring, nativeRoomDirCheckAlias)(JNIEnv* env, jclass, jstring jAlias, jstring jJson) {
+    auto r = getRoomDir()->parseAliasAvailability(jStr(env, jJson), jStr(env, jAlias));
+    return env->NewStringUTF(getRoomDir()->aliasResultToJson(r).c_str());
+}
+
+JNI_FUNC(jstring, nativeRoomDirFormatPreview)(JNIEnv* env, jclass, jstring jRoomJson) {
+    auto json = jStr(env, jRoomJson);
+    progressive::PublicRoom r;
+    r.roomId = jExtractStr(json, "room_id");
+    r.name = jExtractStr(json, "name");
+    r.topic = jExtractStr(json, "topic");
+    r.numJoinedMembers = static_cast<int>(jExtractInt(json, "num_members"));
+    return env->NewStringUTF(getRoomDir()->formatRoomPreview(r).c_str());
 }
 
 } // extern "C"

@@ -1547,6 +1547,15 @@ object ProgressiveNative {
     @JvmStatic external fun nativeDeviceIsInactive(lastSeenTs: Long, inactivityDays: Int): Boolean
     @JvmStatic external fun nativeDeviceSatisfiesVersion(clientVersion: String, minRequired: String): Boolean
 
+    // --- Room Directory ---
+
+    @JvmStatic external fun nativeRoomDirBuildSearch(searchTerm: String, limit: Int, since: String): String
+    @JvmStatic external fun nativeRoomDirParseResponse(json: String): String
+    @JvmStatic external fun nativeRoomDirBuildVisibility(visibility: Int): String
+    @JvmStatic external fun nativeRoomDirParseVisibility(json: String): String
+    @JvmStatic external fun nativeRoomDirCheckAlias(aliasLocalPart: String, json: String): String
+    @JvmStatic external fun nativeRoomDirFormatPreview(roomJson: String): String
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4422,6 +4431,29 @@ object ProgressiveNative {
     }
     @JvmStatic fun nativeDeviceSatisfiesVersionFallback(clientVersion: String, minRequired: String): Boolean =
         clientVersion >= minRequired
+
+    // --- Room Directory fallbacks ---
+    @JvmStatic fun nativeRoomDirBuildSearchFallback(searchTerm: String, limit: Int, since: String): String {
+        val json = StringBuilder("""{"limit":$limit""")
+        if (since.isNotEmpty()) json.append(""","since":"$since"""")
+        if (searchTerm.isNotEmpty()) json.append(""","filter":{"generic_search_term":"$searchTerm"}""")
+        json.append("}")
+        return json.toString()
+    }
+    @JvmStatic fun nativeRoomDirParseResponseFallback(json: String): String =
+        """{"rooms":[],"next_batch":"","has_more":false,"total_estimate":0,"loaded_count":0}"""
+    @JvmStatic fun nativeRoomDirBuildVisibilityFallback(visibility: Int): String =
+        if (visibility == 1) """{"visibility":"public"}""" else """{"visibility":"private"}"""
+    @JvmStatic fun nativeRoomDirParseVisibilityFallback(json: String): String =
+        if (json.contains("public")) "public" else "private"
+    @JvmStatic fun nativeRoomDirCheckAliasFallback(aliasLocalPart: String, json: String): String =
+        """{"alias":"#$aliasLocalPart","available":false}"""
+    @JvmStatic fun nativeRoomDirFormatPreviewFallback(roomJson: String): String {
+        val name = Regex(""""name":"([^"]+)"""").find(roomJson)?.groupValues?.getOrNull(1) ?: ""
+        val topic = Regex(""""topic":"([^"]+)"""").find(roomJson)?.groupValues?.getOrNull(1) ?: ""
+        val members = Regex(""""num_members":(\d+)""").find(roomJson)?.groupValues?.getOrNull(1) ?: "0"
+        return "$name — $topic ($members members)"
+    }
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")

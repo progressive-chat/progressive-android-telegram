@@ -1688,6 +1688,67 @@ static void test_device_crypto_parse() {
     ASSERT_EQ(static_cast<int>(dev.algorithms.size()), 2);
 }
 
+// ==== Room Directory (Element Android sources) ====
+
+#include "progressive/room_directory_manager.hpp"
+
+static void test_roomdir_parse_chunk() {
+    progressive::RoomDirectoryManager mgr;
+    auto resp = mgr.parsePublicRoomsResponse(
+        R"({"chunk":[{"room_id":"!abc:org","name":"General","num_joined_members":42,"avatar_url":"mxc://org/avatar"}],"next_batch":"tok2","total_room_count_estimate":100})");
+    ASSERT_EQ(resp.loadedCount, 1);
+    ASSERT_STREQ(resp.nextBatch.c_str(), "tok2");
+    ASSERT_TRUE(resp.hasMore);
+    ASSERT_STREQ(resp.chunk[0].name.c_str(), "General");
+    ASSERT_EQ(resp.chunk[0].numJoinedMembers, 42);
+}
+
+static void test_roomdir_build_search() {
+    progressive::RoomDirectoryManager mgr;
+    progressive::PublicRoomsParams p;
+    p.filter.searchTerm = "matrix";
+    p.limit = 10;
+    auto json = mgr.buildPublicRoomsRequest(p);
+    ASSERT_TRUE(json.find("matrix") != std::string::npos);
+    ASSERT_TRUE(json.find("10") != std::string::npos);
+}
+
+static void test_roomdir_primary_alias() {
+    progressive::RoomDirectoryManager mgr;
+    progressive::PublicRoom r;
+    r.canonicalAlias = "#canon:org";
+    r.aliases = {"#alias1:org", "#alias2:org"};
+    ASSERT_STREQ(r.getPrimaryAlias().c_str(), "#canon:org");
+    r.canonicalAlias = "";
+    ASSERT_STREQ(r.getPrimaryAlias().c_str(), "#alias1:org");
+}
+
+static void test_roomdir_visibility() {
+    ASSERT_STREQ(progressive::visibilityToString(progressive::RoomDirectoryVisibility::PUBLIC), "public");
+    ASSERT_TRUE(progressive::visibilityFromString("public") == progressive::RoomDirectoryVisibility::PUBLIC);
+    ASSERT_TRUE(progressive::visibilityFromString("private") == progressive::RoomDirectoryVisibility::PRIVATE);
+}
+
+static void test_roomdir_sort_popularity() {
+    progressive::RoomDirectoryManager mgr;
+    std::vector<progressive::PublicRoom> rooms;
+    progressive::PublicRoom a, b;
+    a.name = "Small"; a.numJoinedMembers = 5;
+    b.name = "Big"; b.numJoinedMembers = 100;
+    rooms.push_back(a); rooms.push_back(b);
+    mgr.sortRoomsByPopularity(rooms);
+    ASSERT_STREQ(rooms[0].name.c_str(), "Big"); // Most popular first
+}
+
+static void test_roomdir_preview() {
+    progressive::RoomDirectoryManager mgr;
+    progressive::PublicRoom r;
+    r.name = "Matrix HQ"; r.topic = "Official Matrix room"; r.numJoinedMembers = 5000;
+    auto preview = mgr.formatRoomPreview(r);
+    ASSERT_TRUE(preview.find("Matrix HQ") != std::string::npos);
+    ASSERT_TRUE(preview.find("5000 members") != std::string::npos);
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -1988,6 +2049,14 @@ int main() {
     ADD_TEST(runner, test_device_trust_label);
     ADD_TEST(runner, test_device_build_rename);
     ADD_TEST(runner, test_device_crypto_parse);
+    
+    printf("\n-- Room Directory (Element Android) --\n");
+    ADD_TEST(runner, test_roomdir_parse_chunk);
+    ADD_TEST(runner, test_roomdir_build_search);
+    ADD_TEST(runner, test_roomdir_primary_alias);
+    ADD_TEST(runner, test_roomdir_visibility);
+    ADD_TEST(runner, test_roomdir_sort_popularity);
+    ADD_TEST(runner, test_roomdir_preview);
     
     return runner.summary();
 }
