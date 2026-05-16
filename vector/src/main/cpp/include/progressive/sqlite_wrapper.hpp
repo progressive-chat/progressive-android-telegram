@@ -37,6 +37,8 @@ public:
     // Close and clean up.
     ~SqliteDB();
 
+    bool isOpen() const { return db_ != nullptr; }
+
     // Execute a SQL statement (no result rows).
     // Returns true on success.
     bool execute(const std::string& sql);

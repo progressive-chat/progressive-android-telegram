@@ -1155,7 +1155,7 @@ JNI_FUNC(jint, nativeDbCount)(JNIEnv*, jclass) {
 // SqliteDB JNI (richer API with room summaries, transactions)
 JNI_FUNC(jboolean, nativeSqliteDbOpen)(JNIEnv* env, jclass, jstring jPath, jstring jKey) {
     auto db = progressive::SqliteDB::open(jStr(env, jPath));
-    if (db.db_ == nullptr) return JNI_FALSE;
+    if (!db.isOpen()) return JNI_FALSE;
     db.createTimelineSchema();
     g_sqliteDbs[jStr(env, jKey)] = std::move(db);
     return JNI_TRUE;
@@ -1562,54 +1562,6 @@ JNI_FUNC(jstring, nativeBuildUserPermalink)(JNIEnv* env, jclass, jstring jUser) 
 }
 
 // --- Media Utilities ---
-
-JNI_FUNC(jstring, nativeFormatFileSize)(JNIEnv* env, jclass, jlong jBytes) {
-    auto result = progressive::formatFileSize(jBytes);
-    return env->NewStringUTF(result.c_str());
-}
-
-JNI_FUNC(jstring, nativeMimeToMsgType)(JNIEnv* env, jclass, jstring jMime) {
-    auto result = progressive::mimeToMsgType(jStr(env, jMime));
-    return env->NewStringUTF(result.c_str());
-}
-
-// --- Key Backup ---
-
-JNI_FUNC(jstring, nativeFormatRecoveryKey)(JNIEnv* env, jclass, jstring jRaw) {
-    auto result = progressive::formatRecoveryKey(jStr(env, jRaw));
-    return env->NewStringUTF(result.c_str());
-}
-
-JNI_FUNC(jboolean, nativeValidateRecoveryKey)(JNIEnv* env, jclass, jstring jKey) {
-    return progressive::validateRecoveryKey(jStr(env, jKey)) ? JNI_TRUE : JNI_FALSE;
-}
-
-// --- Room Encryption ---
-
-JNI_FUNC(jboolean, nativeIsRoomEncrypted)(JNIEnv* env, jclass, jstring jState) {
-    return progressive::isRoomEncrypted(jStr(env, jState)) ? JNI_TRUE : JNI_FALSE;
-}
-
-// --- Event Display ---
-
-JNI_FUNC(jboolean, nativeShouldShowTimestamp)(JNIEnv* env, jclass, jstring jSender, jlong jCurTs, jlong jPrevTs, jboolean jShowAll) {
-    return progressive::shouldShowTimestamp(jStr(env, jSender), jCurTs, jPrevTs, jShowAll) ? JNI_TRUE : JNI_FALSE;
-}
-
-// --- User ID Validation ---
-
-JNI_FUNC(jboolean, nativeIsValidUserId)(JNIEnv* env, jclass, jstring jUserId) {
-    auto id = jStr(env, jUserId);
-    if (id.empty() || id[0] != '@') return JNI_FALSE;
-    auto colon = id.find(':');
-    return colon != std::string::npos && colon > 1 && colon < id.size() - 1;
-}
-
-// --- Date & Time Utilities ---
-
-JNI_FUNC(jstring, nativeFormatDuration)(JNIEnv* env, jclass, jlong jMs) {
-    auto result = progressive::formatDuration(jMs);
-    return env->NewStringUTF(result.c_str());
 }
 
 // --- Presence Utilities ---
@@ -2214,6 +2166,11 @@ JNI_FUNC(jboolean, nativeRequiresDeviceVerification)(JNIEnv* env, jclass, jstrin
 
 JNI_FUNC(jboolean, nativeIsReasonableTimestamp)(JNIEnv* env, jclass, jstring jTs, jlong jMaxFuture) {
     return progressive::isReasonableTimestamp(jStr(env, jTs), jMaxFuture) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeValidateRecoveryKey)(JNIEnv* env, jclass, jstring jKey) {
+    auto rk = progressive::validateRecoveryKey(jStr(env, jKey));
+    return rk.valid ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"
