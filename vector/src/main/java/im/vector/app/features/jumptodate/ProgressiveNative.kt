@@ -1447,7 +1447,6 @@ object ProgressiveNative {
 
     // --- URL Preview ---
 
-    @JvmStatic external fun nativeStripHtmlTags(html: String): String
     @JvmStatic external fun nativeTruncateDescription(text: String, maxLen: Int): String
 
     // --- Device Type ---

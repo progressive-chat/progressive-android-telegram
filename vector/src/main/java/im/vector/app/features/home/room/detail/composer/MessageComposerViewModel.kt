@@ -551,9 +551,13 @@ class MessageComposerViewModel @AssistedInject constructor(
                         }
                         is ParsedCommand.JumpToDate -> {
                             handleJumpToDate(parsedCommand)
-                            _viewEvents.post(MessageComposerViewEvents.SlashCommandResultOk(parsedCommand))
-                            popDraft(room)
-                        }
+                             _viewEvents.post(MessageComposerViewEvents.SlashCommandResultOk(parsedCommand))
+                             popDraft(room)
+                         }
+                         is ParsedCommand.ProgressiveChatCommand -> {
+                             _viewEvents.post(MessageComposerViewEvents.SlashCommandResultOk(parsedCommand))
+                             popDraft(room)
+                         }
                     }
                 }
                 is SendMode.Edit -> {
