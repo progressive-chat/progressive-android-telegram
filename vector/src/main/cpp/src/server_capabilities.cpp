@@ -18,7 +18,7 @@ namespace progressive {
 //   }
 
 ServerRoomCapabilitySupport isFeatureSupported(
-    const ServerServerRoomVersionCapabilities& caps, const std::string& feature)
+    const ServerRoomVersionCapabilities& caps, const std::string& feature)
 {
     // Original: capabilities == null → UNKNOWN
     if (caps.capabilities.empty()) return ServerRoomCapabilitySupport::Unknown;
@@ -37,14 +37,14 @@ ServerRoomCapabilitySupport isFeatureSupported(
     if (preferred.empty()) return ServerRoomCapabilitySupport::Unknown;
 
     // Original: val versionCap = supportedVersion.firstOrNull { it.version == preferred }
-    const ServerServerRoomVersionCapInfo* versionCap = nullptr;
+    const ServerRoomVersionCapInfo* versionCap = nullptr;
     for (const auto& v : caps.supportedVersion) {
         if (v.version == preferred) { versionCap = &v; break; }
     }
     if (!versionCap) return ServerRoomCapabilitySupport::Unknown;
 
     // Original: versionCap.status == STABLE → SUPPORTED else SUPPORTED_UNSTABLE
-    return (versionCap->status == ServerServerRoomVersionCap::Stable)
+    return (versionCap->status == ServerRoomVersionCap::Stable)
         ? ServerRoomCapabilitySupport::Supported
         : ServerRoomCapabilitySupport::SupportedUnstable;
 }
@@ -54,7 +54,7 @@ ServerRoomCapabilitySupport isFeatureSupported(
 //   return info.preferred == byRoomVersion || info.support.contains(byRoomVersion)
 
 bool isFeatureSupportedByVersion(
-    const ServerServerRoomVersionCapabilities& caps, const std::string& feature, const std::string& roomVersion)
+    const ServerRoomVersionCapabilities& caps, const std::string& feature, const std::string& roomVersion)
 {
     if (caps.capabilities.empty()) return false;
 
@@ -75,7 +75,7 @@ bool isFeatureSupportedByVersion(
 //   return cap?.preferred ?: cap?.support?.lastOrNull()
 
 std::string versionOverrideForFeature(
-    const ServerServerRoomVersionCapabilities& caps, const std::string& feature)
+    const ServerRoomVersionCapabilities& caps, const std::string& feature)
 {
     if (caps.capabilities.empty()) return "";
 
