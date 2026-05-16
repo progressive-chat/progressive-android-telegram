@@ -3524,6 +3524,41 @@ JNI_FUNC(jstring, nativeSearchSpaceChildren)(JNIEnv* env, jclass, jstring jChild
     os << "]";
     return env->NewStringUTF(os.str().c_str());
 }
+
+// --- 3PID Manager ---
+
+JNI_FUNC(jstring, nativeParseThreePid)(JNIEnv* env, jclass, jstring jInput) {
+    auto pid = progressive::parseThreePid(jStr(env, jInput));
+    std::ostringstream os;
+    os << R"({"medium":")" << pid.medium
+       << R"(","address":")" << pid.address << "\"}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Presence Aggregator ---
+
+JNI_FUNC(jstring, nativeFormatPresenceAggregation)(JNIEnv* env, jclass, jstring jUsersJson, jint jMaxNames) {
+    auto json = jStr(env, jUsersJson);
+    std::vector<std::string> names;
+    size_t p = 0;
+    while ((p = json.find('"', p)) != std::string::npos) {
+        p++; size_t e = p;
+        while (e < json.size() && json[e] != '"') e++;
+        if (e > p) names.push_back(json.substr(p, e - p));
+        p = e + 1;
+    }
+    // Format: "Alice, Bob and 3 others online"
+    std::ostringstream os;
+    int total = static_cast<int>(names.size());
+    int shown = std::min(total, jMaxNames);
+    for (int i = 0; i < shown; i++) {
+        if (i > 0) os << (i == shown - 1 && total <= jMaxNames ? " and " : ", ");
+        os << names[i];
+    }
+    if (total > jMaxNames) os << " and " << (total - shown) << " others";
+    os << (total == 1 ? " is online" : " are online");
+    return env->NewStringUTF(os.str().c_str());
+}
         return v;
     };
     auto eventIds = parseStrArray(jStr(env, jEventIdsJson));

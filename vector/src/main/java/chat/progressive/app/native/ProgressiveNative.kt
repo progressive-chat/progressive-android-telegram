@@ -377,6 +377,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeSearchSpaceChildren(childrenJson: String, query: String): String
 
+    // --- 3PID / Presence ---
+
+    @JvmStatic external fun nativeParseThreePid(input: String): String
+    @JvmStatic external fun nativeFormatPresenceAggregation(userNamesJson: String, maxNames: Int): String
+
     // --- Event Classifier ---
 
     @JvmStatic external fun nativeIsStateEvent(eventType: String): Boolean
@@ -3442,6 +3447,13 @@ object ProgressiveNative {
 
     // --- Space Hierarchy fallback ---
     @JvmStatic fun nativeSearchSpaceChildrenFallback(childrenJson: String, query: String): String = "[]"
+
+    // --- 3PID/Presence fallbacks ---
+    @JvmStatic fun nativeParseThreePidFallback(input: String): String {
+        val medium = if (input.contains("@")) "email" else "msisdn"
+        return """{"medium":"$medium","address":"$input"}"""
+    }
+    @JvmStatic fun nativeFormatPresenceAggregationFallback(userNamesJson: String, maxNames: Int): String = "Unknown"
 
     // --- Event Classifier fallback ---
     @JvmStatic fun nativeIsStateEventFallback(eventType: String): Boolean =
