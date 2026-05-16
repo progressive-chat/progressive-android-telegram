@@ -4247,6 +4247,27 @@ JNI_FUNC(jstring, nativeCacheKeyForUrl)(JNIEnv* env, jclass, jstring jUrl) {
     return env->NewStringUTF(r.c_str());
 }
 
+// --- Lightweight Settings ---
+
+JNI_FUNC(jboolean, nativeGetSettingBool)(JNIEnv* env, jclass, jstring jJson, jstring jKey, jboolean jDefault) {
+    return progressive::getSettingBool(jStr(env, jJson), jStr(env, jKey), jDefault) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeSetSettingBool)(JNIEnv* env, jclass, jstring jJson, jstring jKey, jboolean jVal) {
+    auto r = progressive::setSettingBool(jStr(env, jJson), jStr(env, jKey), jVal);
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeGetSettingString)(JNIEnv* env, jclass, jstring jJson, jstring jKey, jstring jDefault) {
+    auto r = progressive::getSettingString(jStr(env, jJson), jStr(env, jKey), jStr(env, jDefault));
+    return env->NewStringUTF(r.c_str());
+}
+
+JNI_FUNC(jstring, nativeSetSettingString)(JNIEnv* env, jclass, jstring jJson, jstring jKey, jstring jVal) {
+    auto r = progressive::setSettingString(jStr(env, jJson), jStr(env, jKey), jStr(env, jVal));
+    return env->NewStringUTF(r.c_str());
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 

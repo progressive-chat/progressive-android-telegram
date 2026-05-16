@@ -507,6 +507,13 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeCacheKeyForUrl(url: String): String
 
+    // --- Lightweight Settings ---
+
+    @JvmStatic external fun nativeGetSettingBool(settingsJson: String, key: String, defaultVal: Boolean): Boolean
+    @JvmStatic external fun nativeSetSettingBool(settingsJson: String, key: String, value: Boolean): String
+    @JvmStatic external fun nativeGetSettingString(settingsJson: String, key: String, defaultVal: String): String
+    @JvmStatic external fun nativeSetSettingString(settingsJson: String, key: String, value: String): String
+
     // --- Account Export ---
 
     @JvmStatic external fun nativeEncryptAccount(
@@ -3711,6 +3718,23 @@ object ProgressiveNative {
     // --- Raw Service fallback ---
     @JvmStatic fun nativeCacheKeyForUrlFallback(url: String): String =
         url.replace("https://", "").replace("/", "_").take(200)
+
+    // --- Lightweight Settings fallbacks ---
+    @JvmStatic fun nativeGetSettingBoolFallback(settingsJson: String, key: String, defaultVal: Boolean): Boolean = defaultVal
+    @JvmStatic fun nativeSetSettingBoolFallback(settingsJson: String, key: String, value: Boolean): String {
+        val kv = """"$key":$value"""
+        return if (settingsJson.indexOf('{') >= 0) settingsJson.replaceFirst("{", "{$kv,")
+        else """{$kv}"""
+    }
+    @JvmStatic fun nativeGetSettingStringFallback(settingsJson: String, key: String, defaultVal: String): String =
+        Regex(""""$key":"([^"]*)"""").find(settingsJson)?.groupValues?.getOrNull(1) ?: defaultVal
+    @JvmStatic fun nativeSetSettingStringFallback(settingsJson: String, key: String, value: String): String {
+        val kv = """"$key":"$value""""
+        if (Regex(""""$key":""").containsMatchIn(settingsJson))
+            return Regex(""""$key":"[^"]*"""").replace(settingsJson, """"$key":"$value"""")
+        return if (settingsJson.indexOf('{') >= 0) settingsJson.replaceFirst("{", "{$kv,")
+        else """{$kv}"""
+    }
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false
