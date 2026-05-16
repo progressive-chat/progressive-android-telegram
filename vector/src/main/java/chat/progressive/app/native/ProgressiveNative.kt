@@ -227,6 +227,17 @@ object ProgressiveNative {
     @JvmStatic external fun nativeMarkdownToHtml(markdown: String, enableTables: Boolean): String
     @JvmStatic external fun nativeParseMarkdownTable(tableBlock: String, withScroll: Boolean): String
 
+    // --- Event Relations ---
+
+    @JvmStatic external fun nativeIsReply(contentJson: String): Boolean
+    @JvmStatic external fun nativeIsEdit(contentJson: String): Boolean
+    @JvmStatic external fun nativeIsReaction(contentJson: String): Boolean
+    @JvmStatic external fun nativeIsThreadRoot(contentJson: String): Boolean
+    @JvmStatic external fun nativeExtractThreadRoot(contentJson: String): String
+    @JvmStatic external fun nativeExtractReplySource(contentJson: String): String
+    @JvmStatic external fun nativeExtractEditSource(contentJson: String): String
+    @JvmStatic external fun nativeBuildReplyRelationWithThread(eventId: String, threadRoot: String): String
+
     // --- Account Export ---
 
     @JvmStatic external fun nativeEncryptAccount(
@@ -977,7 +988,6 @@ object ProgressiveNative {
     // --- Markdown Renderer ---
 
     @JvmStatic external fun nativeMarkdownToHtml(markdown: String, enableTables: Boolean, enableLinks: Boolean, enableCode: Boolean, enableScroll: Boolean): String
-    @JvmStatic external fun nativeParseMarkdownTable(tableBlock: String, withScroll: Boolean): String
 
     // --- Megolm Decryptor ---
 
@@ -3047,6 +3057,24 @@ object ProgressiveNative {
     @JvmStatic fun nativeMarkdownToHtmlFallback(markdown: String, enableTables: Boolean, enableLinks: Boolean, enableCode: Boolean, enableScroll: Boolean): String =
         markdown // Fallback: return raw markdown (real rendering via WebView/Android)
     @JvmStatic fun nativeParseMarkdownTableFallback(tableBlock: String, withScroll: Boolean): String = tableBlock
+
+    // --- Event Relation fallbacks ---
+    @JvmStatic fun nativeIsReplyFallback(contentJson: String): Boolean =
+        contentJson.contains("\"m.in_reply_to\"")
+    @JvmStatic fun nativeIsEditFallback(contentJson: String): Boolean =
+        contentJson.contains("\"m.replace\"")
+    @JvmStatic fun nativeIsReactionFallback(contentJson: String): Boolean =
+        contentJson.contains("\"m.annotation\"")
+    @JvmStatic fun nativeIsThreadRootFallback(contentJson: String): Boolean =
+        contentJson.contains("\"m.thread\"")
+    @JvmStatic fun nativeExtractThreadRootFallback(contentJson: String): String =
+        Regex("\"m\\.thread\".*?\"event_id\":\"(\\\$[^\"]+)\"").find(contentJson)?.groupValues?.get(1) ?: ""
+    @JvmStatic fun nativeExtractReplySourceFallback(contentJson: String): String =
+        Regex("\"m\\.in_reply_to\".*?\"event_id\":\"(\\\$[^\"]+)\"").find(contentJson)?.groupValues?.get(1) ?: ""
+    @JvmStatic fun nativeExtractEditSourceFallback(contentJson: String): String =
+        Regex("\"m\\.replace\".*?\"event_id\":\"(\\\$[^\"]+)\"").find(contentJson)?.groupValues?.get(1) ?: ""
+    @JvmStatic fun nativeBuildReplyRelationWithThreadFallback(eventId: String, threadRoot: String): String =
+        """{"m.in_reply_to":{"event_id":"$eventId"},"m.thread":{"event_id":"$threadRoot"}}"""
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false

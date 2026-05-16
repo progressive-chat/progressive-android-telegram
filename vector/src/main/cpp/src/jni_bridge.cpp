@@ -2985,8 +2985,51 @@ JNI_FUNC(jstring, nativeMarkdownToHtml)(JNIEnv* env, jclass, jstring jMarkdown, 
     config.enableLinks = jLinks;
     config.enableCodeBlocks = jCode;
     config.enableHorizontalScroll = jScroll;
-    config.enableImages = false;  // Matrix handles images separately
+    config.enableImages = false;
     auto result = progressive::markdownToHtml(jStr(env, jMarkdown), config);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeParseMarkdownTable)(JNIEnv* env, jclass, jstring jTableBlock, jboolean jWithScroll) {
+    auto result = progressive::parseMarkdownTable(jStr(env, jTableBlock), jWithScroll);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Event Relations (critical: every reaction/edit/reply/thread depends on this) ---
+
+JNI_FUNC(jboolean, nativeIsReply)(JNIEnv* env, jclass, jstring jContentJson) {
+    return progressive::isReply(jStr(env, jContentJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeIsEdit)(JNIEnv* env, jclass, jstring jContentJson) {
+    return progressive::isEdit(jStr(env, jContentJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeIsReaction)(JNIEnv* env, jclass, jstring jContentJson) {
+    return progressive::isReaction(jStr(env, jContentJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeIsThreadRoot)(JNIEnv* env, jclass, jstring jContentJson) {
+    return progressive::isThreadRoot(jStr(env, jContentJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeExtractThreadRoot)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto result = progressive::extractThreadRoot(jStr(env, jContentJson));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeExtractReplySource)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto result = progressive::extractReplySource(jStr(env, jContentJson));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeExtractEditSource)(JNIEnv* env, jclass, jstring jContentJson) {
+    auto result = progressive::extractEditSource(jStr(env, jContentJson));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeBuildReplyRelationWithThread)(JNIEnv* env, jclass, jstring jEventId, jstring jThreadRoot) {
+    auto result = progressive::buildReplyRelationWithThread(jStr(env, jEventId), jStr(env, jThreadRoot));
     return env->NewStringUTF(result.c_str());
 }
 
