@@ -12,28 +12,16 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import im.vector.app.core.services.VectorSyncAndroidService
-import chat.progressive.app.native.ProgressiveNative
 import im.vector.app.features.session.VectorSessionStore
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysBackupState
-import org.matrix.android.sdk.internal.session.sync.parsing.InitialSyncResponseParser
 import timber.log.Timber
 
 fun Session.startSyncing(context: Context) {
     val applicationContext = context.applicationContext
 
-    // Progressive Chat: wire native C++ sync parser (Labs-gated, validation only)
-    InitialSyncResponseParser.nativeSyncValidator = { json ->
-        try {
-            ProgressiveNative.ensureLoaded()
-            val result = ProgressiveNative.nativeParseSyncResponse(json)
-            val nextBatch = ProgressiveNative.nativeGetNextBatch(json)
-            val eventCount = ProgressiveNative.nativeCountEventsInSync(json)
-            Timber.i("PROGRESSIVE native sync parser: next_batch=$nextBatch, events=$eventCount, summary=$result")
-        } catch (e: Exception) {
-            Timber.w(e, "PROGRESSIVE native sync validation: failed (expected if .so not loaded)")
-        }
-    }
+    // Progressive Chat: native sync parser deferred to v0.2
+    // (requires careful integration with Labs flag + file-size safety checks)
 
     if (!syncService().hasAlreadySynced()) {
         // initial sync is done as a service so it can continue below app lifecycle
