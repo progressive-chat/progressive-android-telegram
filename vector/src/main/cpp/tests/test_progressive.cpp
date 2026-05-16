@@ -1375,6 +1375,69 @@ static void test_poll_winners() {
     ASSERT_STREQ(mgr.getWinnerText(result).c_str(), "A — 1 vote");
 }
 
+// ==== Space Graph ====
+
+#include "progressive/space_graph.hpp"
+
+static void test_space_set_root() {
+    progressive::SpaceGraph sg;
+    sg.setRoot("!space:org", "My Space", "A test space", "");
+    ASSERT_EQ(sg.nodeCount(), 1);
+}
+
+static void test_space_add_child() {
+    progressive::SpaceGraph sg;
+    sg.setRoot("!space:org", "Root");
+    progressive::SpaceChildEntry c;
+    c.roomId = "!room1:org"; c.suggested = true; c.valid = true;
+    sg.addChild("!space:org", c);
+
+    auto children = sg.getChildren("!space:org");
+    ASSERT_EQ(static_cast<int>(children.size()), 1);
+    ASSERT_STREQ(children[0].roomId.c_str(), "!room1:org");
+}
+
+static void test_space_parents() {
+    progressive::SpaceGraph sg;
+    sg.setRoot("!space:org", "Root");
+    progressive::SpaceChildEntry c;
+    c.roomId = "!room1:org"; c.suggested = true; c.valid = true;
+    sg.addChild("!space:org", c);
+
+    auto parents = sg.getParents("!room1:org");
+    ASSERT_EQ(static_cast<int>(parents.size()), 1);
+    ASSERT_STREQ(parents[0].c_str(), "!space:org");
+}
+
+static void test_space_depth() {
+    progressive::SpaceGraph sg;
+    sg.setRoot("!space:org", "Root");
+    progressive::SpaceChildEntry c;
+    c.roomId = "!sub:org"; c.suggested = true; c.valid = true;
+    sg.addChild("!space:org", c);
+    c.roomId = "!room1:org";
+    sg.addChild("!sub:org", c);
+
+    ASSERT_EQ(sg.getDepth("!space:org"), 0);
+    ASSERT_EQ(sg.getDepth("!sub:org"), -1); // Not computed until traverse
+}
+
+static void test_space_search() {
+    progressive::SpaceGraph sg;
+    sg.setRoot("!s:org", "Root");
+    sg.setNodeMetadata("!r1:org", "Engineering", "Tech room", "", "public", false);
+    sg.setNodeMetadata("!r2:org", "Marketing", "Sales room", "", "public", false);
+    progressive::SpaceChildEntry c;
+    c.roomId = "!r1:org"; c.valid = true;
+    sg.addChild("!s:org", c);
+    c.roomId = "!r2:org";
+    sg.addChild("!s:org", c);
+
+    auto results = sg.searchSpaceRooms("!s:org", "engine");
+    ASSERT_EQ(static_cast<int>(results.size()), 1);
+    ASSERT_STREQ(results[0].name.c_str(), "Engineering");
+}
+
 // ==== Run all tests ====
 int main() {
     printf("=== Progressive Chat C++ Unit Tests ===\n");
@@ -1628,6 +1691,13 @@ int main() {
     ADD_TEST(runner, test_poll_build_too_few_options);
     ADD_TEST(runner, test_poll_tally);
     ADD_TEST(runner, test_poll_winners);
+    
+    printf("\n-- Space Graph --\n");
+    ADD_TEST(runner, test_space_set_root);
+    ADD_TEST(runner, test_space_add_child);
+    ADD_TEST(runner, test_space_parents);
+    ADD_TEST(runner, test_space_depth);
+    ADD_TEST(runner, test_space_search);
     
     return runner.summary();
 }

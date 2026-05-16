@@ -148,6 +148,7 @@
 #include "progressive/call_manager.hpp"
 #include "progressive/thread_manager.hpp"
 #include "progressive/poll_manager.hpp"
+#include "progressive/space_graph.hpp"
 #include "progressive/cross_signing.hpp"
 #include "progressive/edit_history.hpp"
 #include "progressive/read_marker.hpp"
@@ -5410,6 +5411,96 @@ JNI_FUNC(jstring, nativePollTally)(JNIEnv* env, jclass, jstring jPollJson, jstri
 
 JNI_FUNC(jboolean, nativePollIsValidQuestion)(JNIEnv* env, jclass, jstring jQ) {
     return getPollMgr()->isValidPollQuestion(jStr(env, jQ)) ? JNI_TRUE : JNI_FALSE;
+}
+
+// ============================================================
+// Space Graph
+// ============================================================
+
+static std::unique_ptr<progressive::SpaceGraph> g_spaceGraph;
+
+static progressive::SpaceGraph* getSpaceGraph() {
+    if (!g_spaceGraph) g_spaceGraph.reset(new progressive::SpaceGraph());
+    return g_spaceGraph.get();
+}
+
+JNI_FUNC(void, nativeSpaceSetRoot)(JNIEnv* env, jclass, jstring jId, jstring jName, jstring jTopic, jstring jAvatar) {
+    getSpaceGraph()->setRoot(jStr(env, jId), jStr(env, jName), jStr(env, jTopic), jStr(env, jAvatar));
+}
+
+JNI_FUNC(void, nativeSpaceAddChild)(JNIEnv* env, jclass, jstring jParent, jstring jChildJson) {
+    auto child = progressive::parseSpaceChild(jStr(env, jChildJson), jStr(env, jChildJson));
+    child.roomId = jStr(env, jParent); // stateKey is the parent... wait, stateKey is the CHILD room ID
+    // Re-parse: first arg is parent, second is child state content
+    auto contentJson = jStr(env, jChildJson);
+    child = progressive::parseSpaceChild(jStr(env, jChildJson), contentJson);
+    // Actually: stateKey = child room ID, contentJson = content
+    // We need: parentId = first arg, child info from second arg
+    // Let's do: second arg format: {"room_id":"!child:org","suggested":true,"order":"001"}
+    child.roomId = jExtractStr(contentJson, "room_id");
+    child.suggested = !jExtractBool(contentJson, "not_suggested");
+    child.suggested = contentJson.find("\"suggested\":false") == std::string::npos;
+    child.valid = !child.roomId.empty();
+    getSpaceGraph()->addChild(jStr(env, jParent), child);
+}
+
+JNI_FUNC(void, nativeSpaceAddChildRaw)(JNIEnv* env, jclass, jstring jParent, jstring jChildId, jboolean jSuggested) {
+    progressive::SpaceChildEntry c;
+    c.roomId = jStr(env, jChildId);
+    c.suggested = jSuggested;
+    c.valid = true;
+    getSpaceGraph()->addChild(jStr(env, jParent), c);
+}
+
+JNI_FUNC(void, nativeSpaceSetMetadata)(JNIEnv* env, jclass, jstring jRoomId, jstring jName,
+                                        jstring jTopic, jstring jAvatar, jstring jJoinRule, jboolean jJoined) {
+    getSpaceGraph()->setNodeMetadata(jStr(env, jRoomId), jStr(env, jName), jStr(env, jTopic),
+        jStr(env, jAvatar), jStr(env, jJoinRule), jJoined);
+}
+
+JNI_FUNC(jstring, nativeSpaceTraverse)(JNIEnv* env, jclass, jint jMode, jint jMaxDepth) {
+    progressive::SpaceTraversalOptions opts;
+    opts.mode = static_cast<progressive::SpaceTraversal>(jMode);
+    opts.maxDepth = jMaxDepth > 0 ? jMaxDepth : 10;
+    opts.includeSubspaces = true;
+    auto result = getSpaceGraph()->traverse(opts);
+    return env->NewStringUTF(getSpaceGraph()->graphResultToJson(result).c_str());
+}
+
+JNI_FUNC(jstring, nativeSpaceGetChildren)(JNIEnv* env, jclass, jstring jSpaceId) {
+    auto children = getSpaceGraph()->getChildren(jStr(env, jSpaceId));
+    return env->NewStringUTF(getSpaceGraph()->flatListToJson(children).c_str());
+}
+
+JNI_FUNC(jstring, nativeSpaceGetParents)(JNIEnv* env, jclass, jstring jRoomId) {
+    auto parents = getSpaceGraph()->getParents(jStr(env, jRoomId));
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < parents.size(); i++) {
+        if (i > 0) os << ","; os << "\"" << parents[i] << "\"";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+JNI_FUNC(jint, nativeSpaceGetDepth)(JNIEnv* env, jclass, jstring jRoomId) {
+    return getSpaceGraph()->getDepth(jStr(env, jRoomId));
+}
+
+JNI_FUNC(jboolean, nativeSpaceIsInSpace)(JNIEnv* env, jclass, jstring jSpaceId, jstring jRoomId) {
+    return getSpaceGraph()->isInSpace(jStr(env, jSpaceId), jStr(env, jRoomId)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeSpaceToTree)(JNIEnv* env, jclass, jstring jSpaceId, jint jMaxDepth) {
+    return env->NewStringUTF(getSpaceGraph()->spaceToTreeJson(jStr(env, jSpaceId), jMaxDepth).c_str());
+}
+
+JNI_FUNC(jstring, nativeSpaceSearch)(JNIEnv* env, jclass, jstring jSpaceId, jstring jQuery) {
+    auto results = getSpaceGraph()->searchSpaceRooms(jStr(env, jSpaceId), jStr(env, jQuery));
+    return env->NewStringUTF(getSpaceGraph()->flatListToJson(results).c_str());
+}
+
+JNI_FUNC(void, nativeSpaceReset)(JNIEnv*, jclass) {
+    g_spaceGraph.reset(new progressive::SpaceGraph());
 }
 
 } // extern "C"

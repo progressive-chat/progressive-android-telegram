@@ -1463,6 +1463,21 @@ object ProgressiveNative {
     @JvmStatic external fun nativePollTally(pollJson: String, votesJson: String): String
     @JvmStatic external fun nativePollIsValidQuestion(question: String): Boolean
 
+    // --- Space Graph ---
+
+    @JvmStatic external fun nativeSpaceSetRoot(spaceId: String, name: String, topic: String, avatarUrl: String)
+    @JvmStatic external fun nativeSpaceAddChildRaw(parentId: String, childId: String, suggested: Boolean)
+    @JvmStatic external fun nativeSpaceAddChild(parentId: String, childJson: String)
+    @JvmStatic external fun nativeSpaceSetMetadata(roomId: String, name: String, topic: String, avatarUrl: String, joinRule: String, isJoined: Boolean)
+    @JvmStatic external fun nativeSpaceTraverse(mode: Int, maxDepth: Int): String
+    @JvmStatic external fun nativeSpaceGetChildren(spaceId: String): String
+    @JvmStatic external fun nativeSpaceGetParents(roomId: String): String
+    @JvmStatic external fun nativeSpaceGetDepth(roomId: String): Int
+    @JvmStatic external fun nativeSpaceIsInSpace(spaceId: String, roomId: String): Boolean
+    @JvmStatic external fun nativeSpaceToTree(spaceId: String, maxDepth: Int): String
+    @JvmStatic external fun nativeSpaceSearch(spaceId: String, query: String): String
+    @JvmStatic external fun nativeSpaceReset()
+
     // --- WebRTC Utils ---
 
     @JvmStatic external fun nativeFormatCallDuration(seconds: Int): String
@@ -4194,6 +4209,20 @@ object ProgressiveNative {
     @JvmStatic fun nativePollTallyFallback(pollJson: String, votesJson: String): String =
         """{"question":"","total_votes":0,"is_closed":false,"winner_idx":-1,"plain_text":"","html":"","winner":""}"""
     @JvmStatic fun nativePollIsValidQuestionFallback(question: String): Boolean = question.isNotEmpty() && question.length <= 340
+
+    // --- Space Graph fallbacks ---
+    @JvmStatic fun nativeSpaceSetRootFallback(spaceId: String, name: String, topic: String, avatarUrl: String) {}
+    @JvmStatic fun nativeSpaceAddChildRawFallback(parentId: String, childId: String, suggested: Boolean) {}
+    @JvmStatic fun nativeSpaceAddChildFallback(parentId: String, childJson: String) {}
+    @JvmStatic fun nativeSpaceSetMetadataFallback(roomId: String, name: String, topic: String, avatarUrl: String, joinRule: String, isJoined: Boolean) {}
+    @JvmStatic fun nativeSpaceTraverseFallback(mode: Int, maxDepth: Int): String = """{"root_id":"","root_name":"","total_nodes":0,"total_spaces":0,"total_rooms":0,"max_depth":0,"nodes":[]}"""
+    @JvmStatic fun nativeSpaceGetChildrenFallback(spaceId: String): String = "[]"
+    @JvmStatic fun nativeSpaceGetParentsFallback(roomId: String): String = "[]"
+    @JvmStatic fun nativeSpaceGetDepthFallback(roomId: String): Int = 0
+    @JvmStatic fun nativeSpaceIsInSpaceFallback(spaceId: String, roomId: String): Boolean = false
+    @JvmStatic fun nativeSpaceToTreeFallback(spaceId: String, maxDepth: Int): String = "{}"
+    @JvmStatic fun nativeSpaceSearchFallback(spaceId: String, query: String): String = "[]"
+    @JvmStatic fun nativeSpaceResetFallback() {}
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")
