@@ -133,22 +133,22 @@ bool isRoomUpgraded(const RoomTombstone& tombstone);
 std::string tombstoneToJson(const RoomTombstone& tombstone);
 
 // ---- Room Versioning State ----
-// Ported from: org.matrix.android.sdk.api.session.room.model.VersioningState.kt (39L)
+// Ported from: org.matrix.android.sdk.api.session.room.model.RoomVersioningState.kt (39L)
 //
 // Tracks whether a room has been upgraded and whether the user joined the new room.
 
-enum class VersioningState {
+enum class RoomVersioningState {
     None,                       // not versioned
     UpgradedRoomNotJoined,      // upgraded but new room not joined
     UpgradedRoomJoined          // upgraded and new room joined
 };
 
-inline bool isVersioned(VersioningState state) { return state != VersioningState::None; }
-inline std::string versioningStateToString(VersioningState state) {
+inline bool isVersioned(RoomVersioningState state) { return state != RoomVersioningState::None; }
+inline std::string roomVersioningStateToString(RoomVersioningState state) {
     switch (state) {
-        case VersioningState::None: return "none";
-        case VersioningState::UpgradedRoomNotJoined: return "upgraded_not_joined";
-        case VersioningState::UpgradedRoomJoined: return "upgraded_joined";
+        case RoomVersioningState::None: return "none";
+        case RoomVersioningState::UpgradedRoomNotJoined: return "upgraded_not_joined";
+        case RoomVersioningState::UpgradedRoomJoined: return "upgraded_joined";
     }
     return "unknown";
 }
