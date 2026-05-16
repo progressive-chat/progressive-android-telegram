@@ -404,6 +404,52 @@ std::string formatPowerLevelNotice(const std::string& senderName, bool sentByCur
     return who + " changed power levels";
 }
 
+std::string formatPowerLevelDiff(const std::string& senderName,
+    const std::unordered_map<std::string, int>& oldLevels,
+    const std::unordered_map<std::string, int>& newLevels,
+    const std::unordered_map<std::string, std::string>& userNames,
+    bool sentByCurrentUser)
+{
+    std::string who = sentByCurrentUser ? "You" : senderName;
+    std::string result = who + " changed power levels";
+
+    // Helper: power level → role name
+    auto roleName = [](int pl) -> std::string {
+        if (pl >= 100) return "Admin";
+        if (pl >= 50) return "Moderator";
+        if (pl >= 0) return "User";
+        return "Custom (" + std::to_string(pl) + ")";
+    };
+
+    // Find changed users
+    std::vector<std::string> diffs;
+    for (const auto& kv : newLevels) {
+        const auto& uid = kv.first;
+        int newPl = kv.second;
+        auto oit = oldLevels.find(uid);
+        int oldPl = (oit != oldLevels.end()) ? oit->second : 0;
+        if (oldPl == newPl) continue; // no change
+
+        auto nit = userNames.find(uid);
+        std::string name = (nit != userNames.end()) ? nit->second : uid;
+        std::string from = roleName(oldPl);
+        std::string to = roleName(newPl);
+
+        if (oldPl == 0 && newPl > 0) diffs.push_back(name + " as " + to);
+        else diffs.push_back(name + " from " + from + " to " + to);
+    }
+
+    if (!diffs.empty()) {
+        result += ": ";
+        for (size_t i = 0; i < diffs.size(); i++) {
+            if (i > 0) result += ", ";
+            result += diffs[i];
+        }
+    }
+
+    return result;
+}
+
 std::string formatJoinRulesNotice(const std::string& senderName, const std::string& newRule, bool sentByCurrentUser) {
     std::string who = sentByCurrentUser ? "You" : senderName;
     return who + " changed join rules to " + newRule;

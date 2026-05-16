@@ -169,6 +169,14 @@ std::string formatRoomEncryptionNotice(const std::string& senderName, bool isEna
 // Power level change: "Alice changed power levels"
 std::string formatPowerLevelNotice(const std::string& senderName, bool sentByCurrentUser);
 
+// Power level diff: "Alice changed power levels: Bob from User to Moderator"
+// oldLevels / newLevels: map of userId → power level (only include changed users)
+std::string formatPowerLevelDiff(const std::string& senderName,
+    const std::unordered_map<std::string, int>& oldLevels,
+    const std::unordered_map<std::string, int>& newLevels,
+    const std::unordered_map<std::string, std::string>& userNames, // userId → displayName
+    bool sentByCurrentUser);
+
 // Join rules change: "Alice changed join rules to invite-only"
 std::string formatJoinRulesNotice(const std::string& senderName, const std::string& newRule, bool sentByCurrentUser);
 

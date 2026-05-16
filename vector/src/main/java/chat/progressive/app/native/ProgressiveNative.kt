@@ -417,6 +417,10 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatRoomTombstoneNotice(senderName: String, replacementRoom: String, sentBySelf: Boolean): String
     @JvmStatic external fun nativeFormatRoomEncryptionNotice(senderName: String, isEnabled: Boolean, sentBySelf: Boolean): String
 
+    // --- Power Level Diff ---
+
+    @JvmStatic external fun nativeFormatPowerLevelDiff(senderName: String, oldLevelsJson: String, newLevelsJson: String, userNamesJson: String, sentBySelf: Boolean): String
+
     // --- Poll Validation ---
 
     @JvmStatic external fun nativeIsValidPollQuestion(question: String): Boolean
@@ -3500,6 +3504,12 @@ object ProgressiveNative {
     @JvmStatic fun nativeFormatRoomEncryptionNoticeFallback(senderName: String, isEnabled: Boolean, sentBySelf: Boolean): String {
         val who = if (sentBySelf) "You" else senderName
         return if (isEnabled) "$who enabled encryption" else "$who disabled encryption"
+    }
+
+    // --- Power Level Diff fallback ---
+    @JvmStatic fun nativeFormatPowerLevelDiffFallback(senderName: String, oldLevelsJson: String, newLevelsJson: String, userNamesJson: String, sentBySelf: Boolean): String {
+        val who = if (sentBySelf) "You" else senderName
+        return "$who changed power levels"
     }
 
     // --- Poll fallback ---

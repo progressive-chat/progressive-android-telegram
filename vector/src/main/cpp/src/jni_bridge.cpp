@@ -3743,6 +3743,47 @@ JNI_FUNC(jstring, nativeFormatRoomEncryptionNotice)(JNIEnv* env, jclass, jstring
     auto result = progressive::formatRoomEncryptionNotice(jStr(env, jName), jEnabled, jSelf);
     return env->NewStringUTF(result.c_str());
 }
+
+// --- Power Level Diff ---
+
+JNI_FUNC(jstring, nativeFormatPowerLevelDiff)(JNIEnv* env, jclass, jstring jSender, jstring jOldJson, jstring jNewJson, jstring jNamesJson, jboolean jSelf) {
+    // Parse JSON maps
+    auto parseMap = [&](const std::string& json) -> std::unordered_map<std::string, int> {
+        std::unordered_map<std::string, int> m;
+        size_t p = 0;
+        while ((p = json.find("\"@", p)) != std::string::npos) {
+            p++; size_t e = p;
+            while (e < json.size() && json[e] != '"') e++;
+            std::string uid = json.substr(p, e - p);
+            p = json.find(':', e); if (p == std::string::npos) break;
+            p++; while (p < json.size() && (json[p] == ' ' || json[p] == '\t')) p++;
+            int v = 0; while (p < json.size() && json[p] >= '0' && json[p] <= '9') { v = v*10+(json[p]-'0'); p++; }
+            m[uid] = v;
+        }
+        return m;
+    };
+    auto oldLevels = parseMap(jStr(env, jOldJson));
+    auto newLevels = parseMap(jStr(env, jNewJson));
+
+    // Parse names
+    std::unordered_map<std::string, std::string> names;
+    auto namesJson = jStr(env, jNamesJson);
+    size_t np = 0;
+    while ((np = namesJson.find("\"@", np)) != std::string::npos) {
+        np++; size_t ne = np;
+        while (ne < namesJson.size() && namesJson[ne] != '"') ne++;
+        std::string uid = namesJson.substr(np, ne - np);
+        np = namesJson.find(':', ne); if (np == std::string::npos) break;
+        np++; while (np < namesJson.size() && (namesJson[np] == ' ' || namesJson[np] == '\t' || namesJson[np] == '"')) np++;
+        size_t nne = np;
+        while (nne < namesJson.size() && namesJson[nne] != '"') nne++;
+        names[uid] = namesJson.substr(np, nne - np);
+        np = nne;
+    }
+
+    auto result = progressive::formatPowerLevelDiff(jStr(env, jSender), oldLevels, newLevels, names, jSelf);
+    return env->NewStringUTF(result.c_str());
+}
     auto result = progressive::threadSummaryToJson(summary);
     return env->NewStringUTF(result.c_str());
 }
