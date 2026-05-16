@@ -368,6 +368,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeBuildSyncFilter(includeThreads: Boolean, includePresence: Boolean, timelineLimit: Int, lazyLoadMembers: Boolean): String
 
+    // --- Read Receipts ---
+
+    @JvmStatic external fun nativeFormatReceiptAccessibility(receiptsJson: String, overflowCount: Int): String
+    @JvmStatic external fun nativeFormatOverflowLabel(count: Int): String
+
     // --- Event Classifier ---
 
     @JvmStatic external fun nativeIsStateEvent(eventType: String): Boolean
@@ -3427,6 +3432,10 @@ object ProgressiveNative {
     // --- Sync Filter fallback ---
     @JvmStatic fun nativeBuildSyncFilterFallback(includeThreads: Boolean, includePresence: Boolean, timelineLimit: Int, lazyLoadMembers: Boolean): String =
         """{"room":{"timeline":{"limit":$timelineLimit}},"presence":{"include":$includePresence}}"""
+
+    // --- Read Receipts fallbacks ---
+    @JvmStatic fun nativeFormatReceiptAccessibilityFallback(receiptsJson: String, overflowCount: Int): String = "Read"
+    @JvmStatic fun nativeFormatOverflowLabelFallback(count: Int): String = if (count > 0) "+$count" else ""
 
     // --- Event Classifier fallback ---
     @JvmStatic fun nativeIsStateEventFallback(eventType: String): Boolean =

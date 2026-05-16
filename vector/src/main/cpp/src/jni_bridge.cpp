@@ -3479,6 +3479,36 @@ JNI_FUNC(jstring, nativeBuildSyncFilter)(JNIEnv* env, jclass, jboolean jThreads,
     auto result = progressive::buildSyncFilter(filter);
     return env->NewStringUTF(result.c_str());
 }
+
+// --- Read Receipt Aggregator ---
+
+JNI_FUNC(jstring, nativeFormatReceiptAccessibility)(JNIEnv* env, jclass, jstring jReceiptsJson, jint jOverflow) {
+    auto json = jStr(env, jReceiptsJson);
+    std::vector<progressive::ReceiptEntry> entries;
+    // Parse JSON array of {userId, displayName, avatarUrl, timestamp}
+    size_t p = 0;
+    while ((p = json.find("\"displayName\"", p)) != std::string::npos) {
+        progressive::ReceiptEntry e;
+        p = json.rfind('{', p); if (p == std::string::npos) break;
+        int depth = 1; size_t s = p; p++;
+        while (p < json.size() && depth > 0) {
+            if (json[p] == '{') depth++; else if (json[p] == '}') depth--;
+            p++;
+        }
+        std::string entryJson = json.substr(s, p - s);
+        // Extract displayName
+        auto dn = entryJson.find("\"displayName\"");
+        if (dn != std::string::npos) { dn = entryJson.find('"', dn+13); dn++; size_t d=dn; while(d<entryJson.size()&&entryJson[d]!='"')d++; e.displayName=entryJson.substr(dn,d-dn); }
+        entries.push_back(e);
+    }
+    auto result = progressive::formatReceiptAccessibility(entries, jOverflow);
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeFormatOverflowLabel)(JNIEnv* env, jclass, jint jCount) {
+    auto result = progressive::formatOverflowLabel(jCount);
+    return env->NewStringUTF(result.c_str());
+}
         return v;
     };
     auto eventIds = parseStrArray(jStr(env, jEventIdsJson));
