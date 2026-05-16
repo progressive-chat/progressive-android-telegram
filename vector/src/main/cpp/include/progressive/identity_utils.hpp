@@ -21,14 +21,14 @@ ResolvedId resolveMatrixId(const std::string& input);
 
 // ---- 3PID (Third-Party ID) Utilities ----
 
-struct ThreePid {
+struct IdentityThreePid {
     std::string medium;     // "email", "msisdn"
     std::string address;    // "user@example.com", "+1234567890"
     bool valid = false;
 };
 
 // Parse a 3PID from input.
-ThreePid parseThreePid(const std::string& input);
+IdentityThreePid parseThreePid(const std::string& input);
 
 // Check if a string is an email address.
 bool isEmail(const std::string& input);
@@ -37,7 +37,7 @@ bool isEmail(const std::string& input);
 bool isMsisdn(const std::string& input);
 
 // Format a 3PID for display.
-std::string formatThreePid(const ThreePid& pid);
+std::string formatThreePid(const IdentityThreePid& pid);
 
 // ---- Display Name Utilities ----
 

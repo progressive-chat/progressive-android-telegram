@@ -8,8 +8,8 @@ namespace progressive {
 
 // ==== Message Content Interface ====
 //
-// Original Kotlin (MessageContent.kt:25-33):
-//   interface MessageContent {
+// Original Kotlin (EventMessageContent.kt:25-33):
+//   interface EventMessageContent {
 //       val msgType: String
 //       val body: String
 //       val relatesTo: RelationDefaultContent?
@@ -24,8 +24,8 @@ struct RelationDefaultContent {
 };
 
 // Base message content — all messages have these fields.
-// Original Kotlin: interface MessageContent
-struct MessageContent {
+// Original Kotlin: interface EventMessageContent
+struct EventMessageContent {
     std::string msgType;              // "msgtype" key
     std::string body;                 // "body" key — required human-readable text
     RelationDefaultContent relatesTo; // "m.relates_to" key
@@ -37,7 +37,7 @@ struct MessageContent {
 // ==== Formatted Body ====
 //
 // Original Kotlin (MessageContentWithFormattedBody.kt:24-35):
-//   interface MessageContentWithFormattedBody : MessageContent {
+//   interface MessageContentWithFormattedBody : EventMessageContent {
 //       val format: String?
 //       val formattedBody: String?
 //       val matrixFormattedBody: String?
@@ -46,7 +46,7 @@ struct MessageContent {
 //           }
 //   }
 
-struct MessageContentWithFormattedBody : MessageContent {
+struct EventMessageContentWithFormattedBody : EventMessageContent {
     std::string format;        // "format" key, e.g. "org.matrix.custom.html"
     std::string formattedBody; // "formatted_body" key
 
@@ -173,7 +173,7 @@ struct AudioWaveformInfo {
 // Original Kotlin (MessageImageContent.kt:28-55), (MessageVideoContent.kt:28-56),
 //   (MessageAudioContent.kt:28-63), (MessageFileContent.kt:28-57)
 
-struct MessageImageContent : MessageContent {
+struct MessageImageContent : EventMessageContent {
     ImageInfo info;              // "info" key
     std::string url;             // "url" key — MXC URI (unencrypted)
     EncryptedFileInfo encryptedFile; // "file" key
@@ -186,7 +186,7 @@ struct MessageImageContent : MessageContent {
     }
 };
 
-struct MessageVideoContent : MessageContent {
+struct MessageVideoContent : EventMessageContent {
     VideoInfo videoInfo;         // "info" key
     std::string url;
     EncryptedFileInfo encryptedFile;
@@ -198,7 +198,7 @@ struct MessageVideoContent : MessageContent {
     }
 };
 
-struct MessageAudioContent : MessageContent {
+struct MessageAudioContent : EventMessageContent {
     AudioInfo audioInfo;         // "info" key
     std::string url;
     EncryptedFileInfo encryptedFile;
@@ -212,7 +212,7 @@ struct MessageAudioContent : MessageContent {
     }
 };
 
-struct MessageFileContent : MessageContent {
+struct MessageFileContent : EventMessageContent {
     std::string filename;        // "filename" key
     FileInfo info;               // "info" key
     std::string url;
@@ -231,7 +231,7 @@ struct MessageFileContent : MessageContent {
     }
 };
 
-struct MessageLocationContent : MessageContent {
+struct MessageLocationContent : EventMessageContent {
     std::string geoUri;          // "geo_uri" key
     std::string mxcUrl;          // "url" key for location image
     int64_t latitudeE7 = 0;      // from geo_uri parsing
@@ -261,7 +261,7 @@ struct ParsedMessage {
 };
 
 // Parse message content from JSON
-ParsedMessage parseMessageContent(const std::string& contentJson);
+ParsedMessage parseMessageFull(const std::string& contentJson);
 
 // Serialize message content structs to JSON
 std::string messageTextToJson(const MessageTextContent& msg);

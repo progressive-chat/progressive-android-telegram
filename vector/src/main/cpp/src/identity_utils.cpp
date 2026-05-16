@@ -74,8 +74,8 @@ ResolvedId resolveMatrixId(const std::string& input) {
     return result;
 }
 
-ThreePid parseThreePid(const std::string& input) {
-    ThreePid pid;
+IdentityThreePid parseThreePid(const std::string& input) {
+    IdentityThreePid pid;
     if (input.empty()) return pid;
 
     if (isEmail(input)) {
@@ -106,7 +106,7 @@ bool isMsisdn(const std::string& input) {
     return std::regex_match(input, re);
 }
 
-std::string formatThreePid(const ThreePid& pid) {
+std::string formatThreePid(const IdentityThreePid& pid) {
     if (!pid.valid) return "";
     if (pid.medium == "email") return pid.address;
     if (pid.medium == "msisdn") return pid.address;

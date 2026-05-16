@@ -121,7 +121,7 @@ bool isValidPassphrase(const std::string& passphrase);
 int getMinPassphraseLength();
 
 // ---- Secure Storage Key (4S/SSSS) from SecretStorageKeyContent.kt (103L) ----
-struct SsssPassphrase {
+struct KeyBackupPassphrase {
     std::string algorithm;
     int iterations = 500000;
     std::string salt;
@@ -132,7 +132,7 @@ struct SecretStorageKey {
     std::string algorithm;
     std::string name;
     std::string publicKey;
-    SsssPassphrase passphrase;
+    KeyBackupPassphrase passphrase;
     bool valid = false;
     bool hasPassphrase() const { return !passphrase.salt.empty(); }
 };
