@@ -1974,6 +1974,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeFormatKnockReason(reason: String): String
 
+    // --- Room Uploads ---
+
+    @JvmStatic external fun nativeIsStickerEvent(eventType: String): Boolean
+    @JvmStatic external fun nativeHasAttachmentUrl(contentJson: String): Boolean
+
     // --- Server Compatibility ---
 
     @JvmStatic external fun nativeIsServerCompatible(serverVersion: String, minRequired: String): Boolean
@@ -3767,6 +3772,10 @@ object ProgressiveNative {
 
     // --- Knock / Server / Fingerprint fallbacks ---
     @JvmStatic fun nativeFormatKnockReasonFallback(reason: String): String = reason.ifEmpty { "No reason provided" }
+
+    // --- Room Uploads fallback ---
+    @JvmStatic fun nativeIsStickerEventFallback(eventType: String): Boolean = eventType == "m.sticker"
+    @JvmStatic fun nativeHasAttachmentUrlFallback(contentJson: String): Boolean = "\"url\":" in contentJson || "\"thumbnail_url\":" in contentJson
     @JvmStatic fun nativeIsServerCompatibleFallback(serverVersion: String, minRequired: String): Boolean {
         val r = nativeCompareSemverFallback(serverVersion, minRequired)
         return r >= 0

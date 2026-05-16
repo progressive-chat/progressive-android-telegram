@@ -2282,6 +2282,16 @@ JNI_FUNC(jstring, nativeFormatKnockReason)(JNIEnv* env, jclass, jstring jReason)
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Room Uploads ---
+
+JNI_FUNC(jboolean, nativeIsStickerEvent)(JNIEnv* env, jclass, jstring jEventType) {
+    return progressive::isStickerEvent(jStr(env, jEventType)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeHasAttachmentUrl)(JNIEnv* env, jclass, jstring jContentJson) {
+    return progressive::hasAttachmentUrl(jStr(env, jContentJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
 // --- Server Compatibility ---
 
 JNI_FUNC(jboolean, nativeIsServerCompatible)(JNIEnv* env, jclass, jstring jVersion, jstring jMinRequired) {
