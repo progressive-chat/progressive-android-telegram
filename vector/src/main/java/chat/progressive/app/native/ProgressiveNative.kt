@@ -1466,6 +1466,12 @@ object ProgressiveNative {
     @JvmStatic external fun nativeBuildCallHangupContent(callId: String, reason: String): String
     @JvmStatic external fun nativeFormatCallNotification(callJson: String): String
 
+    // --- Content Scanner / ToS ---
+
+    @JvmStatic external fun nativeIsServerNotice(eventContentJson: String): Boolean
+    @JvmStatic external fun nativeMustAcceptTos(responseJson: String): Boolean
+    @JvmStatic external fun nativeBuildTosAcceptBody(version: String): String
+
     // --- URL Preview ---
 
     @JvmStatic external fun nativeIsPreviewableUrl(url: String): Boolean
@@ -2610,6 +2616,11 @@ object ProgressiveNative {
     @JvmStatic fun nativeBuildCallHangupContentFallback(callId: String, reason: String): String =
         """{"call_id":"$callId","reason":"$reason"}"""
     @JvmStatic fun nativeFormatCallNotificationFallback(callJson: String): String = "Incoming call"
+
+    // --- Content Scanner / ToS fallbacks ---
+    @JvmStatic fun nativeIsServerNoticeFallback(eventContentJson: String): Boolean = eventContentJson.contains("\"server_notice\"")
+    @JvmStatic fun nativeMustAcceptTosFallback(responseJson: String): Boolean = responseJson.contains("\"m.consent\"")
+    @JvmStatic fun nativeBuildTosAcceptBodyFallback(version: String): String = """{"version":"$version"}"""
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")

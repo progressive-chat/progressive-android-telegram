@@ -2396,4 +2396,19 @@ JNI_FUNC(jstring, nativeFormatCallNotification)(JNIEnv* env, jclass, jstring jCa
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Content Scanner / ToS ---
+
+JNI_FUNC(jboolean, nativeIsServerNotice)(JNIEnv* env, jclass, jstring jContentJson) {
+    return progressive::isServerNotice(jStr(env, jContentJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeMustAcceptTos)(JNIEnv* env, jclass, jstring jResponseJson) {
+    return progressive::mustAcceptTos(jStr(env, jResponseJson)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeBuildTosAcceptBody)(JNIEnv* env, jclass, jstring jVersion) {
+    auto result = progressive::buildTosAcceptBody(jStr(env, jVersion));
+    return env->NewStringUTF(result.c_str());
+}
+
 } // extern "C"
