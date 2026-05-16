@@ -4,7 +4,7 @@
 namespace progressive {
 
 // --- Parse Matrix Error JSON ---
-MatrixError parseMatrixError(const std::string& json) {
+MatrixError parseMatrixErrorJson(const std::string& json) {
     MatrixError error;
 
     auto extractStr = [&](const std::string& key) -> std::string {

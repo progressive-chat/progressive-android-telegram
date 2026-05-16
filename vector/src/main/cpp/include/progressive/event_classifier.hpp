@@ -182,10 +182,6 @@ bool isInvitationEvent(const std::string& eventType, const std::string& contentJ
 
 // ---- Relation Types (from RelationType.kt 36L) ----
 namespace RelationType {
-    constexpr const char* ANNOTATION = "m.annotation";
-    constexpr const char* REPLACE = "m.replace";
-    constexpr const char* REFERENCE = "m.reference";
-    constexpr const char* THREAD = "m.thread";
     constexpr const char* RESPONSE = "org.matrix.response";
 }
 

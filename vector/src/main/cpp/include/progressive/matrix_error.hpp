@@ -89,7 +89,7 @@ struct MatrixError {
 };
 
 // Parse a Matrix error JSON response.
-MatrixError parseMatrixError(const std::string& json);
+MatrixError parseMatrixErrorJson(const std::string& json);
 
 // Get a human-readable description for a Matrix error code.
 std::string getErrorDescription(const std::string& errorCode);
