@@ -2864,6 +2864,18 @@ JNI_FUNC(jboolean, nativeIsCommonPassword)(JNIEnv* env, jclass, jstring jPasswor
     return progressive::isCommonPassword(jStr(env, jPassword)) ? JNI_TRUE : JNI_FALSE;
 }
 
+// --- SSO Utilities ---
+
+JNI_FUNC(jstring, nativeBuildSsoLoginUrl)(JNIEnv* env, jclass, jstring jBaseUrl, jstring jRedirectUrl) {
+    auto result = progressive::buildSsoLoginUrl(jStr(env, jBaseUrl), jStr(env, jRedirectUrl));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jstring, nativeGetSsoProviderBrand)(JNIEnv* env, jclass, jstring jProvider) {
+    auto result = progressive::getSsoProviderBrand(jStr(env, jProvider));
+    return env->NewStringUTF(result.c_str());
+}
+
 // --- Megolm Decryptor ---
 // Controlled by Labs: SETTINGS_LABS_NATIVE_CRYPTO
 

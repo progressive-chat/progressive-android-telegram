@@ -938,6 +938,11 @@ object ProgressiveNative {
     @JvmStatic external fun nativeCountCharClasses(password: String): Int
     @JvmStatic external fun nativeIsCommonPassword(password: String): Boolean
 
+    // --- SSO Utilities ---
+
+    @JvmStatic external fun nativeBuildSsoLoginUrl(baseUrl: String, redirectUrl: String): String
+    @JvmStatic external fun nativeGetSsoProviderBrand(provider: String): String
+
     // --- Megolm Decryptor ---
 
     @JvmStatic external fun nativeMegolmAddSession(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean
@@ -2949,6 +2954,14 @@ object ProgressiveNative {
         listOf(password.any { it.isUpperCase() }, password.any { it.isLowerCase() }, password.any { it.isDigit() }, password.any { !it.isLetterOrDigit() }).count { it }
     @JvmStatic fun nativeIsCommonPasswordFallback(password: String): Boolean =
         password == "password" || password == "12345678" || password == "qwerty123"
+
+    // --- SSO fallbacks ---
+    @JvmStatic fun nativeBuildSsoLoginUrlFallback(baseUrl: String, redirectUrl: String): String =
+        "$baseUrl/sso/redirect?redirectUrl=$redirectUrl"
+    @JvmStatic fun nativeGetSsoProviderBrandFallback(provider: String): String = when(provider) {
+        "google" -> "Google"; "github" -> "GitHub"; "facebook" -> "Facebook"
+        "apple" -> "Apple"; "gitlab" -> "GitLab"; else -> provider
+    }
 
     // --- Megolm fallbacks ---
     @JvmStatic fun nativeMegolmAddSessionFallback(roomId: String, senderKey: String, sessionId: String, sessionKeyBase64: String): Boolean = false
