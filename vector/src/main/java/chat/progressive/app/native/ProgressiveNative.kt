@@ -1502,6 +1502,11 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeParseFederationVersion(json: String): String
 
+    // --- Report Utilities ---
+
+    @JvmStatic external fun nativeIsValidReportReason(reason: String): Boolean
+    @JvmStatic external fun nativeGetReasonDescription(code: String): String
+
     // --- URL Preview ---
 
     @JvmStatic external fun nativeIsPreviewableUrl(url: String): Boolean
@@ -2716,6 +2721,14 @@ object ProgressiveNative {
 
     // --- Federation fallback ---
     @JvmStatic fun nativeParseFederationVersionFallback(json: String): String = """{"name":"","version":""}"""
+
+    // --- Report fallbacks ---
+    @JvmStatic fun nativeIsValidReportReasonFallback(reason: String): Boolean = reason.isNotEmpty()
+    @JvmStatic fun nativeGetReasonDescriptionFallback(code: String): String = when(code) {
+        "m.spam" -> "Spam"; "m.violence" -> "Violence"; "m.hate" -> "Hate speech"
+        "m.harassment" -> "Harassment"; "m.suicide" -> "Self-harm"; "m.child" -> "Child exploitation"
+        else -> code
+    }
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")

@@ -2550,4 +2550,15 @@ JNI_FUNC(jstring, nativeParseFederationVersion)(JNIEnv* env, jclass, jstring jJs
     return env->NewStringUTF(os.str().c_str());
 }
 
+// --- Report Utilities ---
+
+JNI_FUNC(jboolean, nativeIsValidReportReason)(JNIEnv* env, jclass, jstring jReason) {
+    return progressive::isValidReportReason(jStr(env, jReason)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeGetReasonDescription)(JNIEnv* env, jclass, jstring jCode) {
+    auto result = progressive::getReasonDescription(jStr(env, jCode));
+    return env->NewStringUTF(result.c_str());
+}
+
 } // extern "C"
