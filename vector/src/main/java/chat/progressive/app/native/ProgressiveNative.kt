@@ -1,4 +1,4 @@
-package im.vector.app.features.jumptodate
+package chat.progressive.app.native
 
 import org.json.JSONObject
 import org.json.JSONArray

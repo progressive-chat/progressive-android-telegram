@@ -277,7 +277,7 @@ static progressive::LocationSharingManager g_locationSharing;
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 #define JNI_FUNC(ret, name) \
-    JNIEXPORT ret JNICALL Java_im_vector_app_features_jumptodate_ProgressiveNative_##name
+    JNIEXPORT ret JNICALL Java_chat_progressive_app_native_ProgressiveNative_##name
 
 static std::string jStr(JNIEnv* env, jstring js) {
     if (!js) return "";
@@ -290,14 +290,14 @@ static std::string jStr(JNIEnv* env, jstring js) {
 extern "C" {
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeValidateAndBuild
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;
  *
  * Returns JSON string: {"url": "...", ...} or {"error": "..."}
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeValidateAndBuild(
+Java_chat_progressive_app_native_ProgressiveNative_nativeValidateAndBuild(
     JNIEnv* env,
     jclass /* this */,
     jstring jRoomId,
@@ -357,14 +357,14 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeValidateAndBuild(
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeParseResponse
  * Signature: (Ljava/lang/String;I)Ljava/lang/String;
  *
  * Parses the HTTP response body and returns JSON with eventId or error.
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseResponse(
+Java_chat_progressive_app_native_ProgressiveNative_nativeParseResponse(
     JNIEnv* env,
     jclass /* this */,
     jstring jResponseBody,
@@ -396,7 +396,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseResponse(
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeParseRelation
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  *
@@ -408,7 +408,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseResponse(
  * Returns JSON: {"sourceEventId": "$xyz", "relationType": "m.annotation"} or {"isRelation": false}
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseRelation(
+Java_chat_progressive_app_native_ProgressiveNative_nativeParseRelation(
     JNIEnv* env,
     jclass /* this */,
     jstring jEventJson,
@@ -458,7 +458,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseRelation(
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeFormatEventHtml
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;
  *
@@ -473,7 +473,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseRelation(
  * @param isContinuation Whether this event is from the same sender as previous
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatEventHtml(
+Java_chat_progressive_app_native_ProgressiveNative_nativeFormatEventHtml(
     JNIEnv* env,
     jclass /* this */,
     jstring jSenderName,
@@ -512,14 +512,14 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatEventHtml(
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeFormatEventPlainText
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  *
  * Formats a single event as plain text line.
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatEventPlainText(
+Java_chat_progressive_app_native_ProgressiveNative_nativeFormatEventPlainText(
     JNIEnv* env,
     jclass /* this */,
     jstring jSenderName,
@@ -549,7 +549,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatEventPlainT
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeBuildHtmlExport
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;
  *
@@ -560,7 +560,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatEventPlainT
  * @param eventHtmls  Array of pre-rendered event HTML strings
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildHtmlExport(
+Java_chat_progressive_app_native_ProgressiveNative_nativeBuildHtmlExport(
     JNIEnv* env,
     jclass /* this */,
     jstring jRoomName,
@@ -628,12 +628,12 @@ hr { border: none; border-top: 1px solid #e0e0e0; margin: 16px 0; }
 static progressive::EventCache g_eventCache;
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeCachePut
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
  */
 JNIEXPORT void JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCachePut(
+Java_chat_progressive_app_native_ProgressiveNative_nativeCachePut(
     JNIEnv* env,
     jclass /* this */,
     jstring jEventId,
@@ -674,12 +674,12 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCachePut(
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeCacheGetContext
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheGetContext(
+Java_chat_progressive_app_native_ProgressiveNative_nativeCacheGetContext(
     JNIEnv* env,
     jclass /* this */,
     jstring jEventId
@@ -696,12 +696,12 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheGetContext(
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeCacheSize
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheSize(
+Java_chat_progressive_app_native_ProgressiveNative_nativeCacheSize(
     JNIEnv* /* env */,
     jclass /* this */
 ) {
@@ -711,12 +711,12 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeCacheSize(
 // --- Translation ---
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeBuildTranslateRequest
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildTranslateRequest(
+Java_chat_progressive_app_native_ProgressiveNative_nativeBuildTranslateRequest(
     JNIEnv* env, jclass,
     jstring jText, jstring jSourceLang, jstring jTargetLang,
     jstring jApiEndpoint, jstring jApiToken, jstring jModel
@@ -741,12 +741,12 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildTranslateReq
 }
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeParseTranslateResponse
  * Signature: (Ljava/lang/String;I)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseTranslateResponse(
+Java_chat_progressive_app_native_ProgressiveNative_nativeParseTranslateResponse(
     JNIEnv* env, jclass,
     jstring jResponseBody, jint jHttpStatus
 ) {
@@ -771,12 +771,12 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeParseTranslateRes
 // --- Proxy Configuration ---
 
 /*
- * Class: im.vector.app.features.jumptodate.ProgressiveNative
+ * Class: chat.progressive.app.native.ProgressiveNative
  * Method: nativeComputeProxyConfig
  * Signature: (IILjava/lang/String;ILjava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeProxyConfig(
+Java_chat_progressive_app_native_ProgressiveNative_nativeComputeProxyConfig(
     JNIEnv* env, jclass,
     jint jConnType, jint jProxyType,
     jstring jHost, jint jPort,
@@ -804,7 +804,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeComputeProxyConfi
 // --- Yggdrasil ---
 
 JNIEXPORT jboolean JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsYggdrasilAddress(
+Java_chat_progressive_app_native_ProgressiveNative_nativeIsYggdrasilAddress(
     JNIEnv* env, jclass, jstring jAddr
 ) {
     if (!jAddr) return JNI_FALSE;
@@ -814,7 +814,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsYggdrasilAddres
 }
 
 JNIEXPORT jboolean JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsYggdrasilDomain(
+Java_chat_progressive_app_native_ProgressiveNative_nativeIsYggdrasilDomain(
     JNIEnv* env, jclass, jstring jHost
 ) {
     if (!jHost) return JNI_FALSE;
@@ -824,7 +824,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeIsYggdrasilDomain
 }
 
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildYggHomeserverUrl(
+Java_chat_progressive_app_native_ProgressiveNative_nativeBuildYggHomeserverUrl(
     JNIEnv* env, jclass, jstring jAddr, jint jPort, jboolean jTls
 ) {
     if (!jAddr) return env->NewStringUTF("");
@@ -835,7 +835,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeBuildYggHomeserve
 }
 
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeRewriteHomeserverUrl(
+Java_chat_progressive_app_native_ProgressiveNative_nativeRewriteHomeserverUrl(
     JNIEnv* env, jclass, jstring jOriginalUrl, jstring jYggAddr
 ) {
     if (!jOriginalUrl || !jYggAddr) return env->NewStringUTF("");
@@ -850,7 +850,7 @@ Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeRewriteHomeserver
 // --- Read Marker Time Label ---
 
 JNIEXPORT jstring JNICALL
-Java_im_vector_app_features_jumptodate_ProgressiveNative_nativeFormatJumpToUnreadLabel(
+Java_chat_progressive_app_native_ProgressiveNative_nativeFormatJumpToUnreadLabel(
     JNIEnv* env, jclass, jstring jReadMarkerJson, jlong jNowMs
 ) {
     auto json = jReadMarkerJson ? std::string(env->GetStringUTFChars(jReadMarkerJson, nullptr)) : "{}";
