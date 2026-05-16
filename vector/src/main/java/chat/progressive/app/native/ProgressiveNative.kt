@@ -1411,6 +1411,22 @@ object ProgressiveNative {
 
     @JvmStatic external fun nativeBuildRoomNotifSettingsBody(mode: String): String
 
+    // --- Notifications / Badge ---
+
+    @JvmStatic external fun nativeFormatBadgeText(totalCount: Int): String
+
+    // --- Presence ---
+
+    @JvmStatic external fun nativeParsePresence(userId: String, apiResponseJson: String): String
+
+    // --- Matrix Error ---
+
+    @JvmStatic external fun nativeGetRetryAfterMs(errorJson: String): Long
+
+    // --- OpenID Token ---
+
+    @JvmStatic external fun nativeParseOpenIdToken(json: String): String
+
     // --- URL Preview ---
 
     @JvmStatic external fun nativeIsPreviewableUrl(url: String): Boolean
@@ -2496,6 +2512,20 @@ object ProgressiveNative {
 
     // --- Room Notif Settings fallback ---
     @JvmStatic fun nativeBuildRoomNotifSettingsBodyFallback(mode: String): String = """{"actions":["$mode"]}"""
+
+    // --- Notifications / Badge fallback ---
+    @JvmStatic fun nativeFormatBadgeTextFallback(totalCount: Int): String =
+        if (totalCount > 99) "99+" else if (totalCount > 0) "$totalCount" else ""
+
+    // --- Presence fallback ---
+    @JvmStatic fun nativeParsePresenceFallback(userId: String, apiResponseJson: String): String =
+        """{"user_id":"$userId","presence":"offline","last_active_ago_ms":0}"""
+
+    // --- Matrix Error fallback ---
+    @JvmStatic fun nativeGetRetryAfterMsFallback(errorJson: String): Long = 3000L
+
+    // --- OpenID Token fallback ---
+    @JvmStatic fun nativeParseOpenIdTokenFallback(json: String): String = "{}"
 
     // --- URL Preview fallbacks ---
     @JvmStatic fun nativeIsPreviewableUrlFallback(url: String): Boolean = url.startsWith("http")

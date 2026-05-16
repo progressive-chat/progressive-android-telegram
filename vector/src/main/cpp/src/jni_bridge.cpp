@@ -2237,4 +2237,40 @@ JNI_FUNC(jstring, nativeFormatUnreadJumpLabel)(JNIEnv* env, jclass, jstring jRea
     return env->NewStringUTF(result.c_str());
 }
 
+// --- Notifications / Badge ---
+
+JNI_FUNC(jstring, nativeFormatBadgeText)(JNIEnv* env, jclass, jint jCount) {
+    auto result = progressive::formatBadgeText(jCount);
+    return env->NewStringUTF(result.c_str());
+}
+
+// --- Presence ---
+
+JNI_FUNC(jstring, nativeParsePresence)(JNIEnv* env, jclass, jstring jUserId, jstring jJson) {
+    auto info = progressive::parsePresence(jStr(env, jUserId), jStr(env, jJson));
+    std::ostringstream os;
+    const char* presenceStr = "offline";
+    if (info.presence == progressive::Presence::Online) presenceStr = "online";
+    else if (info.presence == progressive::Presence::Unavailable) presenceStr = "unavailable";
+    os << R"({"user_id":")" << info.userId
+       << R"(","presence":")" << presenceStr
+       << R"(","last_active_ago_ms":)" << info.lastActiveAgoMs << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+
+// --- Matrix Error ---
+
+JNI_FUNC(jlong, nativeGetRetryAfterMs)(JNIEnv* env, jclass, jstring jErrorJson) {
+    auto error = progressive::parseMatrixErrorJson(jStr(env, jErrorJson));
+    return progressive::getRetryAfterMs(error);
+}
+
+// --- OpenID Token ---
+
+JNI_FUNC(jstring, nativeParseOpenIdToken)(JNIEnv* env, jclass, jstring jJson) {
+    auto token = progressive::parseOpenIdToken(jStr(env, jJson));
+    auto result = progressive::openIdTokenToJson(token);
+    return env->NewStringUTF(result.c_str());
+}
+
 } // extern "C"
