@@ -6,41 +6,9 @@ namespace progressive {
 
 // ====== Enums ======
 
-const char* historyVisibilityToString(RSM_RoomHistoryVisibility v) {
-    switch (v) {
-        case RSM_RoomHistoryVisibility::WORLD_READABLE: return "world_readable";
-        case RSM_RoomHistoryVisibility::SHARED: return "shared";
-        case RSM_RoomHistoryVisibility::INVITED: return "invited";
-        case RSM_RoomHistoryVisibility::JOINED: return "joined";
-    }
-    return "shared";
-}
 
-RSM_RoomHistoryVisibility historyVisibilityFromString(const std::string& s) {
-    if (s == "world_readable") return RSM_RoomHistoryVisibility::WORLD_READABLE;
-    if (s == "shared") return RSM_RoomHistoryVisibility::SHARED;
-    if (s == "invited") return RSM_RoomHistoryVisibility::INVITED;
-    if (s == "joined") return RSM_RoomHistoryVisibility::JOINED;
-    return RSM_RoomHistoryVisibility::SHARED;
-}
 
-const char* joinRuleToString(RoomJoinRule rule) {
-    switch (rule) {
-        case RoomJoinRule::PUBLIC: return "public";
-        case RoomJoinRule::INVITE: return "invite";
-        case RoomJoinRule::KNOCK: return "knock";
-        case RoomJoinRule::PRIVATE: return "private";
-    }
-    return "invite";
-}
 
-RoomJoinRule joinRuleFromString(const std::string& s) {
-    if (s == "public") return RoomJoinRule::PUBLIC;
-    if (s == "invite") return RoomJoinRule::INVITE;
-    if (s == "knock") return RoomJoinRule::KNOCK;
-    if (s == "private") return RoomJoinRule::PRIVATE;
-    return RoomJoinRule::INVITE;
-}
 
 // ====== Helpers ======
 

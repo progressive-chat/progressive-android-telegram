@@ -36,8 +36,6 @@ enum class RSM_RoomHistoryVisibility {
     JOINED = 3,          // Members see from join point
 };
 
-const char* historyVisibilityToString(RSM_RoomHistoryVisibility v);
-RSM_RoomHistoryVisibility historyVisibilityFromString(const std::string& s);
 
 // ---- Room Join Rules ----
 
@@ -48,8 +46,6 @@ enum class RoomJoinRule {
     PRIVATE = 3,   // Not joinable
 };
 
-const char* joinRuleToString(RoomJoinRule rule);
-RoomJoinRule joinRuleFromString(const std::string& s);
 
 // ---- Membership State (for visibility checks) ----
 
