@@ -60,7 +60,6 @@ import javax.inject.Inject
 
 internal class RoomSummaryDataSource @Inject constructor(
         @SessionDatabase private val monarchy: Monarchy,
-        private val clock: Clock,
         private val buildTaskValue: BuildRoomSummariesTaskValue,
 ) {
 
