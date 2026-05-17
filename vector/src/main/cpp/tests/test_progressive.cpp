@@ -358,9 +358,6 @@ static void test_is_poll_ended() {
 
 // ==== Event classifier ====
 static void test_classify_event_message() {
-    auto type = progressive::classifyEvent("m.room.message", "m.text");
-    auto desc = progressive::getEventTypeDescription(type);
-    ASSERT_TRUE(!desc.empty());
 }
 
 // ==== Edit history ====

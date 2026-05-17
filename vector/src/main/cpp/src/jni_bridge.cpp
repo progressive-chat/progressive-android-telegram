@@ -179,7 +179,6 @@
 #include "progressive/url_preview.hpp"
 #include "progressive/power_levels.hpp"
 #include "progressive/well_known.hpp"
-#include "progressive/room_sort.hpp"
 #include "progressive/content_utils.hpp"
 #include "progressive/room_state.hpp"
 #include "progressive/login_flow.hpp"
