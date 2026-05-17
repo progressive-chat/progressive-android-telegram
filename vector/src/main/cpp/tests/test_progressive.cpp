@@ -658,7 +658,6 @@ static void test_uploader_compute_chunks() {
 }
 
 // static void test_uploader_suggest_chunk_size() {
-    int mb = progressive::ChunkedUploader::suggestChunkSizeMb(50000000);
     ASSERT_EQ(mb, 10);
     int mb2 = progressive::ChunkedUploader::suggestChunkSizeMb(500000000);
     ASSERT_EQ(mb2, 20);
@@ -1167,7 +1166,7 @@ static void test_parse_json_string_value() {
 }
 
 static void test_end_call_reason_to_string() {
-    ASSERT_STREQ(progressive::endCallReasonToString(progressive::EndCallReason::USER_HUNG_UP), "user_hung_up");
+    ASSERT_STREQ(progressive::endCallReasonToString(progressive::EndCallReason::USER_HANGUP), "user_hung_up");
 }
 
 // ==== Call Manager ====

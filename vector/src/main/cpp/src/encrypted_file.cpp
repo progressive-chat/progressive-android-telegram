@@ -18,7 +18,7 @@ bool EncryptedFileKey::isValid() const {
     return true;
 }
 
-bool EncryptedFileInfo::isValid() const {
+bool EncFileInfo::isValid() const {
     if (url.empty()) return false;
     if (!key.isValid()) return false;
     if (iv.empty()) return false;
@@ -76,8 +76,8 @@ EncryptedFileKey parseEncryptedFileKey(const std::string& json) {
     return key;
 }
 
-EncryptedFileInfo parseEncryptedFileInfo(const std::string& json) {
-    EncryptedFileInfo info;
+EncFileInfo parseEncryptedFileInfo(const std::string& json) {
+    EncFileInfo info;
 
     auto extractStr = [&](const std::string& field) -> std::string {
         auto search = "\"" + field + "\":\"";
@@ -144,10 +144,10 @@ EncryptedFileInfo parseEncryptedFileInfo(const std::string& json) {
 }
 
 bool isValidJwkKey(const EncryptedFileKey& key) { return key.isValid(); }
-bool isValidEncryptedFile(const EncryptedFileInfo& info) { return info.isValid(); }
+bool isValidEncryptedFile(const EncFileInfo& info) { return info.isValid(); }
 
 std::string extractFileKey(const EncryptedFileKey& key) { return key.k; }
-std::string extractFileIv(const EncryptedFileInfo& info) { return info.iv; }
+std::string extractFileIv(const EncFileInfo& info) { return info.iv; }
 
 std::string encryptedFileKeyToJson(const EncryptedFileKey& key) {
     auto esc = [](const std::string& s) -> std::string {
@@ -162,7 +162,7 @@ std::string encryptedFileKeyToJson(const EncryptedFileKey& key) {
     return json.str();
 }
 
-std::string encryptedFileInfoToJson(const EncryptedFileInfo& info) {
+std::string encryptedFileInfoToJson(const EncFileInfo& info) {
     auto esc = [](const std::string& s) -> std::string {
         std::string out; for (char c : s) { if (c == '"') out += "\\\""; else out += c; } return out;
     };

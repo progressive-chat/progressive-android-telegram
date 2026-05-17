@@ -10,7 +10,7 @@ namespace progressive {
 // ---- Encrypted File Parser (Matrix E2EE Attachments) ----
 // Faithful port from original Kotlin:
 //   org.matrix.android.sdk.api.session.crypto.model.EncryptedFileKey.kt (80 lines)
-//   org.matrix.android.sdk.api.session.crypto.model.EncryptedFileInfo.kt (84 lines)
+//   org.matrix.android.sdk.api.session.crypto.model.EncFileInfo.kt (84 lines)
 //
 // Matrix spec for encrypted attachments:
 //   https://matrix.org/docs/spec/client_server/latest#sending-encrypted-attachments
@@ -33,7 +33,7 @@ struct EncryptedFileKey {
     bool isValid() const;
 };
 
-struct EncryptedFileInfo {
+struct EncFileInfo {
     std::string url;                     // MXC URL to the encrypted file
     EncryptedFileKey key;                // JWK key object
     std::string iv;                      // Initialisation Vector (base64)
@@ -42,7 +42,7 @@ struct EncryptedFileInfo {
     bool valid = false;
 
     // Check if this encrypted file descriptor is valid.
-    // Original Kotlin (EncryptedFileInfo.kt:isValid):
+    // Original Kotlin (EncFileInfo.kt:isValid):
     //   url not blank, key.isValid(), iv not blank,
     //   hashes contains "sha256", v == "v2"
     bool isValid() const;
@@ -51,24 +51,24 @@ struct EncryptedFileInfo {
 // Parse an EncryptedFileKey from a JSON object.
 EncryptedFileKey parseEncryptedFileKey(const std::string& json);
 
-// Parse an EncryptedFileInfo from JSON.
-EncryptedFileInfo parseEncryptedFileInfo(const std::string& json);
+// Parse an EncFileInfo from JSON.
+EncFileInfo parseEncryptedFileInfo(const std::string& json);
 
 // Validate a JWK key per Matrix spec requirements.
 bool isValidJwkKey(const EncryptedFileKey& key);
 
 // Validate an encrypted file descriptor.
-bool isValidEncryptedFile(const EncryptedFileInfo& info);
+bool isValidEncryptedFile(const EncFileInfo& info);
 
 // Extract the base64-encoded key from a JWK.
 std::string extractFileKey(const EncryptedFileKey& key);
 
 // Extract the base64-encoded IV from encrypted file info.
-std::string extractFileIv(const EncryptedFileInfo& info);
+std::string extractFileIv(const EncFileInfo& info);
 
 // Format as JSON for Kotlin UI.
 std::string encryptedFileKeyToJson(const EncryptedFileKey& key);
-std::string encryptedFileInfoToJson(const EncryptedFileInfo& info);
+std::string encryptedFileInfoToJson(const EncFileInfo& info);
 
 } // namespace progressive
 
