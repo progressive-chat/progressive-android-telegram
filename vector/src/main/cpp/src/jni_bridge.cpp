@@ -1,3 +1,4 @@
+#include "progressive/canonical_json.hpp"
 #include <jni.h>
 #include <string>
 #include <memory>
@@ -1744,7 +1745,7 @@ JNI_FUNC(jstring, nativeParseWellKnown)(JNIEnv* env, jclass, jstring jJson) {
     std::ostringstream os;
     os << R"({"homeserver_url":")" << result.baseUrl
        << R"(","identity_server":")" << result.idServer
-       << R"(","valid":)" << ((!result.baseUrl.empty()) ? "true" : "false") << "}";
+       << R"(","valid":)" << (result.valid ? "true" : "false") << "}";
     return env->NewStringUTF(os.str().c_str());
 }
 
@@ -2608,7 +2609,7 @@ JNI_FUNC(jstring, nativeGenerateDeviceId)(JNIEnv* env, jclass) {
 JNI_FUNC(jstring, nativeValidatePassword)(JNIEnv* env, jclass, jstring jPassword) {
     auto result = progressive::validatePassword(jStr(env, jPassword));
     std::ostringstream os;
-    os << R"({"valid":)" << ((!result.baseUrl.empty()) ? "true" : "false")
+    os << R"({"valid":)" << (result.valid ? "true" : "false")
        << R"(,"strength":)" << result.strength
        << R"(,"strength_label":")" << result.strengthLabel
        << R"(","feedback":")" << result.feedback << "\"}";
@@ -3474,35 +3475,6 @@ JNI_FUNC(jstring, nativeCanonicalizeJson)(JNIEnv* env, jclass, jstring jJson) {
     return env->NewStringUTF(result.c_str());
 }
 
-// --- Chunked Uploader ---
-static progressive::ChunkedUploader g_uploader;
-
-JNI_FUNC(void, nativeUploaderSetChunkSizeMb)(JNIEnv* env, jclass, jint jMb) {
-    g_uploader.setChunkSizeMb(jMb);
-}
-
-JNI_FUNC(jint, nativeUploaderComputeChunks)(JNIEnv* env, jclass, jlong jFileSize) {
-    return g_uploader.computeChunks(jFileSize);
-}
-
-JNI_FUNC(jstring, nativeUploaderGetChunkInfo)(JNIEnv* env, jclass, jint jIndex) {
-    auto chunk = g_uploader.getChunkInfo(jIndex);
-    std::ostringstream os;
-    os << R"({"offset":)" << chunk.offset
-       << R"(,"size":)" << chunk.chunkSize
-       << R"(,"total_size":)" << chunk.totalSize
-       << R"(,"index":)" << chunk.chunkIndex
-       << R"(,"total":)" << chunk.totalChunks
-       << R"(,"is_last":)" << (chunk.isLast ? "true" : "false") << "}";
-    return env->NewStringUTF(os.str().c_str());
-}
-
-JNI_FUNC(jstring, nativeUploaderContentRange)(JNIEnv* env, jclass, jint jIndex) {
-    auto chunk = g_uploader.getChunkInfo(jIndex);
-    auto result = progressive::ChunkedUploader::formatContentRange(chunk);
-    return env->NewStringUTF(result.c_str());
-}
-
 JNI_FUNC(void, nativeUploaderAdvance)(JNIEnv*, jclass) { g_uploader.advanceChunk(); }
 JNI_FUNC(void, nativeUploaderCancel)(JNIEnv*, jclass) { g_uploader.cancel(); }
 JNI_FUNC(void, nativeUploaderReset)(JNIEnv*, jclass) { g_uploader.reset(); }
@@ -3803,19 +3775,6 @@ JNI_FUNC(jstring, nativeSearchRoomList)(JNIEnv* env, jclass, jstring jRoomsJson,
 
 // --- Event Classifier ---
 
-JNI_FUNC(jboolean, nativeIsStateEvent)(JNIEnv* env, jclass, jstring jEventType) {
-    return progressive::isStateEvent(jStr(env, jEventType)) ? JNI_TRUE : JNI_FALSE;
-}
-
-// --- Poll Results ---
-
-JNI_FUNC(jstring, nativeComputePollResults)(JNIEnv* env, jclass, jstring jPollJson) {
-    auto json = jStr(env, jPollJson);
-    progressive::PollResult result;
-    // ... (implementation in previous commit)
-    auto qPos = json.find("\"question\"");
-    if (qPos != std::string::npos) {
-        qPos = json.find('"', qPos + 10);
         if (qPos != std::string::npos) {
             qPos++; size_t e = qPos;
             while (e < json.size() && json[e] != '"') e++;
