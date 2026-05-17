@@ -48,7 +48,7 @@ enum class CallType {
 
 // ---- End Call Reason ----
 
-enum class EndCallReason {
+enum class CallManagerEndReason {
     UNKNOWN = 0,
     USER_HUNG_UP = 1,       // Local user hung up
     REMOTE_HUNG_UP = 2,     // Remote user hung up
@@ -60,8 +60,8 @@ enum class EndCallReason {
     NETWORK_ERROR = 8,      // Network dropped
 };
 
-const char* endCallReasonToString(EndCallReason reason);
-EndCallReason endCallReasonFromString(const std::string& s);
+const char* endCallReasonToString(CallManagerEndReason reason);
+CallManagerEndReason endCallReasonFromString(const std::string& s);
 
 // ---- SDP (Session Description Protocol) ----
 
@@ -127,7 +127,7 @@ struct CallSession {
     int64_t answeredAtMs = 0;    // When answered
     int64_t endedAtMs = 0;       // When ended
     int durationSeconds = 0;     // Call duration (connected time)
-    EndCallReason endReason = EndCallReason::UNKNOWN;
+    CallManagerEndReason endReason = CallManagerEndReason::UNKNOWN;
     std::string endReasonText;   // Human-readable reason
     SdpSession localSdp;         // Our SDP
     SdpSession remoteSdp;        // Their SDP
@@ -211,7 +211,7 @@ public:
 
     // Hang up an active call.
     // Returns the hangup event content JSON.
-    std::string hangupCall(const std::string& callId, EndCallReason reason = EndCallReason::USER_HUNG_UP,
+    std::string hangupCall(const std::string& callId, CallManagerEndReason reason = CallManagerEndReason::USER_HUNG_UP,
                             const std::string& reasonText = "");
 
     // Timeout an unanswered call.

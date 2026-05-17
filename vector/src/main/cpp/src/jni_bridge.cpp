@@ -164,6 +164,8 @@
 #include "progressive/cross_signing_manager.hpp"
 #include "progressive/draft_manager_full.hpp"
 #include "progressive/room_state.hpp"
+#include "progressive/federation_version.hpp"
+#include "progressive/canonical_json.hpp"
 
 #include "progressive/terms_manager.hpp"
 #include "progressive/transparent_overlay.hpp"
@@ -2768,7 +2770,7 @@ JNI_FUNC(jboolean, nativeIsInviteOnly)(JNIEnv* env, jclass, jstring jStateJson) 
 
 JNI_FUNC(jstring, nativeJoinRuleToString)(JNIEnv* env, jclass, jstring jStateJson) {
     auto rules = progressive::parseJoinRules(jStr(env, jStateJson));
-    auto result = progressive::joinRuleToString(rules.joinRule);
+    auto result = progressive::joinRuleToString(rules.rule);
     return env->NewStringUTF(result.c_str());
 }
 
@@ -3206,7 +3208,7 @@ JNI_FUNC(jstring, nativeNormalizeMimeType)(JNIEnv* env, jclass, jstring jMime) {
 JNI_FUNC(jstring, nativeParseJoinRules)(JNIEnv* env, jclass, jstring jContentJson) {
     auto rules = progressive::parseJoinRules(jStr(env, jContentJson));
     std::ostringstream os;
-    os << R"({"rule":")" << progressive::joinRuleToString(rules.joinRule) << "\"}";
+    os << R"({"rule":")" << progressive::joinRuleToString(rules.rule) << "\"}";
     return env->NewStringUTF(os.str().c_str());
 }
 
@@ -3474,14 +3476,6 @@ JNI_FUNC(jstring, nativeCanonicalizeJson)(JNIEnv* env, jclass, jstring jJson) {
 }
 
 // --- Chunked Uploader ---
-static progressive::ChunkedUploader g_uploader;
-
-JNI_FUNC(void, nativeUploaderSetChunkSizeMb)(JNIEnv* env, jclass, jint jMb) {
-    g_uploader.setChunkSizeMb(jMb);
-}
-
-JNI_FUNC(jint, nativeUploaderComputeChunks)(JNIEnv* env, jclass, jlong jFileSize) {
-    return g_uploader.computeChunks(jFileSize);
 }
 
 JNI_FUNC(jstring, nativeUploaderGetChunkInfo)(JNIEnv* env, jclass, jint jIndex) {
@@ -3774,21 +3768,6 @@ JNI_FUNC(jstring, nativeSearchRoomList)(JNIEnv* env, jclass, jstring jRoomsJson,
     return env->NewStringUTF(os.str().c_str());
 }
     // Format: "Alice, Bob and 3 others online"
-    std::ostringstream os;
-    int total = static_cast<int>(names.size());
-    int shown = std::min(total, jMaxNames);
-    for (int i = 0; i < shown; i++) {
-        if (i > 0) os << (i == shown - 1 && total <= jMaxNames ? " and " : ", ");
-        os << names[i];
-    }
-    if (total > jMaxNames) os << " and " << (total - shown) << " others";
-    os << (total == 1 ? " is online" : " are online");
-    return env->NewStringUTF(os.str().c_str());
-}
-        return v;
-    };
-    auto eventIds = parseStrArray(jStr(env, jEventIdsJson));
-    auto highlightIds = parseStrArray(jStr(env, jHighlightIdsJson));
     auto readId = jStr(env, jReadReceiptId);
 
     auto result = progressive::computeThreadUnreadCount(eventIds, readId, highlightIds);

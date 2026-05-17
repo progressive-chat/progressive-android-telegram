@@ -36,30 +36,30 @@ CallState callStateFromString(const std::string& s) {
     return CallState::IDLE;
 }
 
-const char* endCallReasonToString(EndCallReason reason) {
+const char* endCallReasonToString(CallManagerEndReason reason) {
     switch (reason) {
-        case EndCallReason::USER_HUNG_UP: return "user_hung_up";
-        case EndCallReason::REMOTE_HUNG_UP: return "remote_hung_up";
-        case EndCallReason::REJECTED: return "rejected";
-        case EndCallReason::TIMEOUT: return "timeout";
-        case EndCallReason::BUSY: return "busy";
-        case EndCallReason::INVITE_EXPIRED: return "invite_expired";
-        case EndCallReason::ICE_FAILED: return "ice_failed";
-        case EndCallReason::NETWORK_ERROR: return "network_error";
+        case CallManagerEndReason::USER_HUNG_UP: return "user_hung_up";
+        case CallManagerEndReason::REMOTE_HUNG_UP: return "remote_hung_up";
+        case CallManagerEndReason::REJECTED: return "rejected";
+        case CallManagerEndReason::TIMEOUT: return "timeout";
+        case CallManagerEndReason::BUSY: return "busy";
+        case CallManagerEndReason::INVITE_EXPIRED: return "invite_expired";
+        case CallManagerEndReason::ICE_FAILED: return "ice_failed";
+        case CallManagerEndReason::NETWORK_ERROR: return "network_error";
         default: return "unknown";
     }
 }
 
-EndCallReason endCallReasonFromString(const std::string& s) {
-    if (s == "user_hung_up") return EndCallReason::USER_HUNG_UP;
-    if (s == "remote_hung_up") return EndCallReason::REMOTE_HUNG_UP;
-    if (s == "rejected") return EndCallReason::REJECTED;
-    if (s == "timeout") return EndCallReason::TIMEOUT;
-    if (s == "busy") return EndCallReason::BUSY;
-    if (s == "invite_expired") return EndCallReason::INVITE_EXPIRED;
-    if (s == "ice_failed") return EndCallReason::ICE_FAILED;
-    if (s == "network_error") return EndCallReason::NETWORK_ERROR;
-    return EndCallReason::UNKNOWN;
+CallManagerEndReason endCallReasonFromString(const std::string& s) {
+    if (s == "user_hung_up") return CallManagerEndReason::USER_HUNG_UP;
+    if (s == "remote_hung_up") return CallManagerEndReason::REMOTE_HUNG_UP;
+    if (s == "rejected") return CallManagerEndReason::REJECTED;
+    if (s == "timeout") return CallManagerEndReason::TIMEOUT;
+    if (s == "busy") return CallManagerEndReason::BUSY;
+    if (s == "invite_expired") return CallManagerEndReason::INVITE_EXPIRED;
+    if (s == "ice_failed") return CallManagerEndReason::ICE_FAILED;
+    if (s == "network_error") return CallManagerEndReason::NETWORK_ERROR;
+    return CallManagerEndReason::UNKNOWN;
 }
 
 // ====== JSON helpers (local) ======
@@ -395,7 +395,7 @@ std::string CallManager::rejectCall(const std::string& callId, const std::string
     return os.str();
 }
 
-std::string CallManager::hangupCall(const std::string& callId, EndCallReason reason,
+std::string CallManager::hangupCall(const std::string& callId, CallManagerEndReason reason,
                                      const std::string& reasonText) {
     auto* call = findCall(callId);
     if (!call) return "";
@@ -423,7 +423,7 @@ std::string CallManager::timeoutCall(const std::string& callId) {
 
     call->state = CallState::TIMED_OUT;
     call->endedAtMs = nowMs();
-    call->endReason = EndCallReason::TIMEOUT;
+    call->endReason = CallManagerEndReason::TIMEOUT;
 
     std::ostringstream os;
     os << R"({"call_id":")" << callId << R"(")";
