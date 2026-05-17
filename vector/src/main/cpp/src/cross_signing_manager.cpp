@@ -6,46 +6,46 @@ namespace progressive {
 
 // ====== Enum ======
 
-const char* keyUsageToString(KeyUsage usage) {
+const char* keyUsageToString(CSM_KeyUsage usage) {
     switch (usage) {
-        case KeyUsage::MASTER: return "master";
-        case KeyUsage::SELF_SIGNING: return "self_signing";
-        case KeyUsage::USER_SIGNING: return "user_signing";
+        case CSM_KeyUsage::MASTER: return "master";
+        case CSM_KeyUsage::SELF_SIGNING: return "self_signing";
+        case CSM_KeyUsage::USER_SIGNING: return "user_signing";
     }
     return "master";
 }
 
-KeyUsage keyUsageFromString(const std::string& s) {
-    if (s == "master") return KeyUsage::MASTER;
-    if (s == "self_signing") return KeyUsage::SELF_SIGNING;
-    if (s == "user_signing") return KeyUsage::USER_SIGNING;
-    return KeyUsage::MASTER;
+CSM_KeyUsage keyUsageFromString(const std::string& s) {
+    if (s == "master") return CSM_KeyUsage::MASTER;
+    if (s == "self_signing") return CSM_KeyUsage::SELF_SIGNING;
+    if (s == "user_signing") return CSM_KeyUsage::USER_SIGNING;
+    return CSM_KeyUsage::MASTER;
 }
 
-// ====== CrossSigningKey ======
+// ====== CSM_CrossSigningKey ======
 
-bool CrossSigningKey::isMasterKey() const {
-    return std::find(usages.begin(), usages.end(), KeyUsage::MASTER) != usages.end();
+bool CSM_CrossSigningKey::isMasterKey() const {
+    return std::find(usages.begin(), usages.end(), CSM_KeyUsage::MASTER) != usages.end();
 }
-bool CrossSigningKey::isSelfSigningKey() const {
-    return std::find(usages.begin(), usages.end(), KeyUsage::SELF_SIGNING) != usages.end();
+bool CSM_CrossSigningKey::isSelfSigningKey() const {
+    return std::find(usages.begin(), usages.end(), CSM_KeyUsage::SELF_SIGNING) != usages.end();
 }
-bool CrossSigningKey::isUserKey() const {
-    return std::find(usages.begin(), usages.end(), KeyUsage::USER_SIGNING) != usages.end();
+bool CSM_CrossSigningKey::isUserKey() const {
+    return std::find(usages.begin(), usages.end(), CSM_KeyUsage::USER_SIGNING) != usages.end();
 }
 
-std::string CrossSigningKey::getPublicKey() const {
+std::string CSM_CrossSigningKey::getPublicKey() const {
     if (keys.empty()) return "";
     return keys.begin()->second;
 }
 
-void CrossSigningKey::addSignature(const std::string& signerUserId, const std::string& signedKey,
+void CSM_CrossSigningKey::addSignature(const std::string& signerUserId, const std::string& signedKey,
                                     const std::string& signature) {
     signatures[signerUserId]["ed25519:" + signedKey] = signature;
 }
 
-CrossSigningKey CrossSigningKey::Builder::build() const {
-    CrossSigningKey key;
+CSM_CrossSigningKey CSM_CrossSigningKey::Builder::build() const {
+    CSM_CrossSigningKey key;
     key.userId = userId;
     key.usages = {usage};
     key.keys["ed25519:" + publicKey] = publicKey;
@@ -56,23 +56,23 @@ CrossSigningKey CrossSigningKey::Builder::build() const {
     return key;
 }
 
-// ====== CrossSigningInfo ======
+// ====== CSM_CrossSigningInfo ======
 
-bool CrossSigningInfo::isTrusted() const {
+bool CSM_CrossSigningInfo::isTrusted() const {
     auto* msk = masterKey();
     auto* ssk = selfSigningKey();
     return msk && ssk && msk->isVerified() && ssk->isVerified();
 }
 
-const CrossSigningKey* CrossSigningInfo::masterKey() const {
+const CSM_CrossSigningKey* CSM_CrossSigningInfo::masterKey() const {
     for (const auto& k : keys) if (k.isMasterKey()) return &k;
     return nullptr;
 }
-const CrossSigningKey* CrossSigningInfo::userKey() const {
+const CSM_CrossSigningKey* CSM_CrossSigningInfo::userKey() const {
     for (const auto& k : keys) if (k.isUserKey()) return &k;
     return nullptr;
 }
-const CrossSigningKey* CrossSigningInfo::selfSigningKey() const {
+const CSM_CrossSigningKey* CSM_CrossSigningInfo::selfSigningKey() const {
     for (const auto& k : keys) if (k.isSelfSigningKey()) return &k;
     return nullptr;
 }
@@ -86,12 +86,12 @@ bool CrossSigningManager::isVerified() const { return isInitialized() && myKeys_
 bool CrossSigningManager::canCrossSign() const { return privateKeys_.allPrivateKeysKnown(); }
 bool CrossSigningManager::allPrivateKeysKnown() const { return privateKeys_.allPrivateKeysKnown(); }
 
-void CrossSigningManager::setMyKeys(const CrossSigningInfo& info) { myKeys_ = info; }
-void CrossSigningManager::setUserKeys(const std::string& userId, const CrossSigningInfo& info) { userKeys_[userId] = info; }
-CrossSigningInfo CrossSigningManager::getMyKeys() const { return myKeys_; }
-CrossSigningInfo CrossSigningManager::getUserKeys(const std::string& userId) const {
+void CrossSigningManager::setMyKeys(const CSM_CrossSigningInfo& info) { myKeys_ = info; }
+void CrossSigningManager::setUserKeys(const std::string& userId, const CSM_CrossSigningInfo& info) { userKeys_[userId] = info; }
+CSM_CrossSigningInfo CrossSigningManager::getMyKeys() const { return myKeys_; }
+CSM_CrossSigningInfo CrossSigningManager::getUserKeys(const std::string& userId) const {
     auto it = userKeys_.find(userId);
-    return (it != userKeys_.end()) ? it->second : CrossSigningInfo{};
+    return (it != userKeys_.end()) ? it->second : CSM_CrossSigningInfo{};
 }
 
 // ====== Private Key Import ======
@@ -121,11 +121,11 @@ UserTrustResult CrossSigningManager::importPrivateKeys(const std::string& master
     return result;
 }
 
-bool CrossSigningManager::importPrivateKey(KeyUsage usage, const std::string& privateKey) {
+bool CrossSigningManager::importPrivateKey(CSM_KeyUsage usage, const std::string& privateKey) {
     switch (usage) {
-        case KeyUsage::MASTER: privateKeys_.masterKeyPrivate = privateKey; privateKeys_.hasMaster = true; break;
-        case KeyUsage::SELF_SIGNING: privateKeys_.selfSigningKeyPrivate = privateKey; privateKeys_.hasSelfSigning = true; break;
-        case KeyUsage::USER_SIGNING: privateKeys_.userSigningKeyPrivate = privateKey; privateKeys_.hasUserSigning = true; break;
+        case CSM_KeyUsage::MASTER: privateKeys_.masterKeyPrivate = privateKey; privateKeys_.hasMaster = true; break;
+        case CSM_KeyUsage::SELF_SIGNING: privateKeys_.selfSigningKeyPrivate = privateKey; privateKeys_.hasSelfSigning = true; break;
+        case CSM_KeyUsage::USER_SIGNING: privateKeys_.userSigningKeyPrivate = privateKey; privateKeys_.hasUserSigning = true; break;
     }
     return true;
 }
@@ -134,7 +134,7 @@ PrivateKeysInfo CrossSigningManager::getPrivateKeys() const { return privateKeys
 
 // ====== Trust Chain ======
 
-bool CrossSigningManager::verifyKeySignatures(const CrossSigningKey& key) const {
+bool CrossSigningManager::verifyKeySignatures(const CSM_CrossSigningKey& key) const {
     // Check that the MSK has signed this key
     auto* msk = myKeys_.masterKey();
     if (!msk) return false;
@@ -246,35 +246,35 @@ void CrossSigningManager::trustDevice(const std::string& deviceId) {
 
 // ====== Key Building ======
 
-CrossSigningKey CrossSigningManager::buildMasterKey(const std::string& userId, const std::string& publicKey) {
-    return CrossSigningKey::Builder()
+CSM_CrossSigningKey CrossSigningManager::buildMasterKey(const std::string& userId, const std::string& publicKey) {
+    return CSM_CrossSigningKey::Builder()
         .key(publicKey)
         .userId(userId)
-        .usage(KeyUsage::MASTER)
+        .usage(CSM_KeyUsage::MASTER)
         .build();
 }
 
-CrossSigningKey CrossSigningManager::buildSelfSigningKey(const std::string& userId, const std::string& publicKey) {
-    return CrossSigningKey::Builder()
+CSM_CrossSigningKey CrossSigningManager::buildSelfSigningKey(const std::string& userId, const std::string& publicKey) {
+    return CSM_CrossSigningKey::Builder()
         .key(publicKey)
         .userId(userId)
-        .usage(KeyUsage::SELF_SIGNING)
+        .usage(CSM_KeyUsage::SELF_SIGNING)
         .build();
 }
 
-CrossSigningKey CrossSigningManager::buildUserSigningKey(const std::string& userId, const std::string& publicKey) {
-    return CrossSigningKey::Builder()
+CSM_CrossSigningKey CrossSigningManager::buildUserSigningKey(const std::string& userId, const std::string& publicKey) {
+    return CSM_CrossSigningKey::Builder()
         .key(publicKey)
         .userId(userId)
-        .usage(KeyUsage::USER_SIGNING)
+        .usage(CSM_KeyUsage::USER_SIGNING)
         .build();
 }
 
-CrossSigningInfo CrossSigningManager::buildCrossSigningInfo(const std::string& userId,
-                                                              const CrossSigningKey& msk,
-                                                              const CrossSigningKey& usk,
-                                                              const CrossSigningKey& ssk) {
-    CrossSigningInfo info;
+CSM_CrossSigningInfo CrossSigningManager::buildCrossSigningInfo(const std::string& userId,
+                                                              const CSM_CrossSigningKey& msk,
+                                                              const CSM_CrossSigningKey& usk,
+                                                              const CSM_CrossSigningKey& ssk) {
+    CSM_CrossSigningInfo info;
     info.userId = userId;
     info.keys = {msk, usk, ssk};
     info.valid = msk.valid && usk.valid && ssk.valid;
@@ -283,7 +283,7 @@ CrossSigningInfo CrossSigningManager::buildCrossSigningInfo(const std::string& u
 
 // ====== Serialization ======
 
-std::string CrossSigningManager::crossSigningInfoToJson(const CrossSigningInfo& info) const {
+std::string CrossSigningManager::crossSigningInfoToJson(const CSM_CrossSigningInfo& info) const {
     auto esc = [](const std::string& s) -> std::string {
         std::string out;
         for (char c : s) { if (c == '"') out += "\\\""; else out += c; }
@@ -302,7 +302,7 @@ std::string CrossSigningManager::crossSigningInfoToJson(const CrossSigningInfo& 
     return os.str();
 }
 
-std::string CrossSigningManager::keyToJson(const CrossSigningKey& key) const {
+std::string CrossSigningManager::keyToJson(const CSM_CrossSigningKey& key) const {
     auto esc = [](const std::string& s) -> std::string {
         std::string out;
         for (char c : s) { if (c == '"') out += "\\\""; else out += c; }

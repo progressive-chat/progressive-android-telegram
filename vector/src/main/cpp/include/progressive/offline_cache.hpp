@@ -138,7 +138,7 @@ struct RoomCacheState {
 
 // ---- Cache Statistics ----
 
-struct CacheStats {
+struct OLCacheStats {
     int64_t totalCachedBytes = 0;    // Total data cached
     int totalCachedMessages = 0;
     int totalCachedMedia = 0;
@@ -216,7 +216,7 @@ public:
 
     // ====== Statistics ======
 
-    CacheStats getStats() const;
+    OLCacheStats getStats() const;
     void resetStats();
 
     // ====== Cache Plan ======
@@ -234,7 +234,7 @@ private:
     OfflineCacheConfig config_;
     std::vector<RoomPriority> rooms_;
     std::unordered_map<std::string, RoomCacheState> cacheState_; // roomId → cache state
-    CacheStats stats_;
+    OLCacheStats stats_;
 
     RoomCacheState& getOrCreateState(const std::string& roomId);
 };

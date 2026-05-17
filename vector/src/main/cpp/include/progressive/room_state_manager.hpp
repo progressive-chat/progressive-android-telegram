@@ -11,7 +11,7 @@ namespace progressive {
 // Room History Visibility Manager
 //
 // Faithful port from Element Android original sources:
-//   RoomHistoryVisibility.kt — WORLD_READABLE, SHARED, INVITED, JOINED
+//   RSM_RoomHistoryVisibility.kt — WORLD_READABLE, SHARED, INVITED, JOINED
 //     shouldShareHistory() → WORLD_READABLE | SHARED
 //   RoomJoinRules.kt — PUBLIC, INVITE, KNOCK, etc.
 //
@@ -27,17 +27,17 @@ namespace progressive {
 // ================================================================
 
 // ---- Room History Visibility ----
-// Original: RoomHistoryVisibility.kt (WORLD_READABLE, SHARED, INVITED, JOINED)
+// Original: RSM_RoomHistoryVisibility.kt (WORLD_READABLE, SHARED, INVITED, JOINED)
 
-enum class RoomHistoryVisibility {
+enum class RSM_RoomHistoryVisibility {
     WORLD_READABLE = 0,  // Anyone can see all events
     SHARED = 1,          // Joined members see all events
     INVITED = 2,         // Members see from invite point
     JOINED = 3,          // Members see from join point
 };
 
-const char* historyVisibilityToString(RoomHistoryVisibility v);
-RoomHistoryVisibility historyVisibilityFromString(const std::string& s);
+const char* historyVisibilityToString(RSM_RoomHistoryVisibility v);
+RSM_RoomHistoryVisibility historyVisibilityFromString(const std::string& s);
 
 // ---- Room Join Rules ----
 
@@ -67,7 +67,7 @@ enum class MembershipState {
 struct RoomStateSummary {
     std::string roomId;
     std::string roomName;
-    RoomHistoryVisibility historyVisibility = RoomHistoryVisibility::SHARED;
+    RSM_RoomHistoryVisibility historyVisibility = RSM_RoomHistoryVisibility::SHARED;
     RoomJoinRule joinRule = RoomJoinRule::INVITE;
     bool isEncrypted = false;
     bool isPublicRoom = false;          // joinRule == PUBLIC
@@ -83,33 +83,33 @@ struct RoomStateSummary {
 
 // Check if history can be shared with new members.
 // Per MSC3061: only WORLD_READABLE and SHARED allow sharing.
-bool shouldShareHistory(RoomHistoryVisibility visibility);
+bool shouldShareHistory(RSM_RoomHistoryVisibility visibility);
 
 // Check if a member can see an event based on history_visibility.
 // Takes: history visibility, member's state when event was sent, member's current state.
-bool canSeeEvent(RoomHistoryVisibility visibility, MembershipState memberStateAtEventTime,
+bool canSeeEvent(RSM_RoomHistoryVisibility visibility, MembershipState memberStateAtEventTime,
                   MembershipState memberCurrentState);
 
 // Check if a non-member can see events.
-bool canNonMemberSeeEvents(RoomHistoryVisibility visibility);
+bool canNonMemberSeeEvents(RSM_RoomHistoryVisibility visibility);
 
 // Get the effective visibility for a given membership.
-std::string getVisibilityLabel(RoomHistoryVisibility visibility);
+std::string getVisibilityLabel(RSM_RoomHistoryVisibility visibility);
 
 // Get a human-readable description of what the visibility means.
-std::string getVisibilityDescription(RoomHistoryVisibility visibility);
+std::string getVisibilityDescription(RSM_RoomHistoryVisibility visibility);
 
 // ---- Room State Builder ----
 // Original: Build m.room.history_visibility state event content
 
 // Build history_visibility state event content.
-std::string buildHistoryVisibilityContent(RoomHistoryVisibility visibility);
+std::string buildHistoryVisibilityContent(RSM_RoomHistoryVisibility visibility);
 
 // Build join_rules state event content.
 std::string buildJoinRulesContent(RoomJoinRule rule);
 
 // Parse history visibility from state event content.
-RoomHistoryVisibility parseHistoryVisibility(const std::string& contentJson);
+RSM_RoomHistoryVisibility parseHistoryVisibility(const std::string& contentJson);
 
 // Parse join rules from state event content.
 RoomJoinRule parseJoinRules(const std::string& contentJson);
@@ -123,7 +123,7 @@ public:
     // ====== Room State ======
 
     // Set room state from events.
-    void setHistoryVisibility(const std::string& roomId, RoomHistoryVisibility visibility);
+    void setHistoryVisibility(const std::string& roomId, RSM_RoomHistoryVisibility visibility);
     void setJoinRule(const std::string& roomId, RoomJoinRule rule);
     void setRoomName(const std::string& roomId, const std::string& name);
     void setEncrypted(const std::string& roomId, bool encrypted);

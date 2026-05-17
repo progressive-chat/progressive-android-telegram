@@ -20,7 +20,7 @@ namespace progressive {
 //   CryptoCrossSigningKey.kt — userId, usages[], keys{},
 //     signatures{}, isMasterKey/isSelfSigningKey/isUserKey,
 //     addSignatureAndCopy, copyForSignature, Builder
-//   KeyUsage — MASTER("master"), SELF_SIGNING("self_signing"),
+//   CSM_KeyUsage — MASTER("master"), SELF_SIGNING("self_signing"),
 //     USER_SIGNING("user_signing")
 //   DeviceTrustLevel.kt — crossSigningVerified, locallyVerified
 //   UserIdentity.kt — identity verified state
@@ -36,23 +36,23 @@ namespace progressive {
 // ================================================================
 
 // ---- Key Usage ----
-// Original: KeyUsage enum (MASTER, SELF_SIGNING, USER_SIGNING)
+// Original: CSM_KeyUsage enum (MASTER, SELF_SIGNING, USER_SIGNING)
 
-enum class KeyUsage {
+enum class CSM_KeyUsage {
     MASTER = 0,          // Master key — signs other keys
     SELF_SIGNING = 1,    // Signs own devices
     USER_SIGNING = 2,    // Signs other users
 };
 
-const char* keyUsageToString(KeyUsage usage);
-KeyUsage keyUsageFromString(const std::string& s);
+const char* keyUsageToString(CSM_KeyUsage usage);
+CSM_KeyUsage keyUsageFromString(const std::string& s);
 
 // ---- Cross-Signing Key ----
 // Original: CryptoCrossSigningKey.kt (userId, usages[], keys{}, signatures{}, trustLevel)
 
-struct CrossSigningKey {
+struct CSM_CrossSigningKey {
     std::string userId;
-    std::vector<KeyUsage> usages;
+    std::vector<CSM_KeyUsage> usages;
     std::unordered_map<std::string, std::string> keys;      // "ed25519:base64key" → base64key
     std::unordered_map<std::string, std::unordered_map<std::string, std::string>> signatures;
     bool crossSigningVerified = false;
@@ -77,7 +77,7 @@ struct CrossSigningKey {
     // Builder pattern
     struct Builder {
         std::string userId;
-        KeyUsage usage;
+        CSM_KeyUsage usage;
         std::string publicKey;
         struct SignatureEntry {
             std::string userId;
@@ -90,16 +90,16 @@ struct CrossSigningKey {
         Builder& signature(const std::string& uid, const std::string& ks, const std::string& sgn) {
             sigs.push_back({uid, ks, sgn}); return *this;
         }
-        CrossSigningKey build() const;
+        CSM_CrossSigningKey build() const;
     };
 };
 
 // ---- Cross-Signing Info ----
 // Original: MXCrossSigningInfo.kt (userId, crossSigningKeys[], wasTrustedOnce)
 
-struct CrossSigningInfo {
+struct CSM_CrossSigningInfo {
     std::string userId;
-    std::vector<CrossSigningKey> keys;   // MSK, USK, SSK
+    std::vector<CSM_CrossSigningKey> keys;   // MSK, USK, SSK
     bool wasTrustedOnce = false;
     bool valid = false;
 
@@ -107,9 +107,9 @@ struct CrossSigningInfo {
     bool isTrusted() const;
 
     // Original: masterKey(), userKey(), selfSigningKey()
-    const CrossSigningKey* masterKey() const;
-    const CrossSigningKey* userKey() const;
-    const CrossSigningKey* selfSigningKey() const;
+    const CSM_CrossSigningKey* masterKey() const;
+    const CSM_CrossSigningKey* userKey() const;
+    const CSM_CrossSigningKey* selfSigningKey() const;
 };
 
 // ---- User Trust Result ----
@@ -149,9 +149,9 @@ struct PrivateKeysInfo {
 };
 
 // ---- Room Encryption Trust Level ----
-// Original: RoomEncryptionTrustLevel
+// Original: CS_RoomEncryptionTrustLevel
 
-enum class RoomEncryptionTrustLevel {
+enum class CS_RoomEncryptionTrustLevel {
     TRUSTED = 0,         // All members verified
     WARNING = 1,         // Some unverified
     UNTRUSTED = 2,       // Unknown/untrusted devices
@@ -183,16 +183,16 @@ public:
     // Original: getMyCrossSigningKeys / getUserCrossSigningKeys
 
     // Set our own cross-signing keys.
-    void setMyKeys(const CrossSigningInfo& info);
+    void setMyKeys(const CSM_CrossSigningInfo& info);
 
     // Set another user's cross-signing keys.
-    void setUserKeys(const std::string& userId, const CrossSigningInfo& info);
+    void setUserKeys(const std::string& userId, const CSM_CrossSigningInfo& info);
 
     // Get our cross-signing keys.
-    CrossSigningInfo getMyKeys() const;
+    CSM_CrossSigningInfo getMyKeys() const;
 
     // Get a user's cross-signing keys.
-    CrossSigningInfo getUserKeys(const std::string& userId) const;
+    CSM_CrossSigningInfo getUserKeys(const std::string& userId) const;
 
     // ====== Private Key Import ======
     // Original: checkTrustFromPrivateKeys(masterKeyPrivate, uskPrivate, sskPrivate)
@@ -203,7 +203,7 @@ public:
                                        const std::string& selfSigningKeyPrivate);
 
     // Import a single private key by usage.
-    bool importPrivateKey(KeyUsage usage, const std::string& privateKey);
+    bool importPrivateKey(CSM_KeyUsage usage, const std::string& privateKey);
 
     // Get our private keys info.
     PrivateKeysInfo getPrivateKeys() const;
@@ -237,39 +237,39 @@ public:
     // Original: CryptoCrossSigningKey.Builder
 
     // Build a master key.
-    static CrossSigningKey buildMasterKey(const std::string& userId, const std::string& publicKey);
+    static CSM_CrossSigningKey buildMasterKey(const std::string& userId, const std::string& publicKey);
 
     // Build a self-signing key.
-    static CrossSigningKey buildSelfSigningKey(const std::string& userId, const std::string& publicKey);
+    static CSM_CrossSigningKey buildSelfSigningKey(const std::string& userId, const std::string& publicKey);
 
     // Build a user-signing key.
-    static CrossSigningKey buildUserSigningKey(const std::string& userId, const std::string& publicKey);
+    static CSM_CrossSigningKey buildUserSigningKey(const std::string& userId, const std::string& publicKey);
 
     // Build cross-signing info from three keys.
-    static CrossSigningInfo buildCrossSigningInfo(const std::string& userId,
-                                                    const CrossSigningKey& msk,
-                                                    const CrossSigningKey& usk,
-                                                    const CrossSigningKey& ssk);
+    static CSM_CrossSigningInfo buildCrossSigningInfo(const std::string& userId,
+                                                    const CSM_CrossSigningKey& msk,
+                                                    const CSM_CrossSigningKey& usk,
+                                                    const CSM_CrossSigningKey& ssk);
 
     // ====== Serialization ======
 
     // Export cross-signing info as JSON.
-    std::string crossSigningInfoToJson(const CrossSigningInfo& info) const;
+    std::string crossSigningInfoToJson(const CSM_CrossSigningInfo& info) const;
 
     // Export key as JSON.
-    std::string keyToJson(const CrossSigningKey& key) const;
+    std::string keyToJson(const CSM_CrossSigningKey& key) const;
 
     // Export trust result as JSON.
     std::string trustResultToJson(const UserTrustResult& result) const;
     std::string deviceTrustToJson(const DeviceTrustResult& result) const;
 
 private:
-    CrossSigningInfo myKeys_;
-    std::unordered_map<std::string, CrossSigningInfo> userKeys_; // userId → keys
+    CSM_CrossSigningInfo myKeys_;
+    std::unordered_map<std::string, CSM_CrossSigningInfo> userKeys_; // userId → keys
     PrivateKeysInfo privateKeys_;
 
     // Check if a key's signatures are valid.
-    bool verifyKeySignatures(const CrossSigningKey& key) const;
+    bool verifyKeySignatures(const CSM_CrossSigningKey& key) const;
 
     // Verify chain: MSK → USK → user MSK (for other users)
     // Verify chain: MSK → SSK → device (for own devices)

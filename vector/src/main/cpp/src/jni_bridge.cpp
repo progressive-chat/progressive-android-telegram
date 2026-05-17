@@ -6332,10 +6332,10 @@ JNI_FUNC(void, nativeCrossSigningTrustMaster)(JNIEnv*, jclass) {
 // Draft Manager
 // ============================================================
 
-static std::unique_ptr<progressive::DraftManager> g_draftMgr;
+static std::unique_ptr<progressive::FullDraftManager> g_draftMgr;
 
-static progressive::DraftManager* getDraftMgr() {
-    if (!g_draftMgr) g_draftMgr.reset(new progressive::DraftManager());
+static progressive::FullDraftManager* getDraftMgr() {
+    if (!g_draftMgr) g_draftMgr.reset(new progressive::FullDraftManager());
     return g_draftMgr.get();
 }
 
@@ -6407,7 +6407,7 @@ JNI_FUNC(jboolean, nativeRoomStateIsInviteOnly)(JNIEnv* env, jclass, jstring jRo
 }
 
 JNI_FUNC(void, nativeRoomStateSetVisibility)(JNIEnv* env, jclass, jstring jRoomId, jint jVis) {
-    getRoomStateMgr()->setHistoryVisibility(jStr(env, jRoomId), static_cast<progressive::RoomHistoryVisibility>(jVis));
+    getRoomStateMgr()->setHistoryVisibility(jStr(env, jRoomId), static_cast<progressive::RSM_RoomHistoryVisibility>(jVis));
 }
 
 JNI_FUNC(void, nativeRoomStateSetJoinRule)(JNIEnv* env, jclass, jstring jRoomId, jint jRule) {

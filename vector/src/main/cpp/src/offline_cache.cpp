@@ -376,14 +376,14 @@ std::vector<std::string> OfflineCacheManager::evictExpired() {
 
 // ====== Statistics ======
 
-CacheStats OfflineCacheManager::getStats() const {
+OLCacheStats OfflineCacheManager::getStats() const {
     auto s = stats_;
     s.roomsCached = static_cast<int>(cacheState_.size());
     return s;
 }
 
 void OfflineCacheManager::resetStats() {
-    stats_ = CacheStats{};
+    stats_ = OLCacheStats{};
 }
 
 // ====== Cache Plan ======

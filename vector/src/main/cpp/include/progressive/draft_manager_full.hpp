@@ -69,9 +69,9 @@ struct LiveDraftConfig {
 
 // ---- Draft Manager ----
 
-class DraftManager {
+class FullDraftManager {
 public:
-    DraftManager();
+    FullDraftManager();
 
     // ====== Draft Lifecycle ======
     // Original: DraftService.saveDraft(draft) / deleteDraft() / getDraft()

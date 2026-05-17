@@ -37,12 +37,12 @@ bool UserDraft::checkValid() const {
 
 // ====== Constructor ======
 
-DraftManager::DraftManager() {}
+FullDraftManager::FullDraftManager() {}
 
 // ====== Draft Lifecycle ======
 // Original: DraftService.saveDraft / deleteDraft / getDraft
 
-void DraftManager::saveDraft(const std::string& roomId, const UserDraft& draft) {
+void FullDraftManager::saveDraft(const std::string& roomId, const UserDraft& draft) {
     if (draft.content.size() > static_cast<size_t>(config_.maxDraftLength)) {
         UserDraft truncated = draft;
         truncated.content = draft.content.substr(0, config_.maxDraftLength);
@@ -56,28 +56,28 @@ void DraftManager::saveDraft(const std::string& roomId, const UserDraft& draft) 
     }
 }
 
-void DraftManager::deleteDraft(const std::string& roomId) {
+void FullDraftManager::deleteDraft(const std::string& roomId) {
     drafts_.erase(roomId);
 }
 
-bool DraftManager::getDraft(const std::string& roomId, UserDraft& out) const {
+bool FullDraftManager::getDraft(const std::string& roomId, UserDraft& out) const {
     auto it = drafts_.find(roomId);
     if (it == drafts_.end()) return false;
     out = it->second;
     return true;
 }
 
-bool DraftManager::hasDraft(const std::string& roomId) const {
+bool FullDraftManager::hasDraft(const std::string& roomId) const {
     return drafts_.find(roomId) != drafts_.end();
 }
 
 // ====== Live Draft ======
 // Original: auto-save with character threshold + space detection
 
-void DraftManager::setLiveDraftConfig(const LiveDraftConfig& config) { config_ = config; }
-LiveDraftConfig DraftManager::getLiveDraftConfig() const { return config_; }
+void FullDraftManager::setLiveDraftConfig(const LiveDraftConfig& config) { config_ = config; }
+LiveDraftConfig FullDraftManager::getLiveDraftConfig() const { return config_; }
 
-bool DraftManager::qualifiesForAutoSave(const std::string& text) const {
+bool FullDraftManager::qualifiesForAutoSave(const std::string& text) const {
     if (!config_.enabled) return false;
     if (text.empty()) return false;
 
@@ -92,7 +92,7 @@ bool DraftManager::qualifiesForAutoSave(const std::string& text) const {
     return charCount >= config_.characterThreshold && hasSpace;
 }
 
-bool DraftManager::autoSaveIfQualified(const std::string& roomId, const std::string& text) {
+bool FullDraftManager::autoSaveIfQualified(const std::string& roomId, const std::string& text) {
     if (!qualifiesForAutoSave(text)) return false;
 
     UserDraft draft;
@@ -104,7 +104,7 @@ bool DraftManager::autoSaveIfQualified(const std::string& roomId, const std::str
     return true;
 }
 
-std::string DraftManager::stripDraftPrefix(const std::string& text) const {
+std::string FullDraftManager::stripDraftPrefix(const std::string& text) const {
     if (!config_.finalEditRemovesPrefix) return text;
 
     if (text.rfind(config_.draftPrefix, 0) == 0) {
@@ -115,7 +115,7 @@ std::string DraftManager::stripDraftPrefix(const std::string& text) const {
 
 // ====== Draft Types ======
 
-UserDraft DraftManager::buildRegular(const std::string& content) {
+UserDraft FullDraftManager::buildRegular(const std::string& content) {
     UserDraft d;
     d.type = DraftType::REGULAR;
     d.content = content;
@@ -123,7 +123,7 @@ UserDraft DraftManager::buildRegular(const std::string& content) {
     return d;
 }
 
-UserDraft DraftManager::buildQuote(const std::string& linkedEventId, const std::string& content) {
+UserDraft FullDraftManager::buildQuote(const std::string& linkedEventId, const std::string& content) {
     UserDraft d;
     d.type = DraftType::QUOTE;
     d.linkedEventId = linkedEventId;
@@ -132,7 +132,7 @@ UserDraft DraftManager::buildQuote(const std::string& linkedEventId, const std::
     return d;
 }
 
-UserDraft DraftManager::buildEdit(const std::string& linkedEventId, const std::string& content) {
+UserDraft FullDraftManager::buildEdit(const std::string& linkedEventId, const std::string& content) {
     UserDraft d;
     d.type = DraftType::EDIT;
     d.linkedEventId = linkedEventId;
@@ -141,7 +141,7 @@ UserDraft DraftManager::buildEdit(const std::string& linkedEventId, const std::s
     return d;
 }
 
-UserDraft DraftManager::buildReply(const std::string& linkedEventId, const std::string& content) {
+UserDraft FullDraftManager::buildReply(const std::string& linkedEventId, const std::string& content) {
     UserDraft d;
     d.type = DraftType::REPLY;
     d.linkedEventId = linkedEventId;
@@ -150,7 +150,7 @@ UserDraft DraftManager::buildReply(const std::string& linkedEventId, const std::
     return d;
 }
 
-UserDraft DraftManager::buildVoice(const std::string& content) {
+UserDraft FullDraftManager::buildVoice(const std::string& content) {
     UserDraft d;
     d.type = DraftType::VOICE;
     d.content = content;
@@ -160,22 +160,22 @@ UserDraft DraftManager::buildVoice(const std::string& content) {
 
 // ====== Validation ======
 
-bool DraftManager::isValidDraft(const UserDraft& draft) { return draft.checkValid(); }
-bool DraftManager::isContentTooLong(const std::string& content) const { return content.size() > static_cast<size_t>(config_.maxDraftLength); }
+bool FullDraftManager::isValidDraft(const UserDraft& draft) { return draft.checkValid(); }
+bool FullDraftManager::isContentTooLong(const std::string& content) const { return content.size() > static_cast<size_t>(config_.maxDraftLength); }
 
 // ====== Queries ======
 
-std::vector<std::string> DraftManager::getRoomsWithDrafts() const {
+std::vector<std::string> FullDraftManager::getRoomsWithDrafts() const {
     std::vector<std::string> rooms;
     for (const auto& [roomId, draft] : drafts_) rooms.push_back(roomId);
     return rooms;
 }
 
-void DraftManager::clearAll() { drafts_.clear(); }
+void FullDraftManager::clearAll() { drafts_.clear(); }
 
 // ====== Serialization ======
 
-std::string DraftManager::draftToJson(const UserDraft& draft) const {
+std::string FullDraftManager::draftToJson(const UserDraft& draft) const {
     auto esc = [](const std::string& s) -> std::string {
         std::string out;
         for (char c : s) { if (c == '"') out += "\\\""; else out += c; }
@@ -193,7 +193,7 @@ std::string DraftManager::draftToJson(const UserDraft& draft) const {
     return os.str();
 }
 
-std::string DraftManager::configToJson() const {
+std::string FullDraftManager::configToJson() const {
     std::ostringstream os;
     os << R"({"enabled":)" << (config_.enabled ? "true" : "false")
        << R"(,"char_threshold":)" << config_.characterThreshold
