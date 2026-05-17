@@ -1,3 +1,4 @@
+#include "progressive/room_state.hpp"
 #pragma once
 
 #include <string>
@@ -11,7 +12,7 @@ namespace progressive {
 // Room History Visibility Manager
 //
 // Faithful port from Element Android original sources:
-//   RSM_RoomHistoryVisibility.kt — WORLD_READABLE, SHARED, INVITED, JOINED
+//   RoomHistoryVisibility.kt — WORLD_READABLE, SHARED, INVITED, JOINED
 //     shouldShareHistory() → WORLD_READABLE | SHARED
 //   RoomJoinRules.kt — PUBLIC, INVITE, KNOCK, etc.
 //
@@ -27,89 +28,56 @@ namespace progressive {
 // ================================================================
 
 // ---- Room History Visibility ----
-// Original: RSM_RoomHistoryVisibility.kt (WORLD_READABLE, SHARED, INVITED, JOINED)
+// Original: RoomHistoryVisibility.kt (WORLD_READABLE, SHARED, INVITED, JOINED)
 
-enum class RSM_RoomHistoryVisibility {
-    WORLD_READABLE = 0,  // Anyone can see all events
-    SHARED = 1,          // Joined members see all events
-    INVITED = 2,         // Members see from invite point
-    JOINED = 3,          // Members see from join point
-};
 
-const char* historyVisibilityToString(RSM_RoomHistoryVisibility v);
-RSM_RoomHistoryVisibility historyVisibilityFromString(const std::string& s);
+const char* historyVisibilityToString(RoomHistoryVisibility v);
+RoomHistoryVisibility historyVisibilityFromString(const std::string& s);
 
 // ---- Room Join Rules ----
 
-enum class RoomJoinRule {
-    PUBLIC = 0,    // Anyone can join
-    INVITE = 1,    // Only invited users
-    KNOCK = 2,     // Can knock to request join
-    PRIVATE = 3,   // Not joinable
-};
 
 const char* joinRuleToString(RoomJoinRule rule);
 RoomJoinRule joinRuleFromString(const std::string& s);
 
 // ---- Membership State (for visibility checks) ----
 
-enum class MembershipState {
-    JOIN = 0,       // Currently in the room
-    INVITE = 1,     // Invited but not joined
-    KNOCK = 2,      // Requested to join
-    LEAVE = 3,      // Left the room
-    BAN = 4,        // Banned
-    NONE = 5,       // Never been in the room
-};
 
 // ---- Room State Summary ----
 
-struct RoomStateSummary {
-    std::string roomId;
-    std::string roomName;
-    RSM_RoomHistoryVisibility historyVisibility = RSM_RoomHistoryVisibility::SHARED;
-    RoomJoinRule joinRule = RoomJoinRule::INVITE;
-    bool isEncrypted = false;
-    bool isPublicRoom = false;          // joinRule == PUBLIC
-    bool isWorldReadable = false;       // historyVisibility == WORLD_READABLE
-    bool canShareHistory = false;       // shouldShareHistory()
-    int memberCount = 0;
-    std::string creatorId;
-    std::string roomVersion;
-};
 
 // ---- History Visibility Check ----
 // Original: shouldShareHistory() = WORLD_READABLE || SHARED
 
 // Check if history can be shared with new members.
 // Per MSC3061: only WORLD_READABLE and SHARED allow sharing.
-bool shouldShareHistory(RSM_RoomHistoryVisibility visibility);
+bool shouldShareHistory(RoomHistoryVisibility visibility);
 
 // Check if a member can see an event based on history_visibility.
 // Takes: history visibility, member's state when event was sent, member's current state.
-bool canSeeEvent(RSM_RoomHistoryVisibility visibility, MembershipState memberStateAtEventTime,
+bool canSeeEvent(RoomHistoryVisibility visibility, MembershipState memberStateAtEventTime,
                   MembershipState memberCurrentState);
 
 // Check if a non-member can see events.
-bool canNonMemberSeeEvents(RSM_RoomHistoryVisibility visibility);
+bool canNonMemberSeeEvents(RoomHistoryVisibility visibility);
 
 // Get the effective visibility for a given membership.
-std::string getVisibilityLabel(RSM_RoomHistoryVisibility visibility);
+std::string getVisibilityLabel(RoomHistoryVisibility visibility);
 
 // Get a human-readable description of what the visibility means.
-std::string getVisibilityDescription(RSM_RoomHistoryVisibility visibility);
+std::string getVisibilityDescription(RoomHistoryVisibility visibility);
 
 // ---- Room State Builder ----
 // Original: Build m.room.history_visibility state event content
 
 // Build history_visibility state event content.
-std::string buildHistoryVisibilityContent(RSM_RoomHistoryVisibility visibility);
+std::string buildHistoryVisibilityContent(RoomHistoryVisibility visibility);
 
 // Build join_rules state event content.
 std::string buildJoinRulesContent(RoomJoinRule rule);
 
 // Parse history visibility from state event content.
-RSM_RoomHistoryVisibility parseHistoryVisibility(const std::string& contentJson);
+RoomHistoryVisibility parseHistoryVisibility(const std::string& contentJson);
 
 // Parse join rules from state event content.
 RoomJoinRule parseJoinRules(const std::string& contentJson);
@@ -123,7 +91,7 @@ public:
     // ====== Room State ======
 
     // Set room state from events.
-    void setHistoryVisibility(const std::string& roomId, RSM_RoomHistoryVisibility visibility);
+    void setHistoryVisibility(const std::string& roomId, RoomHistoryVisibility visibility);
     void setJoinRule(const std::string& roomId, RoomJoinRule rule);
     void setRoomName(const std::string& roomId, const std::string& name);
     void setEncrypted(const std::string& roomId, bool encrypted);

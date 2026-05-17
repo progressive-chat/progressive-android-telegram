@@ -6,41 +6,9 @@ namespace progressive {
 
 // ====== Enums ======
 
-const char* historyVisibilityToString(RSM_RoomHistoryVisibility v) {
-    switch (v) {
-        case RSM_RoomHistoryVisibility::WORLD_READABLE: return "world_readable";
-        case RSM_RoomHistoryVisibility::SHARED: return "shared";
-        case RSM_RoomHistoryVisibility::INVITED: return "invited";
-        case RSM_RoomHistoryVisibility::JOINED: return "joined";
-    }
-    return "shared";
-}
 
-RSM_RoomHistoryVisibility historyVisibilityFromString(const std::string& s) {
-    if (s == "world_readable") return RSM_RoomHistoryVisibility::WORLD_READABLE;
-    if (s == "shared") return RSM_RoomHistoryVisibility::SHARED;
-    if (s == "invited") return RSM_RoomHistoryVisibility::INVITED;
-    if (s == "joined") return RSM_RoomHistoryVisibility::JOINED;
-    return RSM_RoomHistoryVisibility::SHARED;
-}
 
-const char* joinRuleToString(RoomJoinRule rule) {
-    switch (rule) {
-        case RoomJoinRule::PUBLIC: return "public";
-        case RoomJoinRule::INVITE: return "invite";
-        case RoomJoinRule::KNOCK: return "knock";
-        case RoomJoinRule::PRIVATE: return "private";
-    }
-    return "invite";
-}
 
-RoomJoinRule joinRuleFromString(const std::string& s) {
-    if (s == "public") return RoomJoinRule::PUBLIC;
-    if (s == "invite") return RoomJoinRule::INVITE;
-    if (s == "knock") return RoomJoinRule::KNOCK;
-    if (s == "private") return RoomJoinRule::PRIVATE;
-    return RoomJoinRule::INVITE;
-}
 
 // ====== Helpers ======
 
@@ -58,83 +26,16 @@ static std::string extractStr(const std::string& json, const std::string& key) {
 // ====== History Visibility Functions ======
 // Original: shouldShareHistory() = WORLD_READABLE || SHARED
 
-bool shouldShareHistory(RSM_RoomHistoryVisibility visibility) {
-    return visibility == RSM_RoomHistoryVisibility::WORLD_READABLE ||
-           visibility == RSM_RoomHistoryVisibility::SHARED;
-}
 
-bool canSeeEvent(RSM_RoomHistoryVisibility visibility, MembershipState memberStateAtEventTime,
-                  MembershipState memberCurrentState) {
-    switch (visibility) {
-        case RSM_RoomHistoryVisibility::WORLD_READABLE:
-            // Anyone can see all events, even non-members
-            return true;
 
-        case RSM_RoomHistoryVisibility::SHARED:
-            // Joined members see all events; non-members see nothing
-            return memberCurrentState == MembershipState::JOIN;
 
-        case RSM_RoomHistoryVisibility::INVITED:
-            // Members see events from when they were invited onwards
-            return memberCurrentState == MembershipState::JOIN ||
-                   memberCurrentState == MembershipState::INVITE ||
-                   (memberStateAtEventTime == MembershipState::INVITE);
 
-        case RSM_RoomHistoryVisibility::JOINED:
-            // Members see events from when they joined onwards
-            return memberCurrentState == MembershipState::JOIN &&
-                   memberStateAtEventTime == MembershipState::JOIN;
-    }
-    return false;
-}
-
-bool canNonMemberSeeEvents(RSM_RoomHistoryVisibility visibility) {
-    return visibility == RSM_RoomHistoryVisibility::WORLD_READABLE;
-}
-
-std::string getVisibilityLabel(RSM_RoomHistoryVisibility visibility) {
-    switch (visibility) {
-        case RSM_RoomHistoryVisibility::WORLD_READABLE: return "Anyone";
-        case RSM_RoomHistoryVisibility::SHARED: return "Members (since beginning)";
-        case RSM_RoomHistoryVisibility::INVITED: return "Members (since invite)";
-        case RSM_RoomHistoryVisibility::JOINED: return "Members (since join)";
-    }
-    return "Members";
-}
-
-std::string getVisibilityDescription(RSM_RoomHistoryVisibility visibility) {
-    switch (visibility) {
-        case RSM_RoomHistoryVisibility::WORLD_READABLE:
-            return "Anyone can read the room history, even without joining.";
-        case RSM_RoomHistoryVisibility::SHARED:
-            return "All members can see the entire room history.";
-        case RSM_RoomHistoryVisibility::INVITED:
-            return "Members can see history from the point they were invited.";
-        case RSM_RoomHistoryVisibility::JOINED:
-            return "Members can only see history from the point they joined.";
-    }
-    return "";
-}
 
 // ====== Content Builders ======
 
-std::string buildHistoryVisibilityContent(RSM_RoomHistoryVisibility visibility) {
-    return R"({"history_visibility":")" + std::string(historyVisibilityToString(visibility)) + R"("})";
-}
 
-std::string buildJoinRulesContent(RoomJoinRule rule) {
-    return R"({"join_rule":")" + std::string(joinRuleToString(rule)) + R"("})";
-}
 
-RSM_RoomHistoryVisibility parseHistoryVisibility(const std::string& contentJson) {
-    auto vis = extractStr(contentJson, "history_visibility");
-    return historyVisibilityFromString(vis);
-}
 
-RoomJoinRule parseJoinRules(const std::string& contentJson) {
-    auto rule = extractStr(contentJson, "join_rule");
-    return joinRuleFromString(rule);
-}
 
 // ====== RoomStateManager ======
 
@@ -150,10 +51,10 @@ RoomStateSummary& RoomStateManager::getOrCreateState(const std::string& roomId) 
     return rooms_[roomId];
 }
 
-void RoomStateManager::setHistoryVisibility(const std::string& roomId, RSM_RoomHistoryVisibility visibility) {
+void RoomStateManager::setHistoryVisibility(const std::string& roomId, RoomHistoryVisibility visibility) {
     auto& state = getOrCreateState(roomId);
     state.historyVisibility = visibility;
-    state.isWorldReadable = (visibility == RSM_RoomHistoryVisibility::WORLD_READABLE);
+    state.isWorldReadable = (visibility == RoomHistoryVisibility::WORLD_READABLE);
     state.canShareHistory = shouldShareHistory(visibility);
 }
 
