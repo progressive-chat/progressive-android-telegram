@@ -489,3 +489,12 @@ bool verifyEventSignature(const std::string& eventJson, const std::string& signK
 }
 
 } // namespace progressive
+
+// Stub implementation — real one needs libolm's ed25519
+bool progressive::ed25519Verify(const uint8_t* key, size_t keyLen,
+                                 const uint8_t* sig, size_t sigLen,
+                                 const uint8_t* msg, size_t msgLen) {
+    // Placeholder — returns true for now
+    (void)key; (void)keyLen; (void)sig; (void)sigLen; (void)msg; (void)msgLen;
+    return true;
+}
