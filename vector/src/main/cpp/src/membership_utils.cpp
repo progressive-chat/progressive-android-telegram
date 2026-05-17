@@ -5,13 +5,13 @@
 
 namespace progressive {
 
-Membership parseMembership(const std::string& membershipStr) {
-    if (membershipStr == "join")     return Membership::Join;
-    if (membershipStr == "invite")   return Membership::Invite;
-    if (membershipStr == "leave")    return Membership::Leave;
-    if (membershipStr == "ban")      return Membership::Ban;
-    if (membershipStr == "knock")    return Membership::Knock;
-    return Membership::Unknown;
+MemberState parseMemberState(const std::string& membershipStr) {
+    if (membershipStr == "join")     return MemberState::Join;
+    if (membershipStr == "invite")   return MemberState::Invite;
+    if (membershipStr == "leave")    return MemberState::Leave;
+    if (membershipStr == "ban")      return MemberState::Ban;
+    if (membershipStr == "knock")    return MemberState::Knock;
+    return MemberState::Unknown;
 }
 
 MemberInfo parseMemberInfo(const std::string& stateContentJson, const std::string& userId) {
@@ -19,7 +19,7 @@ MemberInfo parseMemberInfo(const std::string& stateContentJson, const std::strin
     info.userId = userId;
 
     auto membershipStr = parseJsonStringValue(stateContentJson, "membership");
-    info.membership = parseMembership(membershipStr);
+    info.membership = parseMemberState(membershipStr);
 
     info.displayName = parseJsonStringValue(stateContentJson, "displayname");
     info.avatarUrl   = parseJsonStringValue(stateContentJson, "avatar_url");
@@ -31,45 +31,45 @@ MemberInfo parseMemberInfo(const std::string& stateContentJson, const std::strin
     return info;
 }
 
-std::string formatMembership(Membership membership) {
+std::string formatMemberState(MemberState membership) {
     switch (membership) {
-        case Membership::Join:  return "Joined";
-        case Membership::Invite: return "Invited";
-        case Membership::Leave: return "Left";
-        case Membership::Ban:   return "Banned";
-        case Membership::Knock: return "Knocked";
+        case MemberState::Join:  return "Joined";
+        case MemberState::Invite: return "Invited";
+        case MemberState::Leave: return "Left";
+        case MemberState::Ban:   return "Banned";
+        case MemberState::Knock: return "Knocked";
         default:                return "Unknown";
     }
 }
 
-bool isActiveMember(Membership membership) {
-    return membership == Membership::Join ||
-           membership == Membership::Invite ||
-           membership == Membership::Knock;
+bool isActiveMember(MemberState membership) {
+    return membership == MemberState::Join ||
+           membership == MemberState::Invite ||
+           membership == MemberState::Knock;
 }
 
-bool canReadMessages(Membership membership) {
-    return membership == Membership::Join;
+bool canReadMessages(MemberState membership) {
+    return membership == MemberState::Join;
 }
 
-MembershipChange detectMembershipChange(const MemberInfo& oldInfo, const MemberInfo& newInfo) {
-    MembershipChange change;
+MemberStateChange detectMemberStateChange(const MemberInfo& oldInfo, const MemberInfo& newInfo) {
+    MemberStateChange change;
     change.userId = oldInfo.userId;
     change.displayName = newInfo.displayName.empty() ? oldInfo.displayName : newInfo.displayName;
-    change.oldMembership = oldInfo.membership;
-    change.newMembership = newInfo.membership;
+    change.oldMemberState = oldInfo.membership;
+    change.newMemberState = newInfo.membership;
     change.timestampMs = newInfo.timestampMs;
     return change;
 }
 
-std::string formatMembershipChange(const MembershipChange& change) {
+std::string formatMemberStateChange(const MemberStateChange& change) {
     std::ostringstream out;
     out << change.displayName;
-    if (change.oldMembership == Membership::Unknown) {
-        out << " " << formatMembership(change.newMembership);
+    if (change.oldMemberState == MemberState::Unknown) {
+        out << " " << formatMemberState(change.newMemberState);
     } else {
-        out << " changed from " << formatMembership(change.oldMembership)
-            << " to " << formatMembership(change.newMembership);
+        out << " changed from " << formatMemberState(change.oldMemberState)
+            << " to " << formatMemberState(change.newMemberState);
     }
     return out.str();
 }
@@ -113,7 +113,7 @@ MemberListInfo parseMemberList(const std::string& roomId, const std::string& api
                 info.displayName = parseJsonStringValue("{" + content + "}", "displayname");
                 info.avatarUrl   = parseJsonStringValue("{" + content + "}", "avatar_url");
                 auto ms = parseJsonStringValue("{" + content + "}", "membership");
-                info.membership = parseMembership(ms);
+                info.membership = parseMemberState(ms);
             }
         }
         info.avatarUrl = parseJsonStringValue(obj, "avatar_url");
@@ -125,9 +125,9 @@ MemberListInfo parseMemberList(const std::string& roomId, const std::string& api
     list.totalMembers = static_cast<int>(list.members.size());
     for (const auto& m : list.members) {
         switch (m.membership) {
-            case Membership::Join:   list.joinedMembers++; break;
-            case Membership::Invite: list.invitedMembers++; break;
-            case Membership::Ban:    list.bannedMembers++; break;
+            case MemberState::Join:   list.joinedMembers++; break;
+            case MemberState::Invite: list.invitedMembers++; break;
+            case MemberState::Ban:    list.bannedMembers++; break;
             default: break;
         }
     }
@@ -135,7 +135,7 @@ MemberListInfo parseMemberList(const std::string& roomId, const std::string& api
     return list;
 }
 
-std::vector<MemberInfo> filterByMembership(const std::vector<MemberInfo>& members, Membership type) {
+std::vector<MemberInfo> filterByMemberState(const std::vector<MemberInfo>& members, MemberState type) {
     std::vector<MemberInfo> result;
     for (const auto& m : members) {
         if (m.membership == type) result.push_back(m);
@@ -228,27 +228,27 @@ void sortMembersByPowerAndName(std::vector<MemberInfo>& members) {
     std::sort(members.begin(), members.end(), memberCompare);
 }
 
-// ==== Membership Diff (from TimelineEventVisibilityHelper.kt:261-279) ====
+// ==== MemberState Diff (from TimelineEventVisibilityHelper.kt:261-279) ====
 
-MembershipDiff computeMembershipDiff(
-    Membership oldMembership, Membership newMembership,
+MemberStateDiff computeMemberStateDiff(
+    MemberState oldMemberState, MemberState newMemberState,
     const std::string& oldName, const std::string& newName,
     const std::string& oldAvatar, const std::string& newAvatar,
     bool isSelf)
 {
-    MembershipDiff diff;
+    MemberStateDiff diff;
 
-    // Original: val isMembershipChanged = content?.membership != prevContent?.membership
-    bool membershipChanged = (oldMembership != newMembership);
+    // Original: val isMemberStateChanged = content?.membership != prevContent?.membership
+    bool membershipChanged = (oldMemberState != newMemberState);
 
-    // Original: val isJoin = isMembershipChanged && content?.membership == Membership.JOIN
-    diff.isJoin = membershipChanged && newMembership == Membership::Join;
+    // Original: val isJoin = isMemberStateChanged && content?.membership == MemberState.JOIN
+    diff.isJoin = membershipChanged && newMemberState == MemberState::Join;
 
-    // Original: val isPart = isMembershipChanged && content?.membership == LEAVE && root.stateKey == root.senderId
-    diff.isPart = membershipChanged && newMembership == Membership::Leave && isSelf;
+    // Original: val isPart = isMemberStateChanged && content?.membership == LEAVE && root.stateKey == root.senderId
+    diff.isPart = membershipChanged && newMemberState == MemberState::Leave && isSelf;
 
-    // Original: val isProfileChanged = !isMembershipChanged && content?.membership == Membership.JOIN
-    bool profileChanged = !membershipChanged && newMembership == Membership::Join;
+    // Original: val isProfileChanged = !isMemberStateChanged && content?.membership == MemberState.JOIN
+    bool profileChanged = !membershipChanged && newMemberState == MemberState::Join;
 
     // Original: val isDisplaynameChange = isProfileChanged && content?.displayName != prevContent?.displayName
     diff.isDisplaynameChange = profileChanged && oldName != newName;
