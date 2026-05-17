@@ -103,6 +103,33 @@ CI builds F-Droid arm32 (armeabi-v7a, works on all devices). Requires Android SD
 - Android 5.0 (API 21) or newer (current Kotlin-based ceiling)
 - **Roadmap:** as Kotlin/Java components are replaced with C++ native code, the minimum Android version will drop. Target is **Android 4.4 (API 19)**, possibly as low as **Android 2.3 (API 9)** depending on technical obstacles, resource constraints, and priorities encountered during the port
 
+## Versioning
+
+Current version: **v0.1.5**. Before 1.0.0, all bets are off — rapid iteration is the priority.
+
+### Pre-1.0.0 (now)
+
+- **v0.x.y** — versions are sequential, no strict SemVer meaning
+- New features, bug fixes, and **breaking changes** are all expected
+- API surfaces, module boundaries, and data formats may shift between versions
+- Nightly builds available via GitHub Actions
+
+### Post-1.0.0 (SemVer)
+
+Once the core stabilizes, Progressive Chat will adopt strict [Semantic Versioning 2.0.0](https://semver.org/):
+
+| Segment | Meaning | Cadence |
+|---|---|---|
+| **x** (MAJOR) | Architecture changes, API breaks, redesigns | Every few months |
+| **y** (MINOR) | New features, new modules, new Labs flags | ~weekly |
+| **z** (PATCH) | Bug fixes, performance improvements, typos | ~daily |
+
+- `1.0.z` — bug fixes
+- `1.y.0` — new features
+- `x.0.0` — arch changes
+
+Nightly builds will continue alongside stable releases.
+
 ## How You Can Help
 
 Progressive Chat is in active development. We have months of debugging and polishing ahead before the first stable release. Here's how you can contribute:
