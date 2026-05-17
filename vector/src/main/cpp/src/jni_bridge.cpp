@@ -181,6 +181,7 @@
 #include "progressive/user_status.hpp"
 #include "progressive/verification_utils.hpp"
 #include "progressive/account_utils.hpp"
+#include "progressive/widget_manager.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -2561,4 +2562,345 @@ JNI_FUNC(void, nativeMegolmClearRoom)(JNIEnv* env, jclass, jstring jRoom) {
     g_megolmManager.clearRoom(jStr(env, jRoom));
 }
 
+JNI_FUNC(jint, nativeTimelineChunkCount)(JNIEnv* env, jclass, jstring jRoom) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    auto room = jStr(env, jRoom);
+    auto it = managers.find(room);
+    return it != managers.end() ? it->second.chunkCount() : 0;
+}
+JNI_FUNC(jstring, nativeTimelineGetSnapshot)(JNIEnv* env, jclass, jstring jRoom, jint jLimit, jint jOffset) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    auto room = jStr(env, jRoom);
+    auto it = managers.find(room);
+    if (it == managers.end()) return env->NewStringUTF("[]");
+    auto events = it->second.getSnapshot(jLimit, jOffset);
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < events.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"id":")" << events[i].eventId
+           << R"(","di":)" << events[i].displayIndex
+           << R"(","ts":)" << events[i].originServerTs << "}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+JNI_FUNC(jint, nativeTimelineEventsAvailable)(JNIEnv* env, jclass, jstring jRoom, jint jDir) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    auto room = jStr(env, jRoom);
+    auto it = managers.find(room);
+    if (it == managers.end()) return 0;
+    auto dir = jDir == 0 ? progressive::TimelineDirection::FORWARDS : progressive::TimelineDirection::BACKWARDS;
+    return it->second.eventsAvailable(dir);
+}
+JNI_FUNC(jint, nativeTimelineAddSyncEvent)(JNIEnv* env, jclass, jstring jRoom, jstring jEventId, jstring jType, jstring jSenderId, jstring jContentJson, jlong jOriginTs, jint jDi, jstring jStateKey, jstring jRedacts, jstring jRelType, jstring jRelatesToId) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    auto room = jStr(env, jRoom);
+    auto it = managers.find(room);
+    if (it == managers.end()) {
+        managers.emplace(std::piecewise_construct, std::forward_as_tuple(room), std::forward_as_tuple(room));
+        it = managers.find(room);
+    }
+    progressive::TimelineEventData ev;
+    ev.eventId = jStr(env, jEventId);
+    ev.roomId = room;
+    ev.type = jStr(env, jType);
+    ev.senderId = jStr(env, jSenderId);
+    ev.contentJson = jStr(env, jContentJson);
+    ev.originServerTs = jOriginTs;
+    ev.displayIndex = jDi;
+    ev.stateKey = jStr(env, jStateKey);
+    ev.redacts = jStr(env, jRedacts);
+    ev.relationType = jStr(env, jRelType);
+    ev.relatesToEventId = jStr(env, jRelatesToId);
+    ev.ageLocalTs = static_cast<int64_t>(time(nullptr)) * 1000;
+    return it->second.addLiveEvent(ev);
+}
+JNI_FUNC(jboolean, nativeTimelineAttachDb)(JNIEnv* env, jclass, jstring jRoom, jstring jDbKey) {
+    static std::unordered_map<std::string, progressive::TimelineChunkManager> managers;
+    static std::unordered_map<std::string, std::unique_ptr<progressive::SqliteDB>> g_sqliteDbs;
+    auto room = jStr(env, jRoom);
+    auto dbKey = jStr(env, jDbKey);
+    auto dbit = g_sqliteDbs.find(dbKey);
+    if (dbit == g_sqliteDbs.end()) return JNI_FALSE;
+    auto it = managers.find(room);
+    if (it == managers.end()) {
+        managers.emplace(std::piecewise_construct, std::forward_as_tuple(room), std::forward_as_tuple(room));
+        it = managers.find(room);
+    }
+    it->second.attachDatabase(dbit->second.get());
+    it->second.loadFromDatabase(100, 0);
+    return JNI_TRUE;
+}
+JNI_FUNC(jstring, nativeExtractNextBatchLight)(JNIEnv* env, jclass, jstring jPartialJson) {
+    auto json = jStr(env, jPartialJson);
+    auto pos = json.find("\"next_batch\"");
+    if (pos == std::string::npos) return env->NewStringUTF("");
+    pos = json.find(':', pos);
+    if (pos == std::string::npos) return env->NewStringUTF("");
+    pos++;
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '"')) pos++;
+    size_t end = pos;
+    while (end < json.size() && json[end] != '"') { if (json[end] == '\\') end++; end++; }
+    return env->NewStringUTF(json.substr(pos, end - pos).c_str());
+}
+JNI_FUNC(jstring, nativeListRoomWidgets)(JNIEnv* env, jclass, jstring jStateJson) {
+    auto widgets = progressive::listRoomWidgets(jStr(env, jStateJson));
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < widgets.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"widget_id":")" << widgets[i].widgetId
+           << R"(","name":")" << widgets[i].name
+           << R"(","type":")" << widgets[i].type
+           << R"(","url":")" << widgets[i].url << "\"}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+JNI_FUNC(jstring, nativeMarkdownToHtml)(JNIEnv* env, jclass, jstring jMarkdown, jboolean jTables, jboolean jLinks, jboolean jCode, jboolean jScroll) {
+    progressive::MdConfig config;
+    config.enableTables = jTables;
+    config.enableLinks = jLinks;
+    config.enableCodeBlocks = jCode;
+    config.enableHorizontalScroll = jScroll;
+    config.enableImages = false;
+    auto result = progressive::markdownToHtml(jStr(env, jMarkdown), config);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeBuildSyncFilter)(JNIEnv* env, jclass, jboolean jThreads, jboolean jPresence, jint jTimelineLimit, jboolean jLazyLoad) {
+    progressive::SyncFilter filter;
+    filter.includeThreads = jThreads;
+    filter.includePresence = jPresence;
+    filter.timelineLimit = jTimelineLimit;
+    filter.lazyLoadMembers = jLazyLoad;
+    auto result = progressive::buildSyncFilter(filter);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeValidateAndFormatRecoveryKey)(JNIEnv* env, jclass, jstring jRawKey) {
+    auto result = progressive::validateAndFormatRecoveryKey(jStr(env, jRawKey));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeFormatMemberNotice)(JNIEnv* env, jclass, jstring jMembership, jstring jPrevMembership, jstring jSenderId, jstring jSenderName, jstring jTargetId, jstring jTargetName, jstring jReason, jboolean jDirect, jboolean jSelf) {
+    auto result = progressive::formatMemberNotice(jStr(env, jMembership), jStr(env, jPrevMembership), jStr(env, jSenderId), jStr(env, jSenderName), jStr(env, jTargetId), jStr(env, jTargetName), jStr(env, jReason), jDirect, jSelf);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeFormatCallNotice)(JNIEnv* env, jclass, jstring jEventType, jboolean jVideo, jstring jSender, jboolean jSelf) {
+    auto result = progressive::formatCallNotice(jStr(env, jEventType), jVideo, jStr(env, jSender), jSelf);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeAnnotateEdited)(JNIEnv* env, jclass, jstring jBody, jboolean jEdited) {
+    auto result = progressive::annotateEdited(jStr(env, jBody), jEdited);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jboolean, nativeWidgetMgrInit)(JNIEnv* env, jclass, jstring jRoomId, jstring jUserId,
+                                         jstring jDisplayName, jstring jAvatarUrl) {
+    g_widgetMgr.reset(new progressive::WidgetManager(
+        jStr(env, jRoomId), jStr(env, jUserId),
+        jStr(env, jDisplayName), jStr(env, jAvatarUrl)));
+    return JNI_TRUE;
+}
+JNI_FUNC(jboolean, nativeWidgetMgrSetSecurityPolicy)(JNIEnv* env, jclass, jstring jPolicyJson) {
+    auto json = jStr(env, jPolicyJson);
+    auto policy = progressive::defaultWidgetSecurityPolicy();
+    if (json.find("\"enforce_same_origin\":false") != std::string::npos) policy.enforceSameOrigin = false;
+    if (json.find("\"allow_data_urls\":true") != std::string::npos) policy.allowDataUrls = true;
+    if (json.find("\"allow_blob_urls\":true") != std::string::npos) policy.allowBlobUrls = true;
+    getWidgetMgr()->setSecurityPolicy(policy);
+    return JNI_TRUE;
+}
+JNI_FUNC(jstring, nativeWidgetMgrLoadWidgets)(JNIEnv* env, jclass, jstring jStateJson) {
+    auto mgr = getWidgetMgr();
+    mgr->loadWidgets(jStr(env, jStateJson));
+    return env->NewStringUTF(mgr->widgetsToJson().c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrCreateWidget)(JNIEnv* env, jclass, jstring jWidgetId,
+                                                jstring jType, jstring jUrl, jstring jName,
+                                                jboolean jWaitLoad) {
+    auto mgr = getWidgetMgr();
+    std::string error;
+    auto result = mgr->createWidget(jStr(env, jWidgetId), jStr(env, jType),
+                                    jStr(env, jUrl), jStr(env, jName), jWaitLoad, error);
+    if (!result.empty()) {
+        return env->NewStringUTF(result.c_str());
+    }
+    return env->NewStringUTF(("{\"error\":\"" + error + "\"}").c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrRemoveWidget)(JNIEnv* env, jclass, jstring jWidgetId) {
+    auto result = getWidgetMgr()->removeWidget(jStr(env, jWidgetId));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrSetPinned)(JNIEnv* env, jclass, jstring jWidgetId, jboolean jPinned) {
+    std::string error;
+    auto result = getWidgetMgr()->setWidgetPinned(jStr(env, jWidgetId), jPinned, error);
+    if (result.empty()) return env->NewStringUTF(("{\"error\":\"" + error + "\"}").c_str());
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrResize)(JNIEnv* env, jclass, jstring jWidgetId, jint jW, jint jH) {
+    std::string error;
+    auto result = getWidgetMgr()->resizeWidget(jStr(env, jWidgetId), jW, jH, error);
+    if (result.empty()) return env->NewStringUTF(("{\"error\":\"" + error + "\"}").c_str());
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrSetMinimized)(JNIEnv* env, jclass, jstring jWidgetId, jboolean jMin) {
+    auto result = getWidgetMgr()->setWidgetMinimized(jStr(env, jWidgetId), jMin);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrSetMaximized)(JNIEnv* env, jclass, jstring jWidgetId, jboolean jMax) {
+    auto result = getWidgetMgr()->setWidgetMaximized(jStr(env, jWidgetId), jMax);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrRequestCapability)(JNIEnv* env, jclass, jstring jWidgetId, jint jCap) {
+    std::string error;
+    auto result = getWidgetMgr()->requestCapability(jStr(env, jWidgetId),
+        static_cast<progressive::WidgetCapability>(jCap), error);
+    if (result.empty()) return env->NewStringUTF(("{\"error\":\"" + error + "\"}").c_str());
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrApproveCapability)(JNIEnv* env, jclass, jstring jWidgetId, jint jCap) {
+    auto result = getWidgetMgr()->approveCapability(jStr(env, jWidgetId),
+        static_cast<progressive::WidgetCapability>(jCap));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrDenyCapability)(JNIEnv* env, jclass, jstring jWidgetId, jint jCap) {
+    auto result = getWidgetMgr()->denyCapability(jStr(env, jWidgetId),
+        static_cast<progressive::WidgetCapability>(jCap));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrGetUrl)(JNIEnv* env, jclass, jstring jWidgetId) {
+    std::string error;
+    auto result = getWidgetMgr()->getWidgetUrl(jStr(env, jWidgetId), error);
+    if (result.empty()) return env->NewStringUTF(("{\"error\":\"" + error + "\"}").c_str());
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrBuildPostMessage)(JNIEnv* env, jclass, jstring jWidgetId,
+                                                    jstring jAction, jstring jData) {
+    auto result = getWidgetMgr()->buildWidgetPostMessage(jStr(env, jWidgetId),
+        jStr(env, jAction), jStr(env, jData));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrParsePostMessage)(JNIEnv* env, jclass, jstring jMessage) {
+    std::string action, widgetId, data;
+    auto api = getWidgetMgr()->parseWidgetPostMessage(jStr(env, jMessage), action, widgetId, data);
+    std::ostringstream os;
+    os << R"({"api":")" << api << R"(","action":")" << action
+       << R"(","widgetId":")" << widgetId << R"(","data":)" << (data.empty() ? "{}" : data) << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+JNI_FUNC(jboolean, nativeWidgetMgrSupportsPiP)(JNIEnv* env, jclass, jstring jWidgetId) {
+    return getWidgetMgr()->supportsPiP(jStr(env, jWidgetId)) ? JNI_TRUE : JNI_FALSE;
+}
+JNI_FUNC(jstring, nativeWidgetMgrGetByType)(JNIEnv* env, jclass, jstring jType) {
+    auto widgets = getWidgetMgr()->getWidgetsByType(jStr(env, jType));
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < widgets.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"id":")" << widgets[i].widgetId
+           << R"(","name":")" << widgets[i].name
+           << R"(","type":")" << widgets[i].type << "\"}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrCount)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(std::to_string(getWidgetMgr()->widgetCount()).c_str());
+}
+JNI_FUNC(jstring, nativeWidgetMgrBuildCsp)(JNIEnv* env, jclass) {
+    auto csp = getWidgetMgr()->buildGlobalCsp();
+    return env->NewStringUTF(csp.c_str());
+}
+JNI_FUNC(jstring, nativeBackupExtractPrivateKey)(JNIEnv* env, jclass, jstring jRecoveryKey) {
+    auto result = getBackupMgr()->extractPrivateKeyFromRecoveryKey(jStr(env, jRecoveryKey));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeBackupGenerateRecoveryKey)(JNIEnv* env, jclass, jstring jCurveKey) {
+    auto result = getBackupMgr()->generateRecoveryKey(jStr(env, jCurveKey));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeBackupParseVersion)(JNIEnv* env, jclass, jstring jJson) {
+    auto ver = getBackupMgr()->parseBackupVersion(jStr(env, jJson));
+    return env->NewStringUTF(getBackupMgr()->backupVersionToJson(ver).c_str());
+}
+JNI_FUNC(jstring, nativeBackupBuildCreateVersion)(JNIEnv* env, jclass, jstring jConfigJson) {
+    auto json = jStr(env, jConfigJson);
+    progressive::KeyBackupConfig c;
+    c.algorithm = jExtractStr(json, "algorithm");
+    if (c.algorithm.empty()) c.algorithm = "m.megolm_backup.v1.curve25519-aes-sha2";
+    c.authData = jExtractStr(json, "auth_data");
+    c.version = static_cast<int>(jExtractInt(json, "version"));
+    c.recoveryKey = jExtractStr(json, "recovery_key");
+    auto result = getBackupMgr()->buildCreateBackupVersionRequest(c);
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeBackupBuildDelete)(JNIEnv* env, jclass, jstring jVersion) {
+    auto result = getBackupMgr()->buildDeleteBackupRequest(jStr(env, jVersion));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeBackupExportSession)(JNIEnv* env, jclass, jstring jRoomId, jstring jSenderKey,
+                                              jstring jSessionId, jstring jKeyBase64, jlong jIdx,
+                                              jboolean jForwarded, jlong jFwdCount) {
+    auto exp = getBackupMgr()->exportSessionForBackup(
+        jStr(env, jRoomId), jStr(env, jSenderKey), jStr(env, jSessionId),
+        jStr(env, jKeyBase64), jIdx, jForwarded, jFwdCount);
+    std::ostringstream os;
+    os << R"({"room_id":")" << exp.roomId << R"(","session_id":")" << exp.sessionId
+       << R"(","sender_key":")" << exp.senderKey << R"(","first_index":)" << exp.firstMessageIndex << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+JNI_FUNC(jstring, nativeBackupEncryptSession)(JNIEnv* env, jclass, jstring jSessionJson, jstring jAuthData) {
+    auto json = jStr(env, jSessionJson);
+    progressive::MegolmSessionExport s;
+    s.roomId = jExtractStr(json, "room_id");
+    s.senderKey = jExtractStr(json, "sender_key");
+    s.sessionId = jExtractStr(json, "session_id");
+    s.firstMessageIndex = jExtractInt(json, "first_index");
+    s.isForwardedKey = jExtractBool(json, "forwarded");
+    s.forwardedCount = jExtractInt(json, "forwarded_count");
+    auto result = getBackupMgr()->encryptSessionDataForBackup(s, jStr(env, jAuthData));
+    return env->NewStringUTF(result.c_str());
+}
+JNI_FUNC(jstring, nativeBackupParseKeys)(JNIEnv* env, jclass, jstring jJson) {
+    auto rooms = getBackupMgr()->parseBackupKeysResponse(jStr(env, jJson));
+    std::ostringstream os; os << "[";
+    for (size_t i = 0; i < rooms.size(); i++) {
+        if (i > 0) os << ",";
+        os << R"({"room_id":")" << rooms[i].roomId << R"(","count":)" << rooms[i].sessions[rooms[i].roomId].size() << "}";
+    }
+    os << "]";
+    return env->NewStringUTF(os.str().c_str());
+}
+JNI_FUNC(jstring, nativeBackupDecryptSession)(JNIEnv* env, jclass, jstring jSessionJson, jstring jBackupKey, jstring jRoomId) {
+    auto result = getBackupMgr()->decryptSessionData(jStr(env, jSessionJson), jStr(env, jBackupKey), jStr(env, jRoomId));
+    std::ostringstream os;
+    os << R"({"session_id":")" << result.sessionId
+       << R"(","sender_key":")" << result.senderKey
+       << R"(","session_key":")" << result.sessionKeyBase64
+       << R"(","decrypted":)" << (result.decrypted ? "true" : "false");
+    if (!result.error.empty()) os << R"(,"error":")" << result.error << "\"";
+    os << "}";
+    return env->NewStringUTF(os.str().c_str());
+}
+JNI_FUNC(jstring, nativeBackupDecryptAll)(JNIEnv* env, jclass, jstring jKeysJson, jstring jAuthData, jstring jRecoveryKey) {
+    auto results = getBackupMgr()->decryptAllSessions(jStr(env, jKeysJson), jStr(env, jAuthData), jStr(env, jRecoveryKey));
+    return env->NewStringUTF(getBackupMgr()->decryptResultsToJson(results).c_str());
+}
+JNI_FUNC(jboolean, nativeBackupVerifyIntegrity)(JNIEnv* env, jclass, jstring jAuthData) {
+    return getBackupMgr()->verifyBackupIntegrity(jStr(env, jAuthData)) ? JNI_TRUE : JNI_FALSE;
+}
+JNI_FUNC(jboolean, nativeBackupVerifyRecoveryMatch)(JNIEnv* env, jclass, jstring jRecoveryKey, jstring jAuthData) {
+    return getBackupMgr()->verifyRecoveryKeyMatchesBackup(jStr(env, jRecoveryKey), jStr(env, jAuthData)) ? JNI_TRUE : JNI_FALSE;
+}
+JNI_FUNC(jstring, nativeBackupProgress)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(getBackupMgr()->getProgress().isRunning ? "1" : "0");
+}
+JNI_FUNC(jstring, nativeBackupProgressJson)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(getBackupMgr()->progressToJson().c_str());
+}
+JNI_FUNC(void, nativeBackupSetTotalKeys)(JNIEnv* env, jclass, jint jCount) {
+    getBackupMgr()->setTotalKeys(jCount);
+}
+JNI_FUNC(void, nativeBackupAdvanceUploaded)(JNIEnv*, jclass) { getBackupMgr()->advanceUploaded(1); }
+JNI_FUNC(void, nativeBackupAdvanceDownloaded)(JNIEnv*, jclass) { getBackupMgr()->advanceDownloaded(1); }
+JNI_FUNC(void, nativeBackupAdvanceDecrypted)(JNIEnv*, jclass) { getBackupMgr()->advanceDecrypted(1); }
+JNI_FUNC(void, nativeBackupAdvanceImported)(JNIEnv*, jclass) { getBackupMgr()->advanceImported(1); }
+JNI_FUNC(void, nativeBackupMarkComplete)(JNIEnv*, jclass) { getBackupMgr()->markComplete(); }
+JNI_FUNC(void, nativeBackupReset)(JNIEnv*, jclass) { g_backupMgr.reset(new progressive::KeyBackupManager()); }
 } // extern "C"
