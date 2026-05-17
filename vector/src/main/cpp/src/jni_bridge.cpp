@@ -209,6 +209,11 @@
 #include "progressive/thread_manager.hpp"
 #include "progressive/transparent_overlay.hpp"
 #include "progressive/user_directory.hpp"
+#include "progressive/web_search.hpp"
+#include "progressive/federation_version.hpp"
+#include "progressive/canonical_json.hpp"
+#include "progressive/room_uploads.hpp"
+#include "progressive/notif_formatter.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -2868,10 +2873,6 @@ JNI_FUNC(jstring, nativeBuildSyncFilter)(JNIEnv* env, jclass, jboolean jThreads,
     auto result = progressive::buildSyncFilter(filter);
     return env->NewStringUTF(result.c_str());
 }
-JNI_FUNC(jstring, nativeValidateAndFormatRecoveryKey)(JNIEnv* env, jclass, jstring jRawKey) {
-    auto result = progressive::validateAndFormatRecoveryKey(jStr(env, jRawKey));
-    return env->NewStringUTF(result.c_str());
-}
 JNI_FUNC(jstring, nativeFormatMemberNotice)(JNIEnv* env, jclass, jstring jMembership, jstring jPrevMembership, jstring jSenderId, jstring jSenderName, jstring jTargetId, jstring jTargetName, jstring jReason, jboolean jDirect, jboolean jSelf) {
     auto result = progressive::formatMemberNotice(jStr(env, jMembership), jStr(env, jPrevMembership), jStr(env, jSenderId), jStr(env, jSenderName), jStr(env, jTargetId), jStr(env, jTargetName), jStr(env, jReason), jDirect, jSelf);
     return env->NewStringUTF(result.c_str());
@@ -3973,20 +3974,6 @@ JNI_FUNC(jstring, nativeSearchRoomList)(JNIEnv* env, jclass, jstring jRoomsJson,
     os << "]";
     return env->NewStringUTF(os.str().c_str());
 }
-    // Format: "Alice, Bob and 3 others online"
-    std::ostringstream os;
-    int total = static_cast<int>(names.size());
-    int shown = std::min(total, jMaxNames);
-    for (int i = 0; i < shown; i++) {
-        if (i > 0) os << (i == shown - 1 && total <= jMaxNames ? " and " : ", ");
-        os << names[i];
-    }
-    if (total > jMaxNames) os << " and " << (total - shown) << " others";
-    os << (total == 1 ? " is online" : " are online");
-    return env->NewStringUTF(os.str().c_str());
-}
-        return v;
-    }
 JNI_FUNC(jboolean, nativeIsStateEvent)(JNIEnv* env, jclass, jstring jEventType) {
     return progressive::isStateEvent(jStr(env, jEventType)) ? JNI_TRUE : JNI_FALSE;
 }
@@ -4155,7 +4142,6 @@ JNI_FUNC(jstring, nativeValidateAndFormatRecoveryKey)(JNIEnv* env, jclass, jstri
     auto result = progressive::validateAndFormatRecoveryKey(jStr(env, jRawKey));
     return env->NewStringUTF(result.c_str());
 }
-    }
 JNI_FUNC(jstring, nativeFormatRoomNameNotice)(JNIEnv* env, jclass, jstring jName, jstring jNewName, jboolean jSelf) {
     auto result = progressive::formatRoomNameNotice(jStr(env, jName), jStr(env, jNewName), jSelf);
     return env->NewStringUTF(result.c_str());

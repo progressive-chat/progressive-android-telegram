@@ -114,6 +114,9 @@ bool needsWellKnownDiscovery(const std::string& homeserverUrl);
 // Build well-known discovery URL.
 std::string buildWellKnownUrl(const std::string& domain);
 
+// Check if well-known result requires OIDC authentication.
+bool requiresOidc(const WellKnownResult& wk);
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_LOGIN_UTILS_HPP
