@@ -291,6 +291,34 @@ static std::string jStr(JNIEnv* env, jstring js) {
     return result;
 }
 
+// Shared JSON extraction helpers
+static std::string jExtractStr(const std::string& json, const std::string& key) {
+    auto pp = json.find("\"" + key + "\"");
+    if (pp == std::string::npos) return "";
+    pp = json.find('"', pp + key.size() + 2);
+    if (pp == std::string::npos) return "";
+    pp++;
+    size_t e = pp;
+    while (e < json.size() && json[e] != '"') e++;
+    return json.substr(pp, e - pp);
+}
+
+static int64_t jExtractInt(const std::string& json, const std::string& key) {
+    auto pp = json.find("\"" + key + "\"");
+    if (pp == std::string::npos) return 0;
+    pp = json.find(':', pp);
+    if (pp == std::string::npos) return 0;
+    pp++;
+    while (pp < json.size() && (json[pp] == ' ' || json[pp] == '\t')) pp++;
+    int64_t v = 0;
+    while (pp < json.size() && json[pp] >= '0' && json[pp] <= '9') { v=v*10+(json[pp]-'0'); pp++; }
+    return v;
+}
+
+static bool jExtractBool(const std::string& json, const std::string& key) {
+    return json.find("\"" + key + "\":true") != std::string::npos;
+}
+
 extern "C" {
 
 /*
