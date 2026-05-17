@@ -7,36 +7,36 @@ namespace progressive {
 
 // ====== Call State/Reason String Conversions ======
 
-const char* callStateToString(CallState state) {
+const char* callManagerStateToString(CallManagerCallState state) {
     switch (state) {
-        case CallState::IDLE: return "idle";
-        case CallState::INVITING: return "inviting";
-        case CallState::RINGING: return "ringing";
-        case CallState::CONNECTING: return "connecting";
-        case CallState::CONNECTED: return "connected";
-        case CallState::ON_HOLD: return "on_hold";
-        case CallState::ENDED: return "ended";
-        case CallState::REJECTED: return "rejected";
-        case CallState::TIMED_OUT: return "timed_out";
-        case CallState::BUSY: return "busy";
+        case CallManagerCallState::IDLE: return "idle";
+        case CallManagerCallState::INVITING: return "inviting";
+        case CallManagerCallState::RINGING: return "ringing";
+        case CallManagerCallState::CONNECTING: return "connecting";
+        case CallManagerCallState::CONNECTED: return "connected";
+        case CallManagerCallState::ON_HOLD: return "on_hold";
+        case CallManagerCallState::ENDED: return "ended";
+        case CallManagerCallState::REJECTED: return "rejected";
+        case CallManagerCallState::TIMED_OUT: return "timed_out";
+        case CallManagerCallState::BUSY: return "busy";
     }
     return "unknown";
 }
 
-CallState callStateFromString(const std::string& s) {
-    if (s == "inviting") return CallState::INVITING;
-    if (s == "ringing") return CallState::RINGING;
-    if (s == "connecting") return CallState::CONNECTING;
-    if (s == "connected") return CallState::CONNECTED;
-    if (s == "on_hold") return CallState::ON_HOLD;
-    if (s == "ended") return CallState::ENDED;
-    if (s == "rejected") return CallState::REJECTED;
-    if (s == "timed_out") return CallState::TIMED_OUT;
-    if (s == "busy") return CallState::BUSY;
-    return CallState::IDLE;
+CallManagerCallState callManagerStateFromString(const std::string& s) {
+    if (s == "inviting") return CallManagerCallState::INVITING;
+    if (s == "ringing") return CallManagerCallState::RINGING;
+    if (s == "connecting") return CallManagerCallState::CONNECTING;
+    if (s == "connected") return CallManagerCallState::CONNECTED;
+    if (s == "on_hold") return CallManagerCallState::ON_HOLD;
+    if (s == "ended") return CallManagerCallState::ENDED;
+    if (s == "rejected") return CallManagerCallState::REJECTED;
+    if (s == "timed_out") return CallManagerCallState::TIMED_OUT;
+    if (s == "busy") return CallManagerCallState::BUSY;
+    return CallManagerCallState::IDLE;
 }
 
-const char* endCallReasonToString(CallManagerEndReason reason) {
+const char* callManagerEndReasonToString(CallManagerEndReason reason) {
     switch (reason) {
         case CallManagerEndReason::USER_HUNG_UP: return "user_hung_up";
         case CallManagerEndReason::REMOTE_HUNG_UP: return "remote_hung_up";
@@ -50,7 +50,7 @@ const char* endCallReasonToString(CallManagerEndReason reason) {
     }
 }
 
-CallManagerEndReason endCallReasonFromString(const std::string& s) {
+CallManagerEndReason callManagerEndReasonFromString(const std::string& s) {
     if (s == "user_hung_up") return CallManagerEndReason::USER_HUNG_UP;
     if (s == "remote_hung_up") return CallManagerEndReason::REMOTE_HUNG_UP;
     if (s == "rejected") return CallManagerEndReason::REJECTED;
@@ -217,19 +217,19 @@ CallNotification formatCallNotification(const CallInfo& call) {
 
     std::string caller = call.callerName.empty() ? call.callerId : call.callerName;
 
-    if (call.isIncoming && call.state == CallState::RINGING) {
+    if (call.isIncoming && call.state == CallManagerCallState::RINGING) {
         notif.title = caller + " is calling...";
         notif.body = call.type == CallType::VIDEO ? "Video call" : "Voice call";
-    } else if (call.state == CallState::CONNECTED) {
+    } else if (call.state == CallManagerCallState::CONNECTED) {
         notif.title = "Call with " + caller;
         notif.body = call.type == CallType::VIDEO ? "Video call in progress" : "Voice call in progress";
-    } else if (call.state == CallState::ENDED) {
+    } else if (call.state == CallManagerCallState::ENDED) {
         notif.title = "Call ended";
         notif.body = "Call with " + caller + " ended";
-    } else if (call.state == CallState::REJECTED) {
+    } else if (call.state == CallManagerCallState::REJECTED) {
         notif.title = "Call declined";
         notif.body = caller + " declined the call";
-    } else if (call.state == CallState::TIMED_OUT) {
+    } else if (call.state == CallManagerCallState::TIMED_OUT) {
         notif.title = "Missed call";
         notif.body = "Missed " + std::string(call.type == CallType::VIDEO ? "video" : "voice") + " call from " + caller;
     }
@@ -252,28 +252,28 @@ int64_t CallManager::nowMs() const {
     return static_cast<int64_t>(std::time(nullptr)) * 1000;
 }
 
-bool CallManager::isValidStateTransition(CallState from, CallState to) const {
+bool CallManager::isValidStateTransition(CallManagerCallState from, CallManagerCallState to) const {
     // Allow only valid transitions
     switch (from) {
-        case CallState::IDLE:
-            return to == CallState::INVITING || to == CallState::RINGING;
-        case CallState::INVITING:
-            return to == CallState::CONNECTING || to == CallState::ENDED ||
-                   to == CallState::REJECTED || to == CallState::TIMED_OUT;
-        case CallState::RINGING:
-            return to == CallState::CONNECTING || to == CallState::REJECTED ||
-                   to == CallState::TIMED_OUT;
-        case CallState::CONNECTING:
-            return to == CallState::CONNECTED || to == CallState::ENDED;
-        case CallState::CONNECTED:
-            return to == CallState::ENDED || to == CallState::ON_HOLD;
-        case CallState::ON_HOLD:
-            return to == CallState::CONNECTED || to == CallState::ENDED;
-        case CallState::ENDED:
-        case CallState::REJECTED:
-        case CallState::TIMED_OUT:
-        case CallState::BUSY:
-            return to == CallState::IDLE; // Allow cleanup
+        case CallManagerCallState::IDLE:
+            return to == CallManagerCallState::INVITING || to == CallManagerCallState::RINGING;
+        case CallManagerCallState::INVITING:
+            return to == CallManagerCallState::CONNECTING || to == CallManagerCallState::ENDED ||
+                   to == CallManagerCallState::REJECTED || to == CallManagerCallState::TIMED_OUT;
+        case CallManagerCallState::RINGING:
+            return to == CallManagerCallState::CONNECTING || to == CallManagerCallState::REJECTED ||
+                   to == CallManagerCallState::TIMED_OUT;
+        case CallManagerCallState::CONNECTING:
+            return to == CallManagerCallState::CONNECTED || to == CallManagerCallState::ENDED;
+        case CallManagerCallState::CONNECTED:
+            return to == CallManagerCallState::ENDED || to == CallManagerCallState::ON_HOLD;
+        case CallManagerCallState::ON_HOLD:
+            return to == CallManagerCallState::CONNECTED || to == CallManagerCallState::ENDED;
+        case CallManagerCallState::ENDED:
+        case CallManagerCallState::REJECTED:
+        case CallManagerCallState::TIMED_OUT:
+        case CallManagerCallState::BUSY:
+            return to == CallManagerCallState::IDLE; // Allow cleanup
     }
     return false;
 }
@@ -309,7 +309,7 @@ std::string CallManager::startOutgoingCall(const std::string& roomId, const std:
     call.calleeId = calleeId;
     call.calleeName = calleeName;
     call.type = type;
-    call.state = CallState::INVITING;
+    call.state = CallManagerCallState::INVITING;
     call.isIncoming = false;
     call.createdAtMs = nowMs();
     call.startedAtMs = call.createdAtMs;
@@ -346,7 +346,7 @@ std::string CallManager::handleIncomingCall(const std::string& callId, const std
     call.callerId = callerId;
     call.callerName = callerName;
     call.type = type;
-    call.state = CallState::RINGING;
+    call.state = CallManagerCallState::RINGING;
     call.isIncoming = true;
     call.createdAtMs = nowMs();
     call.startedAtMs = call.createdAtMs;
@@ -363,12 +363,12 @@ std::string CallManager::answerCall(const std::string& callId, const std::string
         error = "Call not found: " + callId;
         return "";
     }
-    if (call->state != CallState::RINGING) {
+    if (call->state != CallManagerCallState::RINGING) {
         error = "Call is not ringing";
         return "";
     }
 
-    call->state = CallState::CONNECTING;
+    call->state = CallManagerCallState::CONNECTING;
     call->answeredAtMs = nowMs();
     call->localSdp = parseSdp(sdpAnswer, "answer");
 
@@ -384,7 +384,7 @@ std::string CallManager::rejectCall(const std::string& callId, const std::string
     auto* call = findCall(callId);
     if (!call) return "";
 
-    call->state = CallState::REJECTED;
+    call->state = CallManagerCallState::REJECTED;
     call->endedAtMs = nowMs();
 
     std::ostringstream os;
@@ -400,7 +400,7 @@ std::string CallManager::hangupCall(const std::string& callId, CallManagerEndRea
     auto* call = findCall(callId);
     if (!call) return "";
 
-    call->state = CallState::ENDED;
+    call->state = CallManagerCallState::ENDED;
     call->endedAtMs = nowMs();
     call->endReason = reason;
     call->endReasonText = reasonText;
@@ -411,7 +411,7 @@ std::string CallManager::hangupCall(const std::string& callId, CallManagerEndRea
 
     std::ostringstream os;
     os << R"({"call_id":")" << callId << R"(")";
-    os << R"(,"reason":")" << endCallReasonToString(reason) << R"(")";
+    os << R"(,"reason":")" << callManagerEndReasonToString(reason) << R"(")";
     os << R"(,"version":1)";
     os << "}";
     return os.str();
@@ -421,7 +421,7 @@ std::string CallManager::timeoutCall(const std::string& callId) {
     auto* call = findCall(callId);
     if (!call) return "";
 
-    call->state = CallState::TIMED_OUT;
+    call->state = CallManagerCallState::TIMED_OUT;
     call->endedAtMs = nowMs();
     call->endReason = CallManagerEndReason::TIMEOUT;
 
@@ -470,14 +470,14 @@ std::vector<ParsedIceCandidate> CallManager::getRemoteCandidates(const std::stri
 
 void CallManager::setCallConnected(const std::string& callId) {
     auto* call = findCall(callId);
-    if (call && call->state == CallState::CONNECTING) {
-        call->state = CallState::CONNECTED;
+    if (call && call->state == CallManagerCallState::CONNECTING) {
+        call->state = CallManagerCallState::CONNECTED;
     }
 }
 
 void CallManager::setCallConnecting(const std::string& callId) {
     auto* call = findCall(callId);
-    if (call) call->state = CallState::CONNECTING;
+    if (call) call->state = CallManagerCallState::CONNECTING;
 }
 
 void CallManager::setMuted(const std::string& callId, bool muted) {
@@ -506,7 +506,7 @@ bool CallManager::getCall(const std::string& callId, CallInfo& out) const {
 
 bool CallManager::getActiveCall(CallInfo& out) const {
     for (const auto& c : calls_) {
-        if (c.state == CallState::CONNECTED) {
+        if (c.state == CallManagerCallState::CONNECTED) {
             out = c;
             return true;
         }
@@ -516,7 +516,7 @@ bool CallManager::getActiveCall(CallInfo& out) const {
 
 bool CallManager::getIncomingCall(CallInfo& out) const {
     for (const auto& c : calls_) {
-        if (c.state == CallState::RINGING && c.isIncoming) {
+        if (c.state == CallManagerCallState::RINGING && c.isIncoming) {
             out = c;
             return true;
         }
@@ -535,8 +535,8 @@ std::vector<CallInfo> CallManager::getRoomCalls(const std::string& roomId) const
 bool CallManager::isRoomInCall(const std::string& roomId) const {
     for (const auto& c : calls_) {
         if (c.roomId == roomId &&
-            (c.state == CallState::INVITING || c.state == CallState::RINGING ||
-             c.state == CallState::CONNECTING || c.state == CallState::CONNECTED)) {
+            (c.state == CallManagerCallState::INVITING || c.state == CallManagerCallState::RINGING ||
+             c.state == CallManagerCallState::CONNECTING || c.state == CallManagerCallState::CONNECTED)) {
             return true;
         }
     }
@@ -546,7 +546,7 @@ bool CallManager::isRoomInCall(const std::string& roomId) const {
 int CallManager::activeCallCount() const {
     int count = 0;
     for (const auto& c : calls_) {
-        if (c.state == CallState::CONNECTED || c.state == CallState::CONNECTING) count++;
+        if (c.state == CallManagerCallState::CONNECTED || c.state == CallManagerCallState::CONNECTING) count++;
     }
     return count;
 }
@@ -584,7 +584,7 @@ std::string CallManager::callToJson(const CallInfo& call) const {
        << R"(","caller_name":")" << call.callerName
        << R"(","callee_name":")" << call.calleeName
        << R"(","type":")" << (call.type == CallType::VIDEO ? "video" : "voice")
-       << R"(","state":")" << callStateToString(call.state)
+       << R"(","state":")" << callManagerStateToString(call.state)
        << R"(","is_incoming":)" << (call.isIncoming ? "true" : "false")
        << R"(,"is_muted":)" << (call.isMuted ? "true" : "false")
        << R"(,"is_video_on":)" << (call.isVideoOn ? "true" : "false")

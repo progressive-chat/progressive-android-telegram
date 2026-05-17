@@ -23,7 +23,7 @@ namespace progressive {
 
 // ---- Call State ----
 
-enum class CallState {
+enum class CallManagerCallState {
     IDLE = 0,              // No call active
     INVITING = 1,          // Outgoing: sent invite, waiting for answer
     RINGING = 2,           // Incoming: received invite, waiting to answer
@@ -36,8 +36,8 @@ enum class CallState {
     BUSY = 9,              // Remote busy (reject with busy)
 };
 
-const char* callStateToString(CallState state);
-CallState callStateFromString(const std::string& s);
+const char* callManagerStateToString(CallManagerCallState state);
+CallManagerCallState callManagerStateFromString(const std::string& s);
 
 // ---- Call Type ----
 
@@ -60,8 +60,8 @@ enum class CallManagerEndReason {
     NETWORK_ERROR = 8,      // Network dropped
 };
 
-const char* endCallReasonToString(CallManagerEndReason reason);
-CallManagerEndReason endCallReasonFromString(const std::string& s);
+const char* callManagerEndReasonToString(CallManagerEndReason reason);
+CallManagerEndReason callManagerEndReasonFromString(const std::string& s);
 
 // ---- SDP (Session Description Protocol) ----
 
@@ -117,7 +117,7 @@ struct CallSession {
     std::string calleeName;
     std::vector<std::string> participants;
     CallType type = CallType::VOICE;
-    CallState state = CallState::IDLE;
+    CallManagerCallState state = CallManagerCallState::IDLE;
     bool isIncoming = false;     // true = we received the invite
     bool isMuted = false;
     bool isSpeakerOn = true;
@@ -173,7 +173,7 @@ struct CallNotification {
     std::string title;           // "Alice is calling..."
     std::string body;            // "Voice call" or "Video call"
     bool isVideo = false;
-    CallState state = CallState::RINGING;
+    CallManagerCallState state = CallManagerCallState::RINGING;
     int64_t timestampMs = 0;
 };
 
@@ -304,7 +304,7 @@ private:
     const CallSession* findCall(const std::string& callId) const;
 
     std::string generateCallId() const;
-    bool isValidStateTransition(CallState from, CallState to) const;
+    bool isValidStateTransition(CallManagerCallState from, CallManagerCallState to) const;
     int64_t nowMs() const;
 };
 
