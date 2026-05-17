@@ -5,6 +5,7 @@
 #include "progressive/relation.hpp"
 #include "progressive/olm_session.hpp"
 #include "progressive/sas_verification.hpp"
+#include "progressive/megolm_decryptor.hpp"
 #include "progressive/exporter.hpp"
 #include "progressive/eventcache.hpp"
 #include "progressive/translate.hpp"
@@ -2534,6 +2535,30 @@ JNI_FUNC(jstring, nativeSasCalculateMac)(JNIEnv* env, jclass, jstring jInput, js
 
 JNI_FUNC(jboolean, nativeSasVerifyMac)(JNIEnv* env, jclass, jstring jTheirMac, jstring jInput, jstring jInfo) {
     return progressive::sasVerifyMac(g_sas, jStr(env, jTheirMac), jStr(env, jInput), jStr(env, jInfo)) ? JNI_TRUE : JNI_FALSE;
+}
+
+// --- Megolm Decryptor ---
+static progressive::MegolmSessionManager g_megolmManager;
+
+JNI_FUNC(jboolean, nativeMegolmAddSession)(JNIEnv* env, jclass, jstring jRoom, jstring jSenderKey, jstring jSessionId, jstring jSessionKey) {
+    return g_megolmManager.addSession(jStr(env, jRoom), jStr(env, jSenderKey),
+        jStr(env, jSessionId), jStr(env, jSessionKey)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jstring, nativeMegolmDecrypt)(JNIEnv* env, jclass, jstring jRoom, jstring jSenderKey, jstring jSessionId, jstring jCiphertext) {
+    auto room = jStr(env, jRoom); auto sk = jStr(env, jSenderKey); auto sid = jStr(env, jSessionId);
+    auto* session = g_megolmManager.findSession(room, sk, sid);
+    if (!session) return env->NewStringUTF("");
+    auto result = progressive::megolmDecrypt(*session, jStr(env, jCiphertext));
+    return env->NewStringUTF(result.c_str());
+}
+
+JNI_FUNC(jint, nativeMegolmSessionCount)(JNIEnv*, jclass) {
+    return g_megolmManager.sessionCount();
+}
+
+JNI_FUNC(void, nativeMegolmClearRoom)(JNIEnv* env, jclass, jstring jRoom) {
+    g_megolmManager.clearRoom(jStr(env, jRoom));
 }
 
 } // extern "C"
