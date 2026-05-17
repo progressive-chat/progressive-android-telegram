@@ -305,65 +305,166 @@ static progressive::EventDatabase g_eventDb;
 
 static progressive::EventCache g_eventCache;
 
-static progressive::LocationSharingManager g_locationSharing;
-
-static progressive::LatencyTracker g_latencyTracker;
-
-static progressive::DesyncDetector g_desyncDetector;
-
-static progressive::ConnectionMonitor g_connectionMonitor;
-
-static progressive::ProfileSwiper g_profileSwiper;
-
-static progressive::DrawingCanvas g_drawCanvas;
-
-static progressive::ScheduledEditQueue g_schedEdits;
-
-static progressive::LightweightCallManager g_lightCall;
-
-static progressive::AvatarHistory g_avatarHistory;
-
-static progressive::EmojiBlacklist g_emojiBlacklist;
-
-static progressive::ChatPushDownManager g_chatPushDown;
-
-static progressive::LanguageHideManager g_langHide;
-
-static progressive::MessageQueue g_msgQueue;
-
-static progressive::UserHideManager g_userHide;
-
-static progressive::UserMxidVisibility g_mxidVisibility;
-
-static progressive::ReplacementEngine g_replacementEngine;
-
-static progressive::SymbolBar g_symbolBar;
-
-static progressive::RoomMirrorManager g_mirrorMgr;
-
-static progressive::NotificationKeywords g_notifKeywords;
-
-static progressive::ModuleLoader g_moduleLoader;
-
-static progressive::SearchIndex g_searchIndex;
-
-static progressive::DeletedMessageArchive g_deletedArchive;
-
-static progressive::MessageAggregator g_msgAgg;
-
-static progressive::CacheManager g_cacheMgr;
-
-static progressive::ThreadAggregator g_threadAgg;
-
-static progressive::InvitationHideList g_inviteHide;
-
 static progressive::ChunkedUploader g_uploader;
 
-static progressive::UserMaskRegistry g_userMasks;
+static std::unique_ptr<progressive::ServerNoticeManager> g_serverNotice;
 
-static progressive::NetworkStatsCollector g_netStats;
+static progressive::ServerNoticeManager* getServerNotice() {
+    if (!g_serverNotice) g_serverNotice.reset(new progressive::ServerNoticeManager());
+    return g_serverNotice.get();
+}
+static std::unique_ptr<progressive::LiveLocationManager> g_locationMgr;
 
-static progressive::KeywordFilter g_keywordFilter;
+static progressive::LiveLocationManager* getLocationMgr() {
+    if (!g_locationMgr) g_locationMgr.reset(new progressive::LiveLocationManager());
+    return g_locationMgr.get();
+}
+static std::unique_ptr<progressive::TermsManager> g_termsMgr;
+
+static progressive::TermsManager* getTermsMgr() {
+    if (!g_termsMgr) g_termsMgr.reset(new progressive::TermsManager());
+    return g_termsMgr.get();
+}
+static std::unique_ptr<progressive::CrossSigningManager> g_crossSigningMgr;
+
+static progressive::CrossSigningManager* getCrossSigningMgr() {
+    if (!g_crossSigningMgr) g_crossSigningMgr.reset(new progressive::CrossSigningManager());
+    return g_crossSigningMgr.get();
+}
+static std::unique_ptr<progressive::SpoilerManager> g_spoilerMgr;
+
+static progressive::SpoilerManager* getSpoilerMgr() {
+    if (!g_spoilerMgr) g_spoilerMgr.reset(new progressive::SpoilerManager());
+    return g_spoilerMgr.get();
+}
+static std::unique_ptr<progressive::UserDirectoryManager> g_userDir;
+
+static progressive::UserDirectoryManager* getUserDir() {
+    if (!g_userDir) g_userDir.reset(new progressive::UserDirectoryManager());
+    return g_userDir.get();
+}
+static std::unique_ptr<progressive::TransparentOverlayEngine> g_overlayEngine;
+
+static progressive::TransparentOverlayEngine* getOverlayEngine() {
+    if (!g_overlayEngine) g_overlayEngine.reset(new progressive::TransparentOverlayEngine());
+    return g_overlayEngine.get();
+}
+static std::unique_ptr<progressive::PollManager> g_pollMgr;
+
+static progressive::PollManager* getPollMgr() {
+    if (!g_pollMgr) g_pollMgr.reset(new progressive::PollManager());
+    return g_pollMgr.get();
+}
+static std::unique_ptr<progressive::DraftManager> g_draftMgr;
+
+static progressive::DraftManager* getDraftMgr() {
+    if (!g_draftMgr) g_draftMgr.reset(new progressive::DraftManager());
+    return g_draftMgr.get();
+}
+static std::unique_ptr<progressive::RoomStateManager> g_roomStateMgr;
+
+static progressive::RoomStateManager* getRoomStateMgr() {
+    if (!g_roomStateMgr) g_roomStateMgr.reset(new progressive::RoomStateManager());
+    return g_roomStateMgr.get();
+}
+static std::unique_ptr<progressive::IdentityServerManager> g_identityMgr;
+
+static progressive::IdentityServerManager* getIdentityMgr() {
+    if (!g_identityMgr) g_identityMgr.reset(new progressive::IdentityServerManager());
+    return g_identityMgr.get();
+}
+static std::unique_ptr<progressive::DeviceManager> g_deviceMgr;
+
+static progressive::DeviceManager* getDeviceMgr() {
+    if (!g_deviceMgr) g_deviceMgr.reset(new progressive::DeviceManager());
+    return g_deviceMgr.get();
+}
+static std::unique_ptr<progressive::RoomPermissionsManager> g_permMgr;
+
+static progressive::RoomPermissionsManager* getPermMgr() {
+    if (!g_permMgr) g_permMgr.reset(new progressive::RoomPermissionsManager());
+    return g_permMgr.get();
+}
+static std::unique_ptr<progressive::OfflineCacheManager> g_cacheMgr;
+
+static progressive::OfflineCacheManager* getCacheMgr() {
+    if (!g_cacheMgr) g_cacheMgr.reset(new progressive::OfflineCacheManager());
+    return g_cacheMgr.get();
+}
+static std::unique_ptr<progressive::WidgetManager> g_widgetMgr;
+
+static progressive::WidgetManager* getWidgetMgr() {
+    if (!g_widgetMgr) {
+        g_widgetMgr.reset(new progressive::WidgetManager("", "", "", ""));
+    }
+    return g_widgetMgr.get();
+}
+static std::unique_ptr<progressive::PinManager> g_pinMgr;
+
+static progressive::PinManager* getPinMgr() {
+    if (!g_pinMgr) g_pinMgr.reset(new progressive::PinManager());
+    return g_pinMgr.get();
+}
+static std::unique_ptr<progressive::CallManager> g_callMgr;
+
+static progressive::CallManager* getCallMgr() {
+    if (!g_callMgr) g_callMgr.reset(new progressive::CallManager());
+    return g_callMgr.get();
+}
+static std::unique_ptr<progressive::EventRelationsManager> g_relationsMgr;
+
+static progressive::EventRelationsManager* getRelationsMgr() {
+    if (!g_relationsMgr) g_relationsMgr.reset(new progressive::EventRelationsManager());
+    return g_relationsMgr.get();
+}
+static std::unique_ptr<progressive::ThreadManager> g_threadMgr;
+
+static progressive::ThreadManager* getThreadMgr() {
+    if (!g_threadMgr) g_threadMgr.reset(new progressive::ThreadManager());
+    return g_threadMgr.get();
+}
+static std::unique_ptr<progressive::ComposerManager> g_composerMgr;
+
+static progressive::ComposerManager* getComposerMgr() {
+    if (!g_composerMgr) g_composerMgr.reset(new progressive::ComposerManager());
+    return g_composerMgr.get();
+}
+static std::unique_ptr<progressive::MediaUploadManager> g_uploadMgr;
+
+static progressive::MediaUploadManager* getUploadMgr() {
+    if (!g_uploadMgr) g_uploadMgr.reset(new progressive::MediaUploadManager());
+    return g_uploadMgr.get();
+}
+static std::unique_ptr<progressive::SpaceGraph> g_spaceGraph;
+
+static progressive::SpaceGraph* getSpaceGraph() {
+    if (!g_spaceGraph) g_spaceGraph.reset(new progressive::SpaceGraph());
+    return g_spaceGraph.get();
+}
+static std::unique_ptr<progressive::SessionManager> g_sessionMgrFull;
+
+static progressive::SessionManager* getSessionMgrFull() {
+    if (!g_sessionMgrFull) g_sessionMgrFull.reset(new progressive::SessionManager());
+    return g_sessionMgrFull.get();
+}
+static std::unique_ptr<progressive::TextUndoManager> g_undoMgr;
+
+static progressive::TextUndoManager* getUndoMgr() {
+    if (!g_undoMgr) g_undoMgr.reset(new progressive::TextUndoManager());
+    return g_undoMgr.get();
+}
+static std::unique_ptr<progressive::KeyBackupManager> g_backupMgr;
+
+static progressive::KeyBackupManager* getBackupMgr() {
+    if (!g_backupMgr) g_backupMgr.reset(new progressive::KeyBackupManager());
+    return g_backupMgr.get();
+}
+static std::unique_ptr<progressive::RoomDirectoryManager> g_roomDir;
+
+static progressive::RoomDirectoryManager* getRoomDir() {
+    if (!g_roomDir) g_roomDir.reset(new progressive::RoomDirectoryManager());
+    return g_roomDir.get();
+}
 
 /*
  * Class: chat.progressive.app.native.ProgressiveNative
@@ -5779,161 +5880,5 @@ JNI_FUNC(jstring, nativeSpoilerDetectType)(JNIEnv* env, jclass, jstring jFormatt
 JNI_FUNC(jstring, nativeSpoilerBuildContent)(JNIEnv* env, jclass, jstring jBody, jstring jMxcUrl, jstring jMsgType, jstring jReason) {
     auto sc = getSpoilerMgr()->buildImageSpoiler(jStr(env, jBody), jStr(env, jMxcUrl), "image/jpeg", 0, 0, 0, jStr(env, jReason));
     return env->NewStringUTF(getSpoilerMgr()->buildSpoilerMessageContent(sc, jStr(env, jMxcUrl), jStr(env, jMsgType)).c_str());
-}
-static std::unique_ptr<progressive::ServerNoticeManager> g_serverNotice;
-
-static progressive::ServerNoticeManager* getServerNotice() {
-    if (!g_serverNotice) g_serverNotice.reset(new progressive::ServerNoticeManager());
-    return g_serverNotice.get();
-}
-static std::unique_ptr<progressive::LiveLocationManager> g_locationMgr;
-
-static progressive::LiveLocationManager* getLocationMgr() {
-    if (!g_locationMgr) g_locationMgr.reset(new progressive::LiveLocationManager());
-    return g_locationMgr.get();
-}
-static std::unique_ptr<progressive::TermsManager> g_termsMgr;
-
-static progressive::TermsManager* getTermsMgr() {
-    if (!g_termsMgr) g_termsMgr.reset(new progressive::TermsManager());
-    return g_termsMgr.get();
-}
-static std::unique_ptr<progressive::CrossSigningManager> g_crossSigningMgr;
-
-static progressive::CrossSigningManager* getCrossSigningMgr() {
-    if (!g_crossSigningMgr) g_crossSigningMgr.reset(new progressive::CrossSigningManager());
-    return g_crossSigningMgr.get();
-}
-static std::unique_ptr<progressive::SpoilerManager> g_spoilerMgr;
-
-static progressive::SpoilerManager* getSpoilerMgr() {
-    if (!g_spoilerMgr) g_spoilerMgr.reset(new progressive::SpoilerManager());
-    return g_spoilerMgr.get();
-}
-static std::unique_ptr<progressive::UserDirectoryManager> g_userDir;
-
-static progressive::UserDirectoryManager* getUserDir() {
-    if (!g_userDir) g_userDir.reset(new progressive::UserDirectoryManager());
-    return g_userDir.get();
-}
-static std::unique_ptr<progressive::TransparentOverlayEngine> g_overlayEngine;
-
-static progressive::TransparentOverlayEngine* getOverlayEngine() {
-    if (!g_overlayEngine) g_overlayEngine.reset(new progressive::TransparentOverlayEngine());
-    return g_overlayEngine.get();
-}
-static std::unique_ptr<progressive::PollManager> g_pollMgr;
-
-static progressive::PollManager* getPollMgr() {
-    if (!g_pollMgr) g_pollMgr.reset(new progressive::PollManager());
-    return g_pollMgr.get();
-}
-static std::unique_ptr<progressive::DraftManager> g_draftMgr;
-
-static progressive::DraftManager* getDraftMgr() {
-    if (!g_draftMgr) g_draftMgr.reset(new progressive::DraftManager());
-    return g_draftMgr.get();
-}
-static std::unique_ptr<progressive::RoomStateManager> g_roomStateMgr;
-
-static progressive::RoomStateManager* getRoomStateMgr() {
-    if (!g_roomStateMgr) g_roomStateMgr.reset(new progressive::RoomStateManager());
-    return g_roomStateMgr.get();
-}
-static std::unique_ptr<progressive::IdentityServerManager> g_identityMgr;
-
-static progressive::IdentityServerManager* getIdentityMgr() {
-    if (!g_identityMgr) g_identityMgr.reset(new progressive::IdentityServerManager());
-    return g_identityMgr.get();
-}
-static std::unique_ptr<progressive::DeviceManager> g_deviceMgr;
-
-static progressive::DeviceManager* getDeviceMgr() {
-    if (!g_deviceMgr) g_deviceMgr.reset(new progressive::DeviceManager());
-    return g_deviceMgr.get();
-}
-static std::unique_ptr<progressive::RoomPermissionsManager> g_permMgr;
-
-static progressive::RoomPermissionsManager* getPermMgr() {
-    if (!g_permMgr) g_permMgr.reset(new progressive::RoomPermissionsManager());
-    return g_permMgr.get();
-}
-static std::unique_ptr<progressive::OfflineCacheManager> g_cacheMgr;
-
-static progressive::OfflineCacheManager* getCacheMgr() {
-    if (!g_cacheMgr) g_cacheMgr.reset(new progressive::OfflineCacheManager());
-    return g_cacheMgr.get();
-}
-static std::unique_ptr<progressive::WidgetManager> g_widgetMgr;
-
-static progressive::WidgetManager* getWidgetMgr() {
-    if (!g_widgetMgr) {
-        g_widgetMgr.reset(new progressive::WidgetManager("", "", "", ""));
-    }
-static std::unique_ptr<progressive::PinManager> g_pinMgr;
-
-static progressive::PinManager* getPinMgr() {
-    if (!g_pinMgr) g_pinMgr.reset(new progressive::PinManager());
-    return g_pinMgr.get();
-}
-static std::unique_ptr<progressive::CallManager> g_callMgr;
-
-static progressive::CallManager* getCallMgr() {
-    if (!g_callMgr) g_callMgr.reset(new progressive::CallManager());
-    return g_callMgr.get();
-}
-static std::unique_ptr<progressive::EventRelationsManager> g_relationsMgr;
-
-static progressive::EventRelationsManager* getRelationsMgr() {
-    if (!g_relationsMgr) g_relationsMgr.reset(new progressive::EventRelationsManager());
-    return g_relationsMgr.get();
-}
-static std::unique_ptr<progressive::ThreadManager> g_threadMgr;
-
-static progressive::ThreadManager* getThreadMgr() {
-    if (!g_threadMgr) g_threadMgr.reset(new progressive::ThreadManager());
-    return g_threadMgr.get();
-}
-static std::unique_ptr<progressive::ComposerManager> g_composerMgr;
-
-static progressive::ComposerManager* getComposerMgr() {
-    if (!g_composerMgr) g_composerMgr.reset(new progressive::ComposerManager());
-    return g_composerMgr.get();
-}
-static std::unique_ptr<progressive::MediaUploadManager> g_uploadMgr;
-
-static progressive::MediaUploadManager* getUploadMgr() {
-    if (!g_uploadMgr) g_uploadMgr.reset(new progressive::MediaUploadManager());
-    return g_uploadMgr.get();
-}
-static std::unique_ptr<progressive::SpaceGraph> g_spaceGraph;
-
-static progressive::SpaceGraph* getSpaceGraph() {
-    if (!g_spaceGraph) g_spaceGraph.reset(new progressive::SpaceGraph());
-    return g_spaceGraph.get();
-}
-static std::unique_ptr<progressive::SessionManager> g_sessionMgrFull;
-
-static progressive::SessionManager* getSessionMgrFull() {
-    if (!g_sessionMgrFull) g_sessionMgrFull.reset(new progressive::SessionManager());
-    return g_sessionMgrFull.get();
-}
-static std::unique_ptr<progressive::TextUndoManager> g_undoMgr;
-
-static progressive::TextUndoManager* getUndoMgr() {
-    if (!g_undoMgr) g_undoMgr.reset(new progressive::TextUndoManager());
-    return g_undoMgr.get();
-}
-static std::unique_ptr<progressive::KeyBackupManager> g_backupMgr;
-
-static progressive::KeyBackupManager* getBackupMgr() {
-    if (!g_backupMgr) g_backupMgr.reset(new progressive::KeyBackupManager());
-    return g_backupMgr.get();
-}
-static std::unique_ptr<progressive::RoomDirectoryManager> g_roomDir;
-
-static progressive::RoomDirectoryManager* getRoomDir() {
-    if (!g_roomDir) g_roomDir.reset(new progressive::RoomDirectoryManager());
-    return g_roomDir.get();
 }
 } // extern "C"
