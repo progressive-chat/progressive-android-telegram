@@ -59,7 +59,7 @@ OidcLoginType loginTypeFromString(const std::string& s) {
 
 // ====== SSO Providers ======
 
-std::vector<OidcSsoProvider> parseSsoProviders(const std::string& loginFlowsJson) {
+std::vector<OidcSsoProvider> oidcParseSsoProviders(const std::string& loginFlowsJson) {
     std::vector<OidcSsoProvider> providers;
     size_t pos = 0;
 
@@ -92,7 +92,7 @@ std::vector<OidcSsoProvider> parseSsoProviders(const std::string& loginFlowsJson
     return providers;
 }
 
-std::string buildSsoLoginUrl(const std::string& baseUrl, const std::string& providerId,
+std::string oidcBuildSsoLoginUrl(const std::string& baseUrl, const std::string& providerId,
                               const std::string& redirectUrl) {
     std::ostringstream url;
     url << baseUrl;

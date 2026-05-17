@@ -2537,7 +2537,7 @@ JNI_FUNC(jstring, nativeFormatMembership)(JNIEnv* env, jclass, jstring jMembersh
     else if (ms == "invite") m = progressive::MemberState::Invite;
     else if (ms == "knock") m = progressive::MemberState::Knock;
     else if (ms == "ban") m = progressive::MemberState::Ban;
-    auto result = progressive::formatMembership(m);
+    auto result = progressive::formatMemberState(m);
     return env->NewStringUTF(result.c_str());
 }
 

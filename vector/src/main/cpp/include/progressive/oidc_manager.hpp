@@ -53,10 +53,10 @@ struct OidcSsoProvider {
 };
 
 // Parse SSO providers from login flows response.
-std::vector<OidcSsoProvider> parseSsoProviders(const std::string& loginFlowsJson);
+std::vector<OidcSsoProvider> oidcParseSsoProviders(const std::string& loginFlowsJson);
 
 // Build SSO login URL for a specific provider.
-std::string buildSsoLoginUrl(const std::string& baseUrl, const std::string& providerId,
+std::string oidcBuildSsoLoginUrl(const std::string& baseUrl, const std::string& providerId,
                               const std::string& redirectUrl);
 
 // ---- OIDC Configuration ----
