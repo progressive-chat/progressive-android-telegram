@@ -6411,7 +6411,7 @@ JNI_FUNC(void, nativeRoomStateSetVisibility)(JNIEnv* env, jclass, jstring jRoomI
 }
 
 JNI_FUNC(void, nativeRoomStateSetJoinRule)(JNIEnv* env, jclass, jstring jRoomId, jint jRule) {
-    getRoomStateMgr()->setJoinRule(jStr(env, jRoomId), static_cast<progressive::RoomJoinRule>(jRule));
+    getRoomStateMgr()->setJoinRule(jStr(env, jRoomId), static_cast<progressive::RoomJoinRules>(jRule));
 }
 
 // ============================================================

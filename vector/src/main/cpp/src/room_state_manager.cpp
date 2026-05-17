@@ -58,10 +58,10 @@ void RoomStateManager::setHistoryVisibility(const std::string& roomId, RoomHisto
     state.canShareHistory = shouldShareHistory(visibility);
 }
 
-void RoomStateManager::setJoinRule(const std::string& roomId, RoomJoinRule rule) {
+void RoomStateManager::setJoinRule(const std::string& roomId, RoomJoinRules rule) {
     auto& state = getOrCreateState(roomId);
     state.joinRule = rule;
-    state.isPublicRoom = (rule == RoomJoinRule::PUBLIC);
+    state.isPublicRoom = (rule == RoomJoinRules::PUBLIC);
 }
 
 void RoomStateManager::setRoomName(const std::string& roomId, const std::string& name) {
@@ -98,7 +98,7 @@ bool RoomStateManager::isWorldReadable(const std::string& roomId) const {
 }
 
 bool RoomStateManager::isInviteOnly(const std::string& roomId) const {
-    return getRoomState(roomId).joinRule == RoomJoinRule::INVITE;
+    return getRoomState(roomId).joinRule == RoomJoinRules::INVITE;
 }
 
 bool RoomStateManager::areGuestsAllowed(const std::string& roomId) const {

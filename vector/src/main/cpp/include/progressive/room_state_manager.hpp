@@ -37,8 +37,8 @@ RoomHistoryVisibility historyVisibilityFromString(const std::string& s);
 // ---- Room Join Rules ----
 
 
-const char* joinRuleToString(RoomJoinRule rule);
-RoomJoinRule joinRuleFromString(const std::string& s);
+const char* joinRuleToString(RoomJoinRules rule);
+RoomJoinRules joinRuleFromString(const std::string& s);
 
 // ---- Membership State (for visibility checks) ----
 
@@ -55,8 +55,8 @@ bool shouldShareHistory(RoomHistoryVisibility visibility);
 
 // Check if a member can see an event based on history_visibility.
 // Takes: history visibility, member's state when event was sent, member's current state.
-bool canSeeEvent(RoomHistoryVisibility visibility, MembershipState memberStateAtEventTime,
-                  MembershipState memberCurrentState);
+bool canSeeEvent(RoomHistoryVisibility visibility, Membership memberStateAtEventTime,
+                  Membership memberCurrentState);
 
 // Check if a non-member can see events.
 bool canNonMemberSeeEvents(RoomHistoryVisibility visibility);
@@ -74,13 +74,13 @@ std::string getVisibilityDescription(RoomHistoryVisibility visibility);
 std::string buildHistoryVisibilityContent(RoomHistoryVisibility visibility);
 
 // Build join_rules state event content.
-std::string buildJoinRulesContent(RoomJoinRule rule);
+std::string buildJoinRulesContent(RoomJoinRules rule);
 
 // Parse history visibility from state event content.
 RoomHistoryVisibility parseHistoryVisibility(const std::string& contentJson);
 
 // Parse join rules from state event content.
-RoomJoinRule parseJoinRules(const std::string& contentJson);
+RoomJoinRules parseJoinRules(const std::string& contentJson);
 
 // ---- Room State Manager ----
 
@@ -92,7 +92,7 @@ public:
 
     // Set room state from events.
     void setHistoryVisibility(const std::string& roomId, RoomHistoryVisibility visibility);
-    void setJoinRule(const std::string& roomId, RoomJoinRule rule);
+    void setJoinRule(const std::string& roomId, RoomJoinRules rule);
     void setRoomName(const std::string& roomId, const std::string& name);
     void setEncrypted(const std::string& roomId, bool encrypted);
     void setMemberCount(const std::string& roomId, int count);
