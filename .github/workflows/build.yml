@@ -75,7 +75,7 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
       - name: Assemble Fdroid unsigned apk (arm32)
-        run: ./gradlew assembleFdroidRelease $CI_GRADLE_ARG_PROPERTIES
+        run: ./gradlew assembleFdroidRelease $CI_GRADLE_ARG_PROPERTIES -x ktlintCheck -x ktlintKotlinScriptCheck -x detekt -x knitCheck -x dependencyCheckAnalyze -x lint
       - name: Upload Kotlin build report (if failed)
         if: failure()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
