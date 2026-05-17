@@ -213,4 +213,6 @@ std::string getUploadsResultToJson(const GetUploadsResult& result) {
     return json;
 }
 
+std::string createUploadsFilterJson(const std::string& /*typesCsv*/) { return "[]"; }
+
 } // namespace progressive

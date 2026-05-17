@@ -69,4 +69,6 @@ std::string formatBadgeText(int totalCount) {
     return "999+";  // capped for Android notification badge
 }
 
+std::string formatImageNotification(const std::string& /*displayName*/, const std::string& /*mimeType*/) { return "sent an image"; }
+
 } // namespace progressive
