@@ -165,6 +165,7 @@
 #include "progressive/cross_signing_manager.hpp"
 #include "progressive/draft_manager_full.hpp"
 #include "progressive/room_state_manager.hpp"
+#include "progressive/federation_version.hpp"
 #include "progressive/terms_manager.hpp"
 #include "progressive/transparent_overlay.hpp"
 #include "progressive/composer_manager.hpp"
@@ -1740,9 +1741,9 @@ JNI_FUNC(jboolean, nativeIsValidDisplayName)(JNIEnv* env, jclass, jstring jName,
 JNI_FUNC(jstring, nativeParseWellKnown)(JNIEnv* env, jclass, jstring jJson) {
     auto result = progressive::oidcParseWellKnown(jStr(env, jJson));
     std::ostringstream os;
-    os << R"({"homeserver_url":")" << result.baseUrl
+    os << R"({"homeserver_url":")" << result.userId
        << R"(","identity_server":")" << result.idServer
-       << R"(","valid":)" << ((!result.baseUrl.empty()) ? "true" : "false") << "}";
+       << R"(","valid":)" << ((!result.userId.empty()) ? "true" : "false") << "}";
     return env->NewStringUTF(os.str().c_str());
 }
 
@@ -2535,7 +2536,7 @@ JNI_FUNC(jstring, nativeFormatMembership)(JNIEnv* env, jclass, jstring jMembersh
     else if (ms == "invite") m = progressive::MemberState::Invite;
     else if (ms == "knock") m = progressive::MemberState::Knock;
     else if (ms == "ban") m = progressive::MemberState::Ban;
-    auto result = progressive::formatMembership(m);
+    auto result = progressive::formatMemberState(m);
     return env->NewStringUTF(result.c_str());
 }
 
@@ -2606,7 +2607,7 @@ JNI_FUNC(jstring, nativeGenerateDeviceId)(JNIEnv* env, jclass) {
 JNI_FUNC(jstring, nativeValidatePassword)(JNIEnv* env, jclass, jstring jPassword) {
     auto result = progressive::validatePassword(jStr(env, jPassword));
     std::ostringstream os;
-    os << R"({"valid":)" << ((!result.baseUrl.empty()) ? "true" : "false")
+    os << R"({"valid":)" << ((!result.userId.empty()) ? "true" : "false")
        << R"(,"strength":)" << result.strength
        << R"(,"strength_label":")" << result.strengthLabel
        << R"(","feedback":")" << result.feedback << "\"}";
