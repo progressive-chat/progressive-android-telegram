@@ -214,6 +214,11 @@
 #include "progressive/canonical_json.hpp"
 #include "progressive/room_uploads.hpp"
 #include "progressive/notif_formatter.hpp"
+#include "progressive/call_models.hpp"
+#include "progressive/lightweight_settings.hpp"
+#include "progressive/raw_service.hpp"
+#include "progressive/json_parser.hpp"
+#include "progressive/content_utils.hpp"
 #include <sstream>
 #include <chrono>
 
@@ -4365,7 +4370,7 @@ JNI_FUNC(jstring, nativeEndCallReasonToString)(JNIEnv* env, jclass, jint jReason
 JNI_FUNC(jstring, nativeMessageTextToJson)(JNIEnv* env, jclass, jstring jContentJson) {
     auto json = jStr(env, jContentJson);
     progressive::MessageTextContent m;
-    m.msgtype = jExtractStr(json, "msgtype"); m.body = jExtractStr(json, "body"); m.formattedBody = jExtractStr(json, "formatted_body");
+    m.msgType = jExtractStr(json, "msgtype"); m.body = jExtractStr(json, "body"); m.formattedBody = jExtractStr(json, "formatted_body");
     m.format = jExtractStr(json, "format"); m.relatesTo = jExtractStr(json, "m.relates_to");
     m.isFallback = jExtractBool(json, "is_fallback");
     auto r = progressive::messageTextToJson(m);
@@ -4374,14 +4379,14 @@ JNI_FUNC(jstring, nativeMessageTextToJson)(JNIEnv* env, jclass, jstring jContent
 JNI_FUNC(jstring, nativeMessageNoticeToJson)(JNIEnv* env, jclass, jstring jContentJson) {
     auto json = jStr(env, jContentJson);
     progressive::MessageNoticeContent m;
-    m.body = jExtractStr(json, "body"); m.msgtype = jExtractStr(json, "msgtype");
+    m.body = jExtractStr(json, "body"); m.msgType = jExtractStr(json, "msgtype");
     auto r = progressive::messageNoticeToJson(m);
     return env->NewStringUTF(r.c_str());
 }
 JNI_FUNC(jstring, nativeMessageEmoteToJson)(JNIEnv* env, jclass, jstring jContentJson) {
     auto json = jStr(env, jContentJson);
     progressive::MessageEmoteContent m;
-    m.body = jExtractStr(json, "body"); m.msgtype = jExtractStr(json, "msgtype");
+    m.body = jExtractStr(json, "body"); m.msgType = jExtractStr(json, "msgtype");
     m.formattedBody = jExtractStr(json, "formatted_body"); m.format = jExtractStr(json, "format");
     auto r = progressive::messageEmoteToJson(m);
     return env->NewStringUTF(r.c_str());
@@ -4390,7 +4395,7 @@ JNI_FUNC(jstring, nativeMessageImageToJson)(JNIEnv* env, jclass, jstring jConten
     auto json = jStr(env, jContentJson);
     progressive::MessageImageContent m;
     m.url = jExtractStr(json, "url"); m.thumbnailUrl = jExtractStr(json, "thumbnail_url"); m.thumbnailInfo = jExtractStr(json, "thumbnail_info");
-    m.mimetype = jExtractStr(json, "mimetype"); m.filename = jExtractStr(json, "filename"); m.body = jExtractStr(json, "body");
+    m.mimeType = jExtractStr(json, "mimetype"); m.filename = jExtractStr(json, "filename"); m.body = jExtractStr(json, "body");
     m.width = static_cast<int>(jExtractInt(json, "w")); m.height = static_cast<int>(jExtractInt(json, "h"));
     m.size = static_cast<int>(jExtractInt(json, "size"));
     auto r = progressive::messageImageToJson(m);
@@ -4399,7 +4404,7 @@ JNI_FUNC(jstring, nativeMessageImageToJson)(JNIEnv* env, jclass, jstring jConten
 JNI_FUNC(jstring, nativeMessageVideoToJson)(JNIEnv* env, jclass, jstring jContentJson) {
     auto json = jStr(env, jContentJson);
     progressive::MessageVideoContent m;
-    m.url = jExtractStr(json, "url"); m.thumbnailUrl = jExtractStr(json, "thumbnail_url"); m.mimetype = jExtractStr(json, "mimetype");
+    m.url = jExtractStr(json, "url"); m.thumbnailUrl = jExtractStr(json, "thumbnail_url"); m.mimeType = jExtractStr(json, "mimetype");
     m.filename = jExtractStr(json, "filename"); m.body = jExtractStr(json, "body"); m.duration = jExtractInt(json, "duration");
     m.width = static_cast<int>(jExtractInt(json, "w")); m.height = static_cast<int>(jExtractInt(json, "h"));
     m.size = static_cast<int>(jExtractInt(json, "size"));
@@ -4409,7 +4414,7 @@ JNI_FUNC(jstring, nativeMessageVideoToJson)(JNIEnv* env, jclass, jstring jConten
 JNI_FUNC(jstring, nativeMessageAudioToJson)(JNIEnv* env, jclass, jstring jContentJson) {
     auto json = jStr(env, jContentJson);
     progressive::MessageAudioContent m;
-    m.url = jExtractStr(json, "url"); m.mimetype = jExtractStr(json, "mimetype"); m.filename = jExtractStr(json, "filename");
+    m.url = jExtractStr(json, "url"); m.mimeType = jExtractStr(json, "mimetype"); m.filename = jExtractStr(json, "filename");
     m.body = jExtractStr(json, "body"); m.duration = jExtractInt(json, "duration"); m.size = static_cast<int>(jExtractInt(json, "size"));
     auto r = progressive::messageAudioToJson(m);
     return env->NewStringUTF(r.c_str());
@@ -4417,7 +4422,7 @@ JNI_FUNC(jstring, nativeMessageAudioToJson)(JNIEnv* env, jclass, jstring jConten
 JNI_FUNC(jstring, nativeMessageFileToJson)(JNIEnv* env, jclass, jstring jContentJson) {
     auto json = jStr(env, jContentJson);
     progressive::MessageFileContent m;
-    m.url = jExtractStr(json, "url"); m.mimetype = jExtractStr(json, "mimetype"); m.filename = jExtractStr(json, "filename");
+    m.url = jExtractStr(json, "url"); m.mimeType = jExtractStr(json, "mimetype"); m.filename = jExtractStr(json, "filename");
     m.body = jExtractStr(json, "body"); m.size = static_cast<int>(jExtractInt(json, "size"));
     auto r = progressive::messageFileToJson(m);
     return env->NewStringUTF(r.c_str());

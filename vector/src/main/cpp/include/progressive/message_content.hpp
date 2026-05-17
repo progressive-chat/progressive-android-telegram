@@ -32,6 +32,7 @@ struct EventMessageContent {
     std::string newContent;           // "m.new_content" key (for edits) — raw JSON or empty
     bool hasRelation = false;
     bool isEdit = false;
+    bool isFallback = false;          // "is_fallback" — rendered as fallback body
 };
 
 // ==== Formatted Body ====
@@ -178,6 +179,9 @@ struct MessageImageContent : EventMessageContent {
     std::string url;             // "url" key — MXC URI (unencrypted)
     EncryptedFileInfo encryptedFile; // "file" key
     std::string mimeType;        // derived: info.mimeType
+    std::string thumbnailUrl;    // convenience: mirrors info.thumbnailUrl
+    std::string filename;        // original filename
+    ThumbnailInfo thumbnailInfo; // mirrors info.thumbnailInfo
 
     // Original Kotlin: getFileUrl() = encryptedFile?.url ?: url
     std::string getFileUrl() const {
