@@ -158,6 +158,7 @@
 #include "progressive/room_directory_manager.hpp"
 #include "progressive/session_manager_full.hpp"
 #include "progressive/server_notice_manager.hpp"
+#include "progressive/web_search.hpp"
 #include "progressive/media_upload_manager.hpp"
 #include "progressive/identity_server_manager.hpp"
 #include "progressive/event_relations_manager.hpp"
