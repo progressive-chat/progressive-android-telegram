@@ -229,14 +229,14 @@ void WidgetManager::setSecurityPolicy(const WidgetSecurityPolicy& policy) {
     policy_ = policy;
 }
 
-WidgetInfo* WidgetManager::findWidget(const std::string& widgetId) {
+WidgetEntry* WidgetManager::findWidget(const std::string& widgetId) {
     for (auto& w : widgets_) {
         if (w.widgetId == widgetId) return &w;
     }
     return nullptr;
 }
 
-const WidgetInfo* WidgetManager::findWidget(const std::string& widgetId) const {
+const WidgetEntry* WidgetManager::findWidget(const std::string& widgetId) const {
     for (const auto& w : widgets_) {
         if (w.widgetId == widgetId) return &w;
     }
@@ -267,7 +267,7 @@ std::string WidgetManager::sanitizeWidgetUrl(const std::string& url, std::string
     return expanded;
 }
 
-std::string WidgetManager::buildWidgetStateJson(const WidgetInfo& widget) const {
+std::string WidgetManager::buildWidgetStateJson(const WidgetEntry& widget) const {
     auto esc = [](const std::string& s) -> std::string {
         std::string out;
         for (char c : s) { if (c == '"') out += "\\\""; else out += c; }
@@ -301,7 +301,7 @@ std::string WidgetManager::buildWidgetStateJson(const WidgetInfo& widget) const 
     return json.str();
 }
 
-std::vector<WidgetInfo> WidgetManager::loadWidgets(const std::string& stateEventsJson) {
+std::vector<WidgetEntry> WidgetManager::loadWidgets(const std::string& stateEventsJson) {
     widgets_.clear();
 
     // Parse state events looking for im.vector.modular.widgets
@@ -347,7 +347,7 @@ std::vector<WidgetInfo> WidgetManager::loadWidgets(const std::string& stateEvent
         // Content might be double-encoded — try to parse as JSON
         std::string contentJson = "{" + content + "}";
 
-        WidgetInfo w;
+        WidgetEntry w;
         w.widgetId = stateKey;
         w.roomId = roomId_;
         w.type = extractStr(contentJson, "type");
@@ -418,7 +418,7 @@ std::string WidgetManager::createWidget(const std::string& widgetId, const std::
         // Allow unknown types but warn
     }
 
-    WidgetInfo w;
+    WidgetEntry w;
     w.widgetId = widgetId;
     w.type = type;
     w.url = url;
@@ -606,18 +606,18 @@ bool WidgetManager::supportsPiP(const std::string& widgetId) const {
     return false;
 }
 
-std::vector<WidgetInfo> WidgetManager::getWidgetsByType(const std::string& type) const {
-    std::vector<WidgetInfo> result;
+std::vector<WidgetEntry> WidgetManager::getWidgetsByType(const std::string& type) const {
+    std::vector<WidgetEntry> result;
     for (const auto& w : widgets_) {
         if (w.type == type) result.push_back(w);
     }
     // Sort by display order
     std::sort(result.begin(), result.end(),
-              [](const WidgetInfo& a, const WidgetInfo& b) { return a.displayOrder < b.displayOrder; });
+              [](const WidgetEntry& a, const WidgetEntry& b) { return a.displayOrder < b.displayOrder; });
     return result;
 }
 
-bool WidgetManager::getWidget(const std::string& widgetId, WidgetInfo& out) const {
+bool WidgetManager::getWidget(const std::string& widgetId, WidgetEntry& out) const {
     auto* w = findWidget(widgetId);
     if (!w) return false;
     out = *w;

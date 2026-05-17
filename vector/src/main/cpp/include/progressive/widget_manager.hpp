@@ -135,7 +135,7 @@ WidgetType classifyWidgetType(const std::string& type);
 
 // ---- Widget Info (extended) ----
 
-struct WidgetInfo {
+struct WidgetEntry {
     std::string widgetId;
     std::string name;
     std::string type;              // "m.custom", "m.jitsi", etc.
@@ -170,7 +170,7 @@ public:
     void setSecurityPolicy(const WidgetSecurityPolicy& policy);
 
     // Load all widgets from room state events JSON.
-    std::vector<WidgetInfo> loadWidgets(const std::string& stateEventsJson);
+    std::vector<WidgetEntry> loadWidgets(const std::string& stateEventsJson);
 
     // Create a new widget. Returns the widget JSON to send as state event.
     // Validates URL, applies template, checks security policy.
@@ -223,10 +223,10 @@ public:
     bool supportsPiP(const std::string& widgetId) const;
 
     // Get all widgets of a specific type.
-    std::vector<WidgetInfo> getWidgetsByType(const std::string& type) const;
+    std::vector<WidgetEntry> getWidgetsByType(const std::string& type) const;
 
     // Get a specific widget.
-    bool getWidget(const std::string& widgetId, WidgetInfo& out) const;
+    bool getWidget(const std::string& widgetId, WidgetEntry& out) const;
 
     // Count total widgets.
     int widgetCount() const { return static_cast<int>(widgets_.size()); }
@@ -243,17 +243,17 @@ private:
     std::string displayName_;
     std::string avatarUrl_;
     WidgetSecurityPolicy policy_;
-    std::vector<WidgetInfo> widgets_;
+    std::vector<WidgetEntry> widgets_;
 
     // Quick lookup by widget ID
-    WidgetInfo* findWidget(const std::string& widgetId);
-    const WidgetInfo* findWidget(const std::string& widgetId) const;
+    WidgetEntry* findWidget(const std::string& widgetId);
+    const WidgetEntry* findWidget(const std::string& widgetId) const;
 
     // Apply templating + security to a widget URL.
     std::string sanitizeWidgetUrl(const std::string& url, std::string& error);
 
     // Build JSON for an m.widget state event.
-    std::string buildWidgetStateJson(const WidgetInfo& widget) const;
+    std::string buildWidgetStateJson(const WidgetEntry& widget) const;
 
     // Build template variables from manager state.
     WidgetUrlTemplate buildTemplate() const;

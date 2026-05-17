@@ -7,26 +7,26 @@
 
 namespace progressive {
 
-// ---- Room Membership ----
+// ---- Room MemberState ----
 
-enum class Membership { None, Join, Invite, Leave, Ban, Knock, Unknown };
+enum class MemberState { None, Join, Invite, Leave, Ban, Knock, Unknown };
 
 struct MemberInfo {
     std::string userId;
     std::string displayName;
     std::string avatarUrl;
-    Membership membership = Membership::Unknown;
+    MemberState membership = MemberState::Unknown;
     int powerLevel = 0;
     std::string reason;        // ban reason or invite reason
     int64_t timestampMs = 0;
     bool isFromCache = false;
 };
 
-struct MembershipChange {
+struct MemberStateChange {
     std::string userId;
     std::string displayName;
-    Membership oldMembership = Membership::Unknown;
-    Membership newMembership = Membership::Unknown;
+    MemberState oldMemberState = MemberState::Unknown;
+    MemberState newMemberState = MemberState::Unknown;
     std::string senderId;       // who made the change
     int64_t timestampMs = 0;
 };
@@ -35,22 +35,22 @@ struct MembershipChange {
 MemberInfo parseMemberInfo(const std::string& stateContentJson, const std::string& userId);
 
 // Parse membership string to enum.
-Membership parseMembership(const std::string& membershipStr);
+MemberState parseMemberState(const std::string& membershipStr);
 
 // Format membership as human-readable text.
-std::string formatMembership(Membership membership);
+std::string formatMemberState(MemberState membership);
 
 // Check if membership is a positive state (join/invite/knock).
-bool isActiveMember(Membership membership);
+bool isActiveMember(MemberState membership);
 
 // Check if membership allows reading room messages.
-bool canReadMessages(Membership membership);
+bool canReadMessages(MemberState membership);
 
 // Detect membership changes between two state events.
-MembershipChange detectMembershipChange(const MemberInfo& oldInfo, const MemberInfo& newInfo);
+MemberStateChange detectMemberStateChange(const MemberInfo& oldInfo, const MemberInfo& newInfo);
 
 // Format a membership change as human-readable text.
-std::string formatMembershipChange(const MembershipChange& change);
+std::string formatMemberStateChange(const MemberStateChange& change);
 
 // ---- Member List ----
 
@@ -68,7 +68,7 @@ struct MemberListInfo {
 MemberListInfo parseMemberList(const std::string& roomId, const std::string& apiResponseJson, bool isTruncated);
 
 // Filter members by membership type.
-std::vector<MemberInfo> filterByMembership(const std::vector<MemberInfo>& members, Membership type);
+std::vector<MemberInfo> filterByMemberState(const std::vector<MemberInfo>& members, MemberState type);
 
 // Filter members by display name (search).
 std::vector<MemberInfo> searchMembers(const std::vector<MemberInfo>& members, const std::string& query);
@@ -85,11 +85,11 @@ std::string memberListToJson(const MemberListInfo& list);
 void sortMembersByPowerAndName(std::vector<MemberInfo>& members);
 bool memberCompare(const MemberInfo& a, const MemberInfo& b);
 
-// ---- Membership Diff (from TimelineEventVisibilityHelper.kt:261-279) ----
+// ---- MemberState Diff (from TimelineEventVisibilityHelper.kt:261-279) ----
 // Detects what changed between two membership events.
-// Original: computeMembershipDiff() → MembershipDiff
+// Original: computeMemberStateDiff() → MemberStateDiff
 
-struct MembershipDiff {
+struct MemberStateDiff {
     bool isJoin = false;
     bool isPart = false;
     bool isDisplaynameChange = false;
@@ -98,12 +98,12 @@ struct MembershipDiff {
 };
 
 // Compute the difference between two membership states.
-// @param oldMembership, newMembership — previous and current membership
+// @param oldMemberState, newMemberState — previous and current membership
 // @param oldName, newName — previous and current display name
 // @param oldAvatar, newAvatar — previous and current avatar URL
 // @param isSelf — true if sender == stateKey (for part detection)
-MembershipDiff computeMembershipDiff(
-    Membership oldMembership, Membership newMembership,
+MemberStateDiff computeMemberStateDiff(
+    MemberState oldMemberState, MemberState newMemberState,
     const std::string& oldName, const std::string& newName,
     const std::string& oldAvatar, const std::string& newAvatar,
     bool isSelf);

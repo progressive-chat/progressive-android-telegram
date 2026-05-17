@@ -466,7 +466,7 @@ struct Widget {
 };
 
 // Widget type constants
-namespace WidgetType {
+namespace WidgetTypeConst {
     constexpr const char* JITSI = "m.jitsi";
     constexpr const char* TRADING_VIEW = "m.tradingview";
     constexpr const char* SPOTIFY = "m.spotify";

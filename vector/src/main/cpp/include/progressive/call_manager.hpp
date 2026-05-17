@@ -88,7 +88,7 @@ std::string sdpToJson(const SdpSession& sdp);
 
 // ---- ICE Candidate ----
 
-struct IceCandidate {
+struct ParsedIceCandidate {
     std::string sdpMid;          // Media stream ID
     int sdpMLineIndex = 0;       // Media line index
     std::string candidate;       // Full candidate string
@@ -104,11 +104,11 @@ struct IceCandidate {
 
 // Parse ICE candidate string (RFC 5245).
 // Format: foundation component transport priority ip port typ type [raddr rport generation]
-IceCandidate parseIceCandidateLine(const std::string& candidateLine, const std::string& sdpMid, int sdpMLineIndex);
+ParsedIceCandidate parseParsedIceCandidateLine(const std::string& candidateLine, const std::string& sdpMid, int sdpMLineIndex);
 
 // ---- Call Info (extended) ----
 
-struct CallInfo {
+struct CallSession {
     std::string callId;
     std::string roomId;
     std::string callerId;
@@ -131,8 +131,8 @@ struct CallInfo {
     std::string endReasonText;   // Human-readable reason
     SdpSession localSdp;         // Our SDP
     SdpSession remoteSdp;        // Their SDP
-    std::vector<IceCandidate> localCandidates;
-    std::vector<IceCandidate> remoteCandidates;
+    std::vector<ParsedIceCandidate> localCandidates;
+    std::vector<ParsedIceCandidate> remoteCandidates;
     int inviteLifetimeSec = 120; // How long to wait before timeout
     std::string roomName;        // For display
     bool hasRemoteVideo = false; // Peer is sending video
@@ -178,7 +178,7 @@ struct CallNotification {
 };
 
 // Format a call notification for system notification.
-CallNotification formatCallNotification(const CallInfo& call);
+CallNotification formatCallNotification(const CallSession& call);
 
 // ---- Call Manager ----
 
@@ -220,17 +220,17 @@ public:
     // ====== ICE Candidates ======
 
     // Add a local ICE candidate to a call.
-    void addLocalIceCandidate(const std::string& callId, const IceCandidate& candidate);
+    void addLocalParsedIceCandidate(const std::string& callId, const ParsedIceCandidate& candidate);
 
     // Add a remote ICE candidate (received from peer).
-    void addRemoteIceCandidate(const std::string& callId, const IceCandidate& candidate);
+    void addRemoteParsedIceCandidate(const std::string& callId, const ParsedIceCandidate& candidate);
 
     // Build candidates event content for sending.
     std::string buildCandidatesEvent(const std::string& callId,
-                                      const std::vector<IceCandidate>& candidates);
+                                      const std::vector<ParsedIceCandidate>& candidates);
 
     // Get all collected remote candidates for a call.
-    std::vector<IceCandidate> getRemoteCandidates(const std::string& callId) const;
+    std::vector<ParsedIceCandidate> getRemoteCandidates(const std::string& callId) const;
 
     // ====== Call State Management ======
 
@@ -252,16 +252,16 @@ public:
     // ====== Call Queries ======
 
     // Get call by ID.
-    bool getCall(const std::string& callId, CallInfo& out) const;
+    bool getCall(const std::string& callId, CallSession& out) const;
 
     // Get the active (connected) call if any.
-    bool getActiveCall(CallInfo& out) const;
+    bool getActiveCall(CallSession& out) const;
 
     // Get an incoming ringing call if any.
-    bool getIncomingCall(CallInfo& out) const;
+    bool getIncomingCall(CallSession& out) const;
 
     // Get all calls in a room.
-    std::vector<CallInfo> getRoomCalls(const std::string& roomId) const;
+    std::vector<CallSession> getRoomCalls(const std::string& roomId) const;
 
     // Check if a room has an active call.
     bool isRoomInCall(const std::string& roomId) const;
@@ -283,7 +283,7 @@ public:
     // ====== Serialization ======
 
     // Format call info as JSON for UI.
-    std::string callToJson(const CallInfo& call) const;
+    std::string callToJson(const CallSession& call) const;
 
     // Format all calls as JSON array.
     std::string allCallsToJson() const;
@@ -298,10 +298,10 @@ public:
     std::string formatCallEvent(const CallEvent& event, const std::string& senderDisplayName);
 
 private:
-    std::vector<CallInfo> calls_;
+    std::vector<CallSession> calls_;
 
-    CallInfo* findCall(const std::string& callId);
-    const CallInfo* findCall(const std::string& callId) const;
+    CallSession* findCall(const std::string& callId);
+    const CallSession* findCall(const std::string& callId) const;
 
     std::string generateCallId() const;
     bool isValidStateTransition(CallState from, CallState to) const;

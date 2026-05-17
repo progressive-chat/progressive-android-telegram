@@ -176,8 +176,8 @@ std::string sdpToJson(const SdpSession& sdp) {
 
 // ====== ICE Candidate Parsing ======
 
-IceCandidate parseIceCandidateLine(const std::string& candidateLine, const std::string& sdpMid, int sdpMLineIndex) {
-    IceCandidate ice;
+ParsedIceCandidate parseParsedIceCandidateLine(const std::string& candidateLine, const std::string& sdpMid, int sdpMLineIndex) {
+    ParsedIceCandidate ice;
     ice.sdpMid = sdpMid;
     ice.sdpMLineIndex = sdpMLineIndex;
     ice.candidate = candidateLine;
@@ -437,18 +437,18 @@ std::string CallManager::timeoutCall(const std::string& callId) {
 
 // ====== ICE Candidates ======
 
-void CallManager::addLocalIceCandidate(const std::string& callId, const IceCandidate& candidate) {
+void CallManager::addLocalParsedIceCandidate(const std::string& callId, const ParsedIceCandidate& candidate) {
     auto* call = findCall(callId);
     if (call) call->localCandidates.push_back(candidate);
 }
 
-void CallManager::addRemoteIceCandidate(const std::string& callId, const IceCandidate& candidate) {
+void CallManager::addRemoteParsedIceCandidate(const std::string& callId, const ParsedIceCandidate& candidate) {
     auto* call = findCall(callId);
     if (call) call->remoteCandidates.push_back(candidate);
 }
 
 std::string CallManager::buildCandidatesEvent(const std::string& callId,
-                                               const std::vector<IceCandidate>& candidates) {
+                                               const std::vector<ParsedIceCandidate>& candidates) {
     std::ostringstream os;
     os << R"({"call_id":")" << callId << R"(")";
     os << R"(,"candidates":[)";
@@ -463,7 +463,7 @@ std::string CallManager::buildCandidatesEvent(const std::string& callId,
     return os.str();
 }
 
-std::vector<IceCandidate> CallManager::getRemoteCandidates(const std::string& callId) const {
+std::vector<ParsedIceCandidate> CallManager::getRemoteCandidates(const std::string& callId) const {
     auto* call = findCall(callId);
     if (!call) return {};
     return call->remoteCandidates;
