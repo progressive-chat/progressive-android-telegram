@@ -1,1 +1,1 @@
-Previous generation Element
+Progressive Chat — native C++ Matrix client. Private, secure, decentralized communication.
