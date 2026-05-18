@@ -498,6 +498,17 @@ object ProgressiveNative {
     @JvmStatic external fun nativeNeedsConsent(errorJson: String): Boolean
     @JvmStatic external fun nativeIsUserDeactivated(errorJson: String): Boolean
 
+    // --- Error Classification (login/auth flow) ---
+
+    @JvmStatic external fun nativeErrorIsTokenError(errorCode: String): Boolean
+    @JvmStatic external fun nativeErrorShouldBeRetried(errorCode: String, httpCode: Int, isNetworkError: Boolean): Boolean
+    @JvmStatic external fun nativeErrorIsInvalidUsername(errorCode: String, errorMessage: String): Boolean
+    @JvmStatic external fun nativeErrorIsInvalidPassword(errorCode: String, errorMessage: String): Boolean
+    @JvmStatic external fun nativeErrorIsWeakPassword(errorCode: String): Boolean
+    @JvmStatic external fun nativeErrorIsLoginEmailUnknown(errorCode: String, errorMessage: String): Boolean
+    @JvmStatic external fun nativeErrorIsHomeserverUnavailable(isNetworkError: Boolean, isUnknownHost: Boolean): Boolean
+    @JvmStatic external fun nativeErrorIsRegistrationAvailability(errorCode: String, httpCode: Int): Boolean
+
     // --- Notification Formatter ---
 
     @JvmStatic external fun nativeFormatImageNotification(senderName: String): String

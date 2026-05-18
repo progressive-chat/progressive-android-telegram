@@ -2519,6 +2519,65 @@ JNI_FUNC(jstring, nativeSanitizeDisplayText)(JNIEnv* env, jclass, jstring jText)
     return env->NewStringUTF(result.c_str());
 }
 
+// ============================================================
+// Matrix Error Classification (ported from failure/Extensions.kt)
+// ============================================================
+
+JNI_FUNC(jboolean, nativeErrorIsTokenError)(JNIEnv* env, jclass, jstring jErrorCode) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    return progressive::isTokenError(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeErrorShouldBeRetried)(JNIEnv* env, jclass, jstring jErrorCode, jint jHttpCode, jboolean jIsNetwork) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    ctx.httpCode = jHttpCode;
+    ctx.isNetworkError = jIsNetwork;
+    return progressive::shouldBeRetried(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeErrorIsInvalidUsername)(JNIEnv* env, jclass, jstring jErrorCode, jstring jErrorMessage) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    ctx.errorMessage = jStr(env, jErrorMessage);
+    return progressive::isInvalidUsername(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeErrorIsInvalidPassword)(JNIEnv* env, jclass, jstring jErrorCode, jstring jErrorMessage) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    ctx.errorMessage = jStr(env, jErrorMessage);
+    return progressive::isInvalidPassword(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeErrorIsWeakPassword)(JNIEnv* env, jclass, jstring jErrorCode) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    return progressive::isWeakPassword(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeErrorIsLoginEmailUnknown)(JNIEnv* env, jclass, jstring jErrorCode, jstring jErrorMessage) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    ctx.errorMessage = jStr(env, jErrorMessage);
+    return progressive::isLoginEmailUnknown(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeErrorIsHomeserverUnavailable)(JNIEnv* env, jclass, jboolean jIsNetwork, jboolean jIsUnknownHost) {
+    progressive::ErrorContext ctx;
+    ctx.isNetworkError = jIsNetwork;
+    ctx.isUnknownHost = jIsUnknownHost;
+    return progressive::isHomeserverUnavailable(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(jboolean, nativeErrorIsRegistrationAvailability)(JNIEnv* env, jclass, jstring jErrorCode, jint jHttpCode) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    ctx.httpCode = jHttpCode;
+    return progressive::isRegistrationAvailabilityError(ctx) ? JNI_TRUE : JNI_FALSE;
+}
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
     JNIEnv* env = nullptr;
     if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK)

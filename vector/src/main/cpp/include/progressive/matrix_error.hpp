@@ -118,6 +118,111 @@ std::vector<std::string> getAllErrorCodes();
 // Format error as JSON for Kotlin UI.
 std::string matrixErrorToJson(const MatrixError& error);
 
+// ---- Error Classification (ported from failure/Extensions.kt) ----
+// These classify Matrix API errors by HTTP code + error code + message.
+// Used for login/auth flow error handling and UI decisions.
+
+struct ErrorContext {
+    int httpCode = 0;
+    std::string errorCode;
+    std::string errorMessage;
+    bool isNetworkError = false;
+    bool isUnknownHost = false;
+    bool isCertificateError = false;
+};
+
+// HTTP status code checks
+inline bool is400(const ErrorContext& ctx) { return ctx.httpCode == 400; }
+inline bool is401(const ErrorContext& ctx) { return ctx.httpCode == 401 && ctx.errorCode == ErrorCode::M_UNAUTHORIZED; }
+inline bool is404(const ErrorContext& ctx) { return ctx.httpCode == 404 && ctx.errorCode == ErrorCode::M_NOT_FOUND; }
+
+// Token errors (M_UNKNOWN_TOKEN / M_MISSING_TOKEN / expired account)
+inline bool isTokenError(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_UNKNOWN_TOKEN ||
+           ctx.errorCode == ErrorCode::M_MISSING_TOKEN ||
+           ctx.errorCode == ErrorCode::ORG_MATRIX_EXPIRED_ACCOUNT;
+}
+
+// Rate limit exceeded (429 + M_LIMIT_EXCEEDED)
+inline bool isLimitExceededError(const ErrorContext& ctx) {
+    return ctx.httpCode == 429 && ctx.errorCode == ErrorCode::M_LIMIT_EXCEEDED;
+}
+
+// Whether the request should be automatically retried
+inline bool shouldBeRetried(const ErrorContext& ctx) {
+    return ctx.isNetworkError || isLimitExceededError(ctx);
+}
+
+// Retry delay — rate limit retry-after + 100ms buffer, or default
+inline int64_t getRetryDelayMs(const ErrorContext& ctx, int64_t retryAfterMs, int64_t defaultMs) {
+    if (isLimitExceededError(ctx)) return retryAfterMs + 100;
+    return defaultMs;
+}
+
+// Username validation errors
+inline bool isUsernameInUse(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_USER_IN_USE;
+}
+
+inline bool isInvalidUsername(const ErrorContext& ctx) {
+    if (ctx.errorCode == ErrorCode::M_INVALID_USERNAME) return true;
+    if (ctx.errorCode == ErrorCode::M_UNKNOWN &&
+        ctx.errorMessage == "Query parameter 'username' must be ascii") return true;
+    return false;
+}
+
+// Password errors
+inline bool isInvalidPassword(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_FORBIDDEN &&
+           ctx.errorMessage == "Invalid password";
+}
+
+inline bool isWeakPassword(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_WEAK_PASSWORD;
+}
+
+// Registration errors
+inline bool isRegistrationDisabled(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_FORBIDDEN && ctx.httpCode == 403;
+}
+
+inline bool isRegistrationAvailabilityError(const ErrorContext& ctx) {
+    return ctx.httpCode == 400 &&
+           (ctx.errorCode == ErrorCode::M_USER_IN_USE ||
+            ctx.errorCode == ErrorCode::M_INVALID_USERNAME ||
+            ctx.errorCode == ErrorCode::M_EXCLUSIVE);
+}
+
+// Login email unknown (M_FORBIDDEN with empty message)
+inline bool isLoginEmailUnknown(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_FORBIDDEN && ctx.errorMessage.empty();
+}
+
+// User-Interactive Authentication (UIA) — flows present means more auth needed
+inline bool isInvalidUIAAuth(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_FORBIDDEN;
+    // Note: Kotlin checks error.flows != null; C++ caller must check separately
+}
+
+// Homeserver connectivity checks
+inline bool isHomeserverUnavailable(const ErrorContext& ctx) {
+    return ctx.isNetworkError && ctx.isUnknownHost;
+}
+
+inline bool isHomeserverConnectionError(const ErrorContext& ctx) {
+    return ctx.isNetworkError;
+}
+
+inline bool isUnrecognisedCertificate(const ErrorContext& ctx) {
+    return ctx.isCertificateError;
+}
+
+// Email verification missing (specific M_UNAUTHORIZED message)
+inline bool isMissingEmailVerification(const ErrorContext& ctx) {
+    return ctx.errorCode == ErrorCode::M_UNAUTHORIZED &&
+           ctx.errorMessage == "Unable to get validated threepid";
+}
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_MATRIX_ERROR_HPP
