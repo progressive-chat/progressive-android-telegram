@@ -1824,10 +1824,6 @@ object ProgressiveNative {
         myUserId: String
     ): String
 
-    @JvmStatic external fun nativeShouldShowJumpToUnread(readMarkerJson: String): Boolean
-
-    @JvmStatic external fun nativeFormatUnreadJumpLabel(readMarkerJson: String): String
-
     @JvmStatic external fun nativeAdvanceReadMarker(roomId: String, latestEventId: String): String
     @JvmStatic external fun nativeReadMarkerToJson(lastReadEventId: String, unreadCount: Int, unreadMentions: Int, unreadHighlights: Int, hasUnread: Boolean): String
 
@@ -2058,9 +2054,6 @@ object ProgressiveNative {
     @JvmStatic external fun nativeFormatUnreadJumpLabel(unreadCount: Int, unreadMentions: Int): String
     @JvmStatic external fun nativeShouldShowJumpToUnread(readMarkerJson: String): Boolean
 
-    // --- Content / Reply Utilities ---
-
-    @JvmStatic external fun nativeEnsureCorrectFormattedBodyInTextReply(newFormattedBody: String, newBody: String, originalFormattedBody: String): String
 
     // --- Permalink Parser (updated) ---
 

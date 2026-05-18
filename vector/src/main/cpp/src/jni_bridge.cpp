@@ -6029,30 +6029,6 @@ JNI_FUNC(jboolean, nativeCanJoinRoom)(JNIEnv* env, jclass, jstring jJoinRulesJso
 // Text Format Utilities (ported from TextUtils.kt)
 // ============================================================
 
-JNI_FUNC(jstring, nativeFormatCountToShortDecimal)(JNIEnv* env, jclass, jlong jValue) {
-    auto result = progressive::formatCountToShortDecimal(jValue);
-    return env->NewStringUTF(result.c_str());
-}
-
-JNI_FUNC(jstring, nativeFormatDuration)(JNIEnv* env, jclass, jlong jTotalSeconds) {
-    auto result = progressive::formatDuration(jTotalSeconds);
-    return env->NewStringUTF(result.c_str());
-}
-
-JNI_FUNC(jstring, nativeFormatDurationWithUnits)(JNIEnv* env, jclass, jlong jTotalSeconds, jboolean jAppendSeconds) {
-
-JNI_FUNC(jstring, nativeFormatUnreadJumpLabel)(JNIEnv* env, jclass, jint jUnreadCount, jint jUnreadMentions) {
-    auto result = progressive::formatUnreadJumpLabel(jUnreadCount, jUnreadMentions);
-    return env->NewStringUTF(result.c_str());
-}
-
-JNI_FUNC(jboolean, nativeShouldShowJumpToUnread)(JNIEnv* env, jclass, jstring jReadMarkerJson) {
-    return progressive::shouldShowJumpToUnread(jStr(env, jReadMarkerJson)) ? JNI_TRUE : JNI_FALSE;
-}
-    auto result = progressive::formatDurationWithUnits(jTotalSeconds, jAppendSeconds);
-    return env->NewStringUTF(result.c_str());
-}
-
 // ============================================================
 // Content Utils — reply text formatting
 // ============================================================
