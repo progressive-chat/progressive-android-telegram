@@ -192,6 +192,12 @@
 #include "progressive/raw_service.hpp"
 #include "progressive/json_parser.hpp"
 #include "progressive/signout_service.hpp"
+#include "progressive/matrix_error.hpp"
+#include "progressive/call_manager.hpp"
+#include "progressive/event_relations_manager.hpp"
+#include "progressive/composer_manager.hpp"
+#include "progressive/media_upload_manager.hpp"
+#include "progressive/key_backup_manager.hpp"
 #include <sstream>
 #include <chrono>
 
