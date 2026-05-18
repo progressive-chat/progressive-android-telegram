@@ -272,4 +272,5 @@ private:
     static std::string simpleHash(const std::string& input);
 };
 
+using SessionInfo = SavedSessionInfo;
 } // namespace progressive

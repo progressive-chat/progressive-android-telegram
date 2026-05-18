@@ -470,6 +470,7 @@ struct PublicRoomsParams {
     int limit = 0;
     std::string since;                   // pagination token
     std::string searchTerm;              // "filter.generic_search_term"
+    std::string filter;                  // JNI compat alias for searchTerm
     bool includeAllNetworks = false;
     std::string thirdPartyInstanceId;
 };

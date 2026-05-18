@@ -50,6 +50,7 @@ MediaAttachmentType attachmentTypeFromString(const std::string& s);
 // Original: getSafeMimeType() → normalizeMimeType
 
 struct MediaContentAttachmentData {
+    using ContentAttachmentData = MediaContentAttachmentData;  // JNI compat
     int64_t size = 0;                // File size in bytes
     int64_t duration = 0;            // Audio/video duration in ms
     int64_t date = 0;                // File modification date (epoch ms)
