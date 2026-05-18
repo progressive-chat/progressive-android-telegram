@@ -144,6 +144,6 @@ private:
                               const std::string& eventType, bool hasImage, bool hasFile, bool hasVideo) const;
 };
 
+using PinManager = PinManagerFull;
 } // namespace progressive
 
-using PinManager = PinManagerFull;  // JNI compat alias

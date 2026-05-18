@@ -48,15 +48,20 @@ EventRelationType relationTypeFromString(const std::string& s);
 // ---- Reply-To Content ----
 // Original: ReplyToContent.kt (event_id)
 
+#ifndef PROGRESSIVE_REPLY_TO_DEFINED
+#define PROGRESSIVE_REPLY_TO_DEFINED
 struct ReplyToContent {
     std::string eventId;
     bool valid = false;
 };
+#endif
 
 // ---- Relation Content ----
 // Original: RelationContent.kt (type, eventId, inReplyTo, option, isFallingBack)
 // Original: RelationDefaultContent.kt (all fields, shouldRenderInThread, isReply)
 
+#ifndef PROGRESSIVE_RELATION_CONTENT_DEFINED
+#define PROGRESSIVE_RELATION_CONTENT_DEFINED
 struct RelationContent {
     EventRelationType type = EventRelationType::UNKNOWN;
     std::string typeString;          // Raw type string
@@ -84,6 +89,7 @@ struct RelationContent {
     // Check if this is a reference.
     bool isReference() const { return type == EventRelationType::REFERENCE; }
 };
+#endif
 
 // ---- Event Relations Manager ----
 
