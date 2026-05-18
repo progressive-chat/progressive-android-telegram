@@ -103,6 +103,11 @@ struct WellKnownResult {
     bool valid = false;
     bool isWellKnown = false;
     std::string errorMessage;
+    // JNI compat convenience fields
+    std::string baseUrl;         // alias for homeServerBaseUrl
+    std::string oidcIssuer;
+    bool supportsOidc = false;
+    bool supportsPassword = true;
 };
 
 // Parse /.well-known/matrix/client response.

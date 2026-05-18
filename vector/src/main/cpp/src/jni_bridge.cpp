@@ -182,6 +182,7 @@
 #include "progressive/live_location.hpp"
 #include "progressive/cross_signing_manager.hpp"
 #include "progressive/poll_manager.hpp"
+#include "progressive/profiler.hpp"
 #include "progressive/identity_server_manager.hpp"
 #include "progressive/device_manager_full.hpp"
 #include "progressive/offline_cache.hpp"
