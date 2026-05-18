@@ -106,9 +106,6 @@ add_library(
     src/event_utils.cpp
     src/room_directory.cpp
     src/widget_utils.cpp
-    src/room_directory_manager.cpp
-    src/room_name.cpp
-    src/space_graph.cpp
     src/widget_manager.cpp
     src/call_manager.cpp
     src/sso_utils.cpp
