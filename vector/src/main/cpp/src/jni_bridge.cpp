@@ -2591,7 +2591,7 @@ JNI_FUNC(jstring, nativeBuildCallHangupContent)(JNIEnv* env, jclass, jstring jCa
 JNI_FUNC(jstring, nativeFormatCallNotification)(JNIEnv* env, jclass, jstring jCallJson) {
     // Parse CallInfo from JSON, format notification
     auto json = jStr(env, jCallJson);
-    progressive::CallInfo call;
+    progressive::CallSession call;
     auto extractStr = [&](const std::string& key) -> std::string {
         auto p = json.find("\"" + key + "\"");
         if (p == std::string::npos) return "";
@@ -4759,17 +4759,17 @@ JNI_FUNC(jstring, nativeCallReject)(JNIEnv* env, jclass, jstring jCallId) {
     return env->NewStringUTF(r.c_str());
 }
 JNI_FUNC(jstring, nativeCallHangup)(JNIEnv* env, jclass, jstring jCallId) {
-    auto r = getCallMgr()->hangupCall(jStr(env, jCallId), progressive::EndCallReason::USER_HANGUP);
+    auto r = getCallMgr()->hangupCall(jStr(env, jCallId), progressive::CallManagerEndReason::USER_HANGUP);
     return env->NewStringUTF(r.c_str());
 }
 JNI_FUNC(jstring, nativeCallGetActive)(JNIEnv* env, jclass) {
-    progressive::CallInfo call;
+    progressive::CallSession call;
     if (getCallMgr()->getActiveCall(call))
         return env->NewStringUTF(getCallMgr()->callToJson(call).c_str());
     return env->NewStringUTF("{}");
 }
 JNI_FUNC(jstring, nativeCallGetIncoming)(JNIEnv* env, jclass) {
-    progressive::CallInfo call;
+    progressive::CallSession call;
     if (getCallMgr()->getIncomingCall(call))
         return env->NewStringUTF(getCallMgr()->callToJson(call).c_str());
     return env->NewStringUTF("{}");
@@ -4805,7 +4805,7 @@ JNI_FUNC(jstring, nativeThreadExtractRoot)(JNIEnv* env, jclass, jstring jContent
 }
 JNI_FUNC(void, nativeThreadUpsert)(JNIEnv* env, jclass, jstring jThreadJson) {
     auto json = jStr(env, jThreadJson);
-    progressive::ThreadInfo t;
+    progressive::ThreadInfoFull t;
     t.threadId = jExtractStr(json, "thread_id");
     t.roomId = jExtractStr(json, "room_id");
     t.rootSenderId = jExtractStr(json, "root_sender_id");
