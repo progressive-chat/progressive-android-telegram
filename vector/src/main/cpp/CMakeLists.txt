@@ -121,7 +121,6 @@ add_library(
     src/oidc_manager.cpp
     src/media_viewer.cpp
     src/media_upload_manager.cpp
-    src/login_flow.cpp
     src/live_location.cpp
     src/key_backup_manager.cpp
     src/identity_server_manager.cpp
