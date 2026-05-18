@@ -24,11 +24,14 @@ namespace progressive {
 //           val strict: Boolean) : CacheStrategy()
 //       object InfiniteCache : CacheStrategy()
 //   }
+#ifndef PROGRESSIVE_CACHE_STRATEGY_TYPE_DEFINED
+#define PROGRESSIVE_CACHE_STRATEGY_TYPE_DEFINED
 enum class CacheStrategyType {
     NO_CACHE = 0,
     TTL_CACHE = 1,
     INFINITE_CACHE = 2
 };
+#endif
 
 struct CacheStrategy {
     CacheStrategyType type = CacheStrategyType::NO_CACHE;
