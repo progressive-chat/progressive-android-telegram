@@ -17,6 +17,7 @@ struct ReactionInfo {
     std::vector<std::string> userIds;  // who reacted
     int64_t firstTimestamp = 0;
 };
+#endif
 
 struct ReactionSummary {
     std::string eventId;
