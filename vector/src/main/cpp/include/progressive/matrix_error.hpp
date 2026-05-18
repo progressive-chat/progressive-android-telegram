@@ -223,6 +223,113 @@ inline bool isMissingEmailVerification(const ErrorContext& ctx) {
            ctx.errorMessage == "Unable to get validated threepid";
 }
 
+// ---- Human-Readable Error Classification (ported from ErrorFormatter.kt) ----
+// Maps Matrix error context to a specific error type for UI display.
+
+enum class HumanErrorType {
+    NONE,
+    NETWORK_TIMEOUT,
+    SSL_PEER_UNVERIFIED,
+    SSL_OTHER,
+    NO_NETWORK,
+    TERMS_NOT_ACCEPTED,
+    INVALID_PASSWORD,
+    USER_IN_USE,
+    BAD_JSON,
+    NOT_JSON,
+    THREEPID_DENIED,
+    RATE_LIMITED,
+    FILE_TOO_BIG,
+    THREEPID_NOT_FOUND,
+    USER_DEACTIVATED,
+    EMAIL_ALREADY_USED,
+    PHONE_ALREADY_USED,
+    THREEPID_AUTH_FAILED,
+    ROOM_ACCESS_UNAUTHORIZED,
+    UNVERIFIED_EMAIL,
+    HOMESERVER_NOT_FOUND,
+    UNAUTHORIZED,
+    UNKNOWN_ERROR,
+};
+
+inline HumanErrorType classifyError(const ErrorContext& ctx) {
+    using EC = ErrorCode;
+    if (ctx.isNetworkError) {
+        if (ctx.isUnknownHost) return HumanErrorType::NO_NETWORK;
+        if (ctx.errorCode == "SSL_PEER_UNVERIFIED") return HumanErrorType::SSL_PEER_UNVERIFIED;
+        if (ctx.errorCode == "SSL_OTHER") return HumanErrorType::SSL_OTHER;
+        return HumanErrorType::NO_NETWORK;
+    }
+    if (ctx.errorCode == EC::M_CONSENT_NOT_GIVEN)
+        return HumanErrorType::TERMS_NOT_ACCEPTED;
+    if (isInvalidPassword(ctx))
+        return HumanErrorType::INVALID_PASSWORD;
+    if (ctx.errorCode == EC::M_USER_IN_USE)
+        return HumanErrorType::USER_IN_USE;
+    if (ctx.errorCode == EC::M_BAD_JSON)
+        return HumanErrorType::BAD_JSON;
+    if (ctx.errorCode == EC::M_NOT_JSON)
+        return HumanErrorType::NOT_JSON;
+    if (ctx.errorCode == EC::M_THREEPID_DENIED)
+        return HumanErrorType::THREEPID_DENIED;
+    if (isLimitExceededError(ctx))
+        return HumanErrorType::RATE_LIMITED;
+    if (ctx.errorCode == EC::M_TOO_LARGE)
+        return HumanErrorType::FILE_TOO_BIG;
+    if (ctx.errorCode == EC::M_THREEPID_NOT_FOUND)
+        return HumanErrorType::THREEPID_NOT_FOUND;
+    if (ctx.errorCode == EC::M_USER_DEACTIVATED)
+        return HumanErrorType::USER_DEACTIVATED;
+    if (ctx.errorCode == EC::M_THREEPID_IN_USE) {
+        if (ctx.errorMessage == "Email is already in use")
+            return HumanErrorType::EMAIL_ALREADY_USED;
+        if (ctx.errorMessage == "MSISDN is already in use")
+            return HumanErrorType::PHONE_ALREADY_USED;
+    }
+    if (ctx.errorCode == EC::M_THREEPID_AUTH_FAILED)
+        return HumanErrorType::THREEPID_AUTH_FAILED;
+    if (ctx.errorCode == EC::M_UNKNOWN &&
+        ctx.errorMessage == "Not allowed to join this room")
+        return HumanErrorType::ROOM_ACCESS_UNAUTHORIZED;
+    if (isMissingEmailVerification(ctx))
+        return HumanErrorType::UNVERIFIED_EMAIL;
+    if (ctx.httpCode == 404)
+        return HumanErrorType::HOMESERVER_NOT_FOUND;
+    if (ctx.httpCode == 401)
+        return HumanErrorType::UNAUTHORIZED;
+    return HumanErrorType::UNKNOWN_ERROR;
+}
+
+// Get a stable string identifier for error type (for logging/analytics).
+inline const char* humanErrorTypeName(HumanErrorType t) {
+    switch (t) {
+        case HumanErrorType::NONE: return "none";
+        case HumanErrorType::NETWORK_TIMEOUT: return "network_timeout";
+        case HumanErrorType::SSL_PEER_UNVERIFIED: return "ssl_peer_unverified";
+        case HumanErrorType::SSL_OTHER: return "ssl_other";
+        case HumanErrorType::NO_NETWORK: return "no_network";
+        case HumanErrorType::TERMS_NOT_ACCEPTED: return "terms_not_accepted";
+        case HumanErrorType::INVALID_PASSWORD: return "invalid_password";
+        case HumanErrorType::USER_IN_USE: return "user_in_use";
+        case HumanErrorType::BAD_JSON: return "bad_json";
+        case HumanErrorType::NOT_JSON: return "not_json";
+        case HumanErrorType::THREEPID_DENIED: return "threepid_denied";
+        case HumanErrorType::RATE_LIMITED: return "rate_limited";
+        case HumanErrorType::FILE_TOO_BIG: return "file_too_big";
+        case HumanErrorType::THREEPID_NOT_FOUND: return "threepid_not_found";
+        case HumanErrorType::USER_DEACTIVATED: return "user_deactivated";
+        case HumanErrorType::EMAIL_ALREADY_USED: return "email_already_used";
+        case HumanErrorType::PHONE_ALREADY_USED: return "phone_already_used";
+        case HumanErrorType::THREEPID_AUTH_FAILED: return "threepid_auth_failed";
+        case HumanErrorType::ROOM_ACCESS_UNAUTHORIZED: return "room_access_unauthorized";
+        case HumanErrorType::UNVERIFIED_EMAIL: return "unverified_email";
+        case HumanErrorType::HOMESERVER_NOT_FOUND: return "homeserver_not_found";
+        case HumanErrorType::UNAUTHORIZED: return "unauthorized";
+        case HumanErrorType::UNKNOWN_ERROR: return "unknown_error";
+    }
+    return "unknown";
+}
+
 } // namespace progressive
 
 #endif // PROGRESSIVE_MATRIX_ERROR_HPP

@@ -508,6 +508,7 @@ object ProgressiveNative {
     @JvmStatic external fun nativeErrorIsLoginEmailUnknown(errorCode: String, errorMessage: String): Boolean
     @JvmStatic external fun nativeErrorIsHomeserverUnavailable(isNetworkError: Boolean, isUnknownHost: Boolean): Boolean
     @JvmStatic external fun nativeErrorIsRegistrationAvailability(errorCode: String, httpCode: Int): Boolean
+    @JvmStatic external fun nativeClassifyError(errorCode: String, httpCode: Int, errorMessage: String, isNetworkError: Boolean, isUnknownHost: Boolean): String
 
     // --- Notification Formatter ---
 

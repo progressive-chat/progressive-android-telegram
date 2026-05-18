@@ -5998,6 +5998,17 @@ JNI_FUNC(jboolean, nativeErrorIsRegistrationAvailability)(JNIEnv* env, jclass, j
     return progressive::isRegistrationAvailabilityError(ctx) ? JNI_TRUE : JNI_FALSE;
 }
 
+JNI_FUNC(jstring, nativeClassifyError)(JNIEnv* env, jclass, jstring jErrorCode, jint jHttpCode, jstring jErrorMessage, jboolean jIsNetwork, jboolean jIsUnknownHost) {
+    progressive::ErrorContext ctx;
+    ctx.errorCode = jStr(env, jErrorCode);
+    ctx.httpCode = jHttpCode;
+    ctx.errorMessage = jStr(env, jErrorMessage);
+    ctx.isNetworkError = jIsNetwork;
+    ctx.isUnknownHost = jIsUnknownHost;
+    auto type = progressive::classifyError(ctx);
+    return env->NewStringUTF(progressive::humanErrorTypeName(type));
+}
+
 // ============================================================
 // Text Format Utilities (ported from TextUtils.kt)
 // ============================================================
