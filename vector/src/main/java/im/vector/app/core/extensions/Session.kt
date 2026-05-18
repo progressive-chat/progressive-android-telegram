@@ -12,39 +12,16 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import im.vector.app.core.services.VectorSyncAndroidService
-import chat.progressive.app.native.ProgressiveNative
 import im.vector.app.features.session.VectorSessionStore
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.crypto.keysbackup.KeysBackupState
-import org.matrix.android.sdk.api.session.crypto.model.MXEventDecryptionResult
-import org.matrix.android.sdk.api.session.events.model.Event
-// import org.matrix.android.sdk.internal.crypto.EventDecryptor
-// import org.matrix.android.sdk.internal.crypto.RustCryptoService
-// import org.matrix.android.sdk.internal.session.room.timeline.TokenChunkEventPersistor
-// import org.matrix.android.sdk.internal.session.sync.handler.room.RoomSyncHandler
 import timber.log.Timber
 
 fun Session.startSyncing(context: Context) {
     val applicationContext = context.applicationContext
 
-    // Progressive Chat: native C++ Megolm decryptor (Labs-gated via nativeDecryptAttempt)
-    // EventDecryptor.nativeDecryptAttempt = { event ->
-
-    // Progressive Chat: create native OlmAccount (device identity) alongside Rust SDK
-    try {
-        ProgressiveNative.ensureLoaded()
-        val deviceId = sessionParams.deviceId ?: "NATIVE01"
-        val ok = ProgressiveNative.nativeOlmCreateAccount(myUserId, deviceId)
-        if (ok) {
-            val keys = ProgressiveNative.nativeOlmGetIdentityKeys()
-            Timber.i("PROGRESSIVE native OlmAccount created: $myUserId/$deviceId keys=$keys")
-            // Generate OTKs for key exchange
-            val otks = ProgressiveNative.nativeOlmGenerateOneTimeKeys(50)
-            Timber.d("PROGRESSIVE generated OTKs: len=${otks.length}")
-        }
-    } catch (e: Exception) {
-        Timber.w(e, "PROGRESSIVE native OlmAccount creation skipped")
-    }
+    // Progressive Chat: native sync parser deferred to v0.2
+    // (requires careful integration with Labs flag + file-size safety checks)
 
     if (!syncService().hasAlreadySynced()) {
         // initial sync is done as a service so it can continue below app lifecycle
