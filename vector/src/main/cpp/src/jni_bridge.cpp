@@ -28,7 +28,6 @@
 #include "progressive/room_version.hpp"
 #include "progressive/chat_preview.hpp"
 #include "progressive/ram_monitor.hpp"
-#include "progressive/cache_manager.hpp"
 #include "progressive/message_aggregator.hpp"
 #include "progressive/room_info.hpp"
 #include "progressive/deleted_archive.hpp"
@@ -163,42 +162,6 @@
 #include "progressive/url_preview.hpp"
 #include "progressive/power_levels.hpp"
 #include "progressive/well_known.hpp"
-#include "progressive/room_sort.hpp"
-#include "progressive/key_backup.hpp"
-#include "progressive/content_utils.hpp"
-#include "progressive/room_state.hpp"
-#include "progressive/login_flow.hpp"
-#include "progressive/device_naming.hpp"
-#include "progressive/sync_filter.hpp"
-#include "progressive/room_name.hpp"
-#include "progressive/notif_format.hpp"
-#include "progressive/matrix_error.hpp"
-#include "progressive/agent_executor.hpp"
-#include "progressive/push_condition.hpp"
-#include "progressive/sender_notif_filter.hpp"
-#include "progressive/string_order.hpp"
-#include "progressive/event_classifier.hpp"
-#include "progressive/content_guard.hpp"
-#include "progressive/user_status.hpp"
-#include "progressive/verification_utils.hpp"
-#include "progressive/account_utils.hpp"
-#include "progressive/widget_manager.hpp"
-#include "progressive/call_manager.hpp"
-#include "progressive/composer_manager.hpp"
-#include "progressive/cross_signing_manager.hpp"
-#include "progressive/device_manager_full.hpp"
-#include "progressive/draft_manager_full.hpp"
-#include "progressive/event_relations_manager.hpp"
-#include "progressive/identity_server_manager.hpp"
-#include "progressive/key_backup_manager.hpp"
-#include "progressive/live_location.hpp"
-#include "progressive/media_upload_manager.hpp"
-#include "progressive/media_viewer.hpp"
-#include "progressive/offline_cache.hpp"
-#include "progressive/oidc_manager.hpp"
-#include "progressive/pin_manager.hpp"
-#include "progressive/poll_manager.hpp"
-#include "progressive/profiler.hpp"
 #include "progressive/room_content.hpp"
 #include "progressive/room_directory_manager.hpp"
 #include "progressive/room_permissions_manager.hpp"
@@ -244,9 +207,6 @@ static progressive::InvitationHideList g_inviteHide;
 
 // --- Singleton thread aggregator ---
 static progressive::ThreadAggregator g_threadAgg;
-
-// --- Singleton cache manager ---
-static progressive::CacheManager g_cacheMgr;
 
 // --- Singleton message aggregator ---
 static progressive::MessageAggregator g_msgAgg;
@@ -423,6 +383,8 @@ static progressive::WidgetManager* getWidgetMgr() {
     if (!g_widgetMgr) {
         g_widgetMgr.reset(new progressive::WidgetManager("", "", "", ""));
     }
+    return g_widgetMgr.get();
+}
 static std::unique_ptr<progressive::PinManager> g_pinMgr;
 
 static progressive::PinManager* getPinMgr() {
