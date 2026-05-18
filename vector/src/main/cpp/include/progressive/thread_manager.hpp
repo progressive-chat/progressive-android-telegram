@@ -217,4 +217,6 @@ private:
     static int64_t extractInt(const std::string& json, const std::string& key);
 };
 
+using ThreadInfo = ThreadInfoFull;  // JNI compat alias
+
 } // namespace progressive

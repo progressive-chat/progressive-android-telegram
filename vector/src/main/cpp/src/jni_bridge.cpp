@@ -59,6 +59,8 @@
 #include "progressive/desync_detector.hpp"
 #include "progressive/latency_stats.hpp"
 #include "progressive/string_utils.hpp"
+#include "progressive/create_room.hpp"
+#include "progressive/tls_bridge.hpp"
 #include "progressive/location_sharing.hpp"
 #include "progressive/color_utils.hpp"
 #include "progressive/e2ee_utils.hpp"
@@ -4606,7 +4608,7 @@ JNI_FUNC(jstring, nativeValidateWidgetSecurity)(JNIEnv* env, jclass, jstring jUr
 }
 JNI_FUNC(jstring, nativeClassifyWidgetType)(JNIEnv* env, jclass, jstring jType) {
     auto wt = progressive::classifyWidgetType(jStr(env, jType));
-    return env->NewStringUTF(progressive::getWidgetTypeName(jStr(env, jType)));
+    return env->NewStringUTF(progressive::getWidgetTypeName(jStr(env, jType))).c_str();
 }
 JNI_FUNC(jboolean, nativeIsAutoApprovedCapability)(JNIEnv* env, jclass, jint jCap, jstring jWidgetType) {
     return progressive::isAutoApprovedCapability(
@@ -4753,11 +4755,11 @@ JNI_FUNC(jstring, nativeCallAnswer)(JNIEnv* env, jclass, jstring jCallId, jstrin
 }
 JNI_FUNC(jstring, nativeCallReject)(JNIEnv* env, jclass, jstring jCallId) {
     std::string error;
-    auto r = getCallMgr()->rejectCall(jStr(env, jCallId), "rejected", error);
+    auto r = getCallMgr()->rejectCall(jStr(env, jCallId), error);
     return env->NewStringUTF(r.c_str());
 }
 JNI_FUNC(jstring, nativeCallHangup)(JNIEnv* env, jclass, jstring jCallId) {
-    auto r = getCallMgr()->hangupCall(jStr(env, jCallId), progressive::EndCallReason::USER_HUNG_UP);
+    auto r = getCallMgr()->hangupCall(jStr(env, jCallId), progressive::EndCallReason::USER_HANGUP);
     return env->NewStringUTF(r.c_str());
 }
 JNI_FUNC(jstring, nativeCallGetActive)(JNIEnv* env, jclass) {
