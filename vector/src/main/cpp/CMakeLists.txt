@@ -185,6 +185,7 @@ add_library(
     src/oidc_auth.cpp
     src/olm.cpp
     src/openid_token.cpp
+    src/progressive_stubs.cpp
     src/jni_bridge.cpp
     src/eventdb.cpp
 )
