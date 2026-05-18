@@ -728,10 +728,7 @@ inline EditAction decideEditAction(bool isSent, bool hasFailed) {
 }
 
 // ==== Cache Strategy ====
-#ifndef PROGRESSIVE_CACHE_STRATEGY_TYPE_DEFINED
-#define PROGRESSIVE_CACHE_STRATEGY_TYPE_DEFINED
 enum class CacheStrategyType { NO_CACHE = 0, TTL_CACHE = 1, INFINITE_CACHE = 2 };
-#endif
 struct CacheConfig {
     CacheStrategyType type = CacheStrategyType::NO_CACHE;
     int64_t validityMs = 0;

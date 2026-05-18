@@ -292,8 +292,4 @@ RegistrationFlowResult parseRegistrationFlow(const std::string& json) {
     return result;
 }
 
-bool requiresOidc(const WellKnownResult& /*wk*/) {
-    return false;
-}
-
 } // namespace progressive

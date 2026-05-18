@@ -32,7 +32,6 @@ struct EventMessageContent {
     std::string newContent;           // "m.new_content" key (for edits) — raw JSON or empty
     bool hasRelation = false;
     bool isEdit = false;
-    bool isFallback = false;          // convenience: JNI flat access (from is_fallback JSON)
 };
 
 // ==== Formatted Body ====
@@ -179,12 +178,6 @@ struct MessageImageContent : EventMessageContent {
     std::string url;             // "url" key — MXC URI (unencrypted)
     EncryptedFileInfo encryptedFile; // "file" key
     std::string mimeType;        // derived: info.mimeType
-    std::string thumbnailUrl;    // convenience: JNI flat access
-    std::string filename;        // convenience: JNI flat access
-    ThumbnailInfo thumbnailInfo; // convenience: JNI flat access
-    int width = 0;               // convenience
-    int height = 0;              // convenience
-    int64_t size = 0;            // convenience
 
     // Original Kotlin: getFileUrl() = encryptedFile?.url ?: url
     std::string getFileUrl() const {
@@ -198,12 +191,6 @@ struct MessageVideoContent : EventMessageContent {
     std::string url;
     EncryptedFileInfo encryptedFile;
     std::string mimeType;        // derived: videoInfo.mimeType
-    std::string thumbnailUrl;    // convenience
-    std::string filename;        // convenience
-    int64_t duration = 0;        // convenience
-    int width = 0;               // convenience
-    int height = 0;              // convenience
-    int64_t size = 0;            // convenience
 
     std::string getFileUrl() const {
         if (!encryptedFile.url.empty()) return encryptedFile.url;
@@ -218,9 +205,6 @@ struct MessageAudioContent : EventMessageContent {
     AudioWaveformInfo audioWaveform;  // "org.matrix.msc1767.audio" key
     bool isVoiceMessage = false;      // "org.matrix.msc3245.voice" key presence
     std::string mimeType;        // derived: audioInfo.mimeType
-    std::string filename;        // convenience
-    int64_t duration = 0;        // convenience
-    int64_t size = 0;            // convenience
 
     std::string getFileUrl() const {
         if (!encryptedFile.url.empty()) return encryptedFile.url;
@@ -234,7 +218,6 @@ struct MessageFileContent : EventMessageContent {
     std::string url;
     EncryptedFileInfo encryptedFile;
     std::string mimeType;        // derived: info.mimeType or extension-based
-    int64_t size = 0;            // convenience
 
     std::string getFileUrl() const {
         if (!encryptedFile.url.empty()) return encryptedFile.url;
