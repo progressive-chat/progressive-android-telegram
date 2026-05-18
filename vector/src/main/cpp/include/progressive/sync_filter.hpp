@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "progressive/sync_utils.hpp"
 #include <optional>
 
 namespace progressive {
