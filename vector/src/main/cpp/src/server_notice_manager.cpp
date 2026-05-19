@@ -1,4 +1,5 @@
 #include "progressive/server_notice_manager.hpp"
+#include "progressive/room_content.hpp"
 #include <sstream>
 #include <algorithm>
 #include <ctime>

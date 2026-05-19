@@ -88,11 +88,11 @@ std::string getVisibilityDescription(RSM_RoomHistoryVisibility visibility) {
 // ====== Content Builders ======
 
 std::string buildHistoryVisibilityContent(RSM_RoomHistoryVisibility visibility) {
-    return R"({"history_visibility":")" + std::string(historyVisibilityToString(visibility)) + R"("})";
+    return R"({"history_visibility":")" + std::string(roomHistoryVisibilityToString(visibility)) + R"("})";
 }
 
 std::string buildJoinRulesContent(RoomJoinRule rule) {
-    return R"({"join_rule":")" + std::string(joinRuleToString(rule)) + R"("})";
+    return R"({"join_rule":")" + std::string(roomJoinRulesToString(rule)) + R"("})";
 }
 
     auto vis = extractStr(contentJson, "history_visibility");
@@ -126,7 +126,7 @@ void progressive::RoomStateManager::setHistoryVisibility(const std::string& room
 
 void progressive::RoomStateManager::setJoinRule(const std::string& roomId, RoomJoinRule rule) {
     auto& state = getOrCreateState(roomId);
-    state.joinRule = rule;
+    state.joinRules = rule;
     state.isPublicRoom = (rule == RoomJoinRule::PUBLIC);
 }
 
@@ -164,7 +164,7 @@ bool progressive::RoomStateManager::isWorldReadable(const std::string& roomId) c
 }
 
 bool progressive::RoomStateManager::isInviteOnly(const std::string& roomId) const {
-    return getRoomState(roomId).joinRule == RoomJoinRule::INVITE;
+    return getRoomState(roomId).joinRules == RoomJoinRule::INVITE;
 }
 
 bool progressive::RoomStateManager::areGuestsAllowed(const std::string& roomId) const {
@@ -186,13 +186,13 @@ std::string progressive::RoomStateManager::roomStateToJson(const progressive::pr
     std::ostringstream os;
     os << R"({"room_id":")" << esc(state.roomId)
        << R"(","name":")" << esc(state.roomName)
-       << R"(","history_visibility":")" << historyVisibilityToString(state.historyVisibility)
+       << R"(","history_visibility":")" << roomHistoryVisibilityToString(state.historyVisibility)
        << R"(","visibility_label":")" << getVisibilityLabel(state.historyVisibility)
-       << R"(","join_rule":")" << joinRuleToString(state.joinRule)
+       << R"(","join_rule":")" << roomJoinRulesToString(state.joinRules)
        << R"(,"is_public":)" << (state.isPublicRoom ? "true" : "false")
        << R"(,"is_world_readable":)" << (state.isWorldReadable ? "true" : "false")
        << R"(,"can_share_history":)" << (state.canShareHistory ? "true" : "false")
-       << R"(,"is_invite_only":)" << (joinRuleToString(state.joinRule) == std::string("invite") ? "true" : "false")
+       << R"(,"is_invite_only":)" << (roomJoinRulesToString(state.joinRules) == std::string("invite") ? "true" : "false")
        << R"(,"is_encrypted":)" << (state.isEncrypted ? "true" : "false")
        << R"(,"members":)" << state.memberCount
        << "}";

@@ -241,7 +241,7 @@ std::vector<RestPushRule> RuleSet::getAllRules() const {
 
 RestPushRule RuleSet::findDefaultRule(const std::string& ruleId, RuleSetKey* outKind) const {
     // Original Kotlin: RULE_ID_CONTAIN_USER_NAME is special (content rules)
-    if (ruleId == ".m.rule.contains_user_name") {
+    if (ruleId == ".m.joinRules.contains_user_name") {
         for (const auto& r : contentRules) {
             if (r.ruleId == ruleId) {
                 if (outKind) *outKind = RuleSetKey::CONTENT;

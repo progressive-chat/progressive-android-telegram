@@ -375,10 +375,10 @@ EventSearchResult parseEventSearchResult(const std::string& json) {
     return r;
 }
 
-// ==== Parse ContentAttachmentData ====
+// ==== Parse MediaContentAttachmentData ====
 
-ContentAttachmentData parseContentAttachmentData(const std::string& json) {
-    ContentAttachmentData d;
+MediaContentAttachmentData parseContentAttachmentData(const std::string& json) {
+    MediaContentAttachmentData d;
     d.size = extractJsonInt64(json, "size");
     d.duration = extractJsonInt64(json, "duration");
     d.date = extractJsonInt64(json, "date");

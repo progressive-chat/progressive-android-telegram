@@ -131,7 +131,7 @@ void SpaceGraph::setNodeMetadata(const std::string& roomId, const std::string& n
         node.name = name;
         node.topic = topic;
         node.avatarUrl = avatarUrl;
-        node.joinRule = joinRule;
+        node.joinRules = joinRule;
         node.isJoined = isJoined;
         node.valid = true;
         nodes_[roomId] = node;
@@ -139,7 +139,7 @@ void SpaceGraph::setNodeMetadata(const std::string& roomId, const std::string& n
         it->second.name = name;
         it->second.topic = topic;
         it->second.avatarUrl = avatarUrl;
-        it->second.joinRule = joinRule;
+        it->second.joinRules = joinRule;
         it->second.isJoined = isJoined;
     }
 }
