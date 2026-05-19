@@ -166,4 +166,23 @@ std::string SpaceGraph::nodeToJson(const std::string& nodeId, int depthLeft, std
 SpaceChildEntry parseSpaceChild(const std::string& stateKey, const std::string& contentJson) { return {}; }
 SpaceParentEntry parseSpaceParent(const std::string& contentJson) { return {}; }
 
+
+// Remaining stubs from linker errors
+CrossSigningManager::CrossSigningManager() {}
+DeviceManager::DeviceManager() {}
+PollManager::PollManager() {}
+RoomDirectoryManager::RoomDirectoryManager() {}
+RoomStateManager::RoomStateManager() {}
+ServerNoticeManager::ServerNoticeManager() {}
+SpaceGraph::SpaceGraph() {}
+std::string buildMxcUri(const std::string& serverName, const std::string& mediaId) { return ""; }
+std::string ensureCorrectFormattedBodyInTextReply(const std::string& newFormatted, const std::string& newBody, const std::string& originalFormatted) { return newFormatted; }
+std::string extractUsefulTextFromReply(const std::string& repliedBody) { return repliedBody; }
+std::string formatSpoilerTextFromHtml(const std::string& formattedBody) { return formattedBody; }
+std::string getEditedTargetEventId(const std::string& contentJson) { return ""; }
+std::string getExtensionFromMimeType(const std::string& mimeType) { return ""; }
+std::string getLatestEditEventId(const std::string& contentJson, const std::string& eventId) { return ""; }
+std::string normalizeMimeType(const std::string& mimeType) { return mimeType; }
+std::string resolveMxcThumbnailUrl(const std::string& mxcUrl, const std::string& hsUrl, int w, int h, const std::string& method) { return ""; }
+std::string visibilityToString(RoomDirectoryVisibility vis) { return ""; }
 } // namespace progressive
