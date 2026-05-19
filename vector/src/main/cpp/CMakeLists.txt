@@ -106,7 +106,6 @@ add_library(
     src/event_utils.cpp
     src/room_directory.cpp
     src/widget_utils.cpp
-    src/decryptor_utils.cpp
     src/progressive_stubs.cpp
     src/widget_manager.cpp
     src/user_directory.cpp
