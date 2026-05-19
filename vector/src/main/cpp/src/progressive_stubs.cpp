@@ -174,4 +174,7 @@ SpaceGraph::SpaceGraph() {}
 SpaceChildEntry parseSpaceChild(const std::string& stateKey, const std::string& contentJson) { return {}; }
 std::string resolveMxcThumbnailUrl(const std::string& mxcUrl, const std::string& homeServerUrl, int width, int height, const std::string& method) { return ""; }
 std::vector<SpaceNode> SpaceGraph::getChildren(const std::string& spaceId) const { return {}; }
+std::vector<SpaceNode> SpaceGraph::getParents(const std::string& roomId) const { return {}; }
+std::vector<SpaceNode> SpaceGraph::searchSpaceRooms(const std::string& spaceId, const std::string& query) const { return {}; }
+std::string visibilityToString(RoomDirectoryVisibility vis) { return ""; }
 } // namespace progressive
