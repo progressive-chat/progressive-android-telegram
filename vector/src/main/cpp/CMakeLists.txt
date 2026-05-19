@@ -106,6 +106,40 @@ add_library(
     src/event_utils.cpp
     src/room_directory.cpp
     src/widget_utils.cpp
+    src/widget_manager.cpp
+    src/user_directory.cpp
+    src/transparent_overlay.cpp
+    src/thread_manager.cpp
+    src/text_undo_manager.cpp
+    src/terms_manager.cpp
+    src/sync_filter.cpp
+    src/spoiler_manager.cpp
+    src/space_graph.cpp
+    src/session_manager_full.cpp
+    src/server_notice_manager.cpp
+    src/room_state_manager.cpp
+    src/room_state.cpp
+    src/room_permissions_manager.cpp
+    src/room_name.cpp
+    src/room_directory_manager.cpp
+    src/profiler.cpp
+    src/poll_manager.cpp
+    src/pin_manager.cpp
+    src/oidc_manager.cpp
+    src/media_viewer.cpp
+    src/media_upload_manager.cpp
+    src/login_flow.cpp
+    src/live_location.cpp
+    src/key_backup_manager.cpp
+    src/identity_server_manager.cpp
+    src/event_relations_manager.cpp
+    src/draft_manager_full.cpp
+    src/device_naming.cpp
+    src/device_manager_full.cpp
+    src/cross_signing_manager.cpp
+    src/content_utils.cpp
+    src/composer_manager.cpp
+    src/call_manager.cpp
     src/webrtc_utils.cpp
     src/sso_utils.cpp
     src/backup_utils.cpp

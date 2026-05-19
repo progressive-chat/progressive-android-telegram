@@ -150,7 +150,7 @@ public:
     // ====== Graph Traversal ======
 
     // Traverse the space hierarchy and return all nodes.
-    SpaceGraphResult traverse(const SpaceTraversalOptions& options = {}) const;
+    SpaceGraphResult traverse(const SpaceTraversalOptions& options = {}) const const;
 
     // Get direct children of a space.
     std::vector<SpaceNode> getChildren(const std::string& spaceId) const;
