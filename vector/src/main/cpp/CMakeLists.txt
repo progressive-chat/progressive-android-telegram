@@ -11,7 +11,6 @@ add_library(
     src/json_parser.cpp
     src/relation.cpp
     src/exporter.cpp
-    src/eventcache.cpp
     src/translate.cpp
     src/proxy.cpp
     src/yggdrasil.cpp
