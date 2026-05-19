@@ -1,4 +1,5 @@
 #include "progressive/composer_manager.hpp"
+#include <unordered_map>
 #include <sstream>
 #include <regex>
 #include <algorithm>
