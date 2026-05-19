@@ -2,7 +2,6 @@
 #include "progressive/content_utils.hpp"
 #include "progressive/cross_signing_manager.hpp"
 #include "progressive/device_manager_full.hpp"
-#include "progressive/login_flow.hpp"
 #include "progressive/poll_manager.hpp"
 #include "progressive/room_directory_manager.hpp"
 #include "progressive/room_state_manager.hpp"
@@ -11,7 +10,7 @@
 
 namespace progressive {
 
-void ComposerManager::enterRegularMode(bool fromSharing = false) {}
+void ComposerManager::enterRegularMode(bool fromSharing) {}
 void ComposerManager::enterEditMode(const std::string& eventId) {}
 void ComposerManager::enterQuoteMode(const std::string& eventId) {}
 void ComposerManager::enterReplyMode(const std::string& eventId) {}
@@ -40,11 +39,11 @@ std::string buildRoomMentionPill(const std::string& roomAlias) { return ""; }
 std::string replaceMention(const std::string& text, const MentionMatch& match) { return ""; }
 std::string replaceEmojiShortcode(const std::string& text, const EmojiMatch& match) { return ""; }
 std::string autoReplaceEmojis(const std::string& text) { return ""; }
-MessageValidation validateMessage(const std::string& text, int maxLength = 65535) { return {}; }
-std::string buildQuotedBody(const std::string& quotedText, const std::string& replyText, const std::string& quotedSender = "") { return ""; }
-std::string buildQuotedHtmlBody(const std::string& quotedHtml, const std::string& replyHtml, const std::string& quotedSender = "") { return ""; }
+MessageValidation validateMessage(const std::string& text, int maxLength) { return {}; }
+std::string buildQuotedBody(const std::string& quotedText, const std::string& replyText, const std::string& quotedSender) { return ""; }
+std::string buildQuotedHtmlBody(const std::string& quotedHtml, const std::string& replyHtml, const std::string& quotedSender) { return ""; }
 std::string resolveMxcDownloadUrl(const std::string& mxcUrl, const std::string& homeServerUrl) { return ""; }
-std::string resolveMxcThumbnailUrl(const std::string& mxcUrl, const std::string& homeServerUrl, int width, int height, const std::string& method = "scale") { return ""; }
+std::string resolveMxcThumbnailUrl(const std::string& mxcUrl, const std::string& homeServerUrl, int width, int height, const std::string& method) { return ""; }
 bool isMxcUri(const std::string& url) { return {}; }
 std::string extractMxcServerName(const std::string& mxcUrl) { return ""; }
 std::string extractMxcMediaId(const std::string& mxcUrl) { return ""; }
@@ -59,10 +58,10 @@ std::string getExtensionFromMimeType(const std::string& mimetype) { return ""; }
 std::string formatFileSize(int64_t bytes) { return ""; }
 std::string messageContentToJson(const MessageContent& content) { return ""; }
 std::string extractUsefulTextFromReply(const std::string& repliedBody) { return ""; }
-std::string extractUsefulTextFromHtmlReply(const std::string& repliedHtmlBody, const std::string& mxReplyStartTag = "<mx-reply>", const std::string& mxReplyEndTag = "</mx-reply>") { return ""; }
+std::string extractUsefulTextFromHtmlReply(const std::string& repliedHtmlBody, const std::string& mxReplyStartTag, const std::string& mxReplyEndTag) { return ""; }
 std::string formatSpoilerTextFromHtml(const std::string& formattedBody) { return ""; }
-std::string buildTextWithImageContent(const std::string& plainText, const std::string& imageMxcUrl, const std::string& imageMimetype = "image/png", int imageWidth = 0, int imageHeight = 0) { return ""; }
-std::string buildReplyWithImageContent(const std::string& plainText, const std::string& imageMxcUrl, const std::string& replyEventId, const std::string& imageMimetype = "image/png") { return ""; }
+std::string buildTextWithImageContent(const std::string& plainText, const std::string& imageMxcUrl, const std::string& imageMimetype, int imageWidth, int imageHeight) { return ""; }
+std::string buildReplyWithImageContent(const std::string& plainText, const std::string& imageMxcUrl, const std::string& replyEventId, const std::string& imageMimetype) { return ""; }
 bool hasTextWithImage(const std::string& contentJson) { return {}; }
 std::string ensureCorrectFormattedBodyInTextReply(const std::string& newFormattedBody, const std::string& newBody, const std::string& originalFormattedBody) { return ""; }
 std::string normalizeMimeType(const std::string& mimeType) { return ""; }
@@ -72,7 +71,7 @@ bool isMimeTypeAudio(const std::string& mt) { return {}; }
 bool isMimeTypeText(const std::string& mt) { return {}; }
 std::string getLatestEditEventId(const std::string& editSummaryJson, const std::string& originalEventId) { return ""; }
 std::string getEditedTargetEventId(const std::string& contentJson) { return ""; }
-std::string getTextEditableContent(const std::string& contentJson, const std::string& editSummaryJson, bool formatted = false) { return ""; }
+std::string getTextEditableContent(const std::string& contentJson, const std::string& editSummaryJson, bool formatted) { return ""; }
 bool isReplyEvent(const std::string& contentJson) { return {}; }
 bool isEditionEvent(const std::string& contentJson) { return {}; }
 bool CrossSigningManager::isInitialized() const { return {}; }
@@ -113,7 +112,7 @@ std::string DeviceManager::formatTrustLevel(const DeviceTrustLevel& level) const
 std::string DeviceManager::getTrustLabel(const DeviceTrustLevel& level) const { return {}; }
 std::string DeviceManager::formatFingerprint(const std::string& rawKey) const { return {}; }
 std::string DeviceManager::formatShortKey(const std::string& rawKey) const { return {}; }
-bool DeviceManager::isDeviceInactive(int64_t lastSeenTs, int inactivityDays = 7) const { return {}; }
+bool DeviceManager::isDeviceInactive(int64_t lastSeenTs, int inactivityDays) const { return {}; }
 std::string DeviceManager::formatLastSeen(int64_t lastSeenTs) const { return {}; }
 bool DeviceManager::satisfiesMinVersion(const std::string& clientVersion, const std::string& minRequired) const { return {}; }
 void DeviceManager::sortDevices(std::vector<DeviceInfo>& devices, DeviceSortMode mode) const {}
@@ -215,16 +214,16 @@ std::string ServerNoticeManager::extractStr(const std::string& json, const std::
 int64_t ServerNoticeManager::extractInt(const std::string& json, const std::string& key) { return {}; }
 bool ServerNoticeManager::extractBool(const std::string& json, const std::string& key) { return {}; }
 ResourceLimitType resourceLimitTypeFromString(const std::string& s) { return {}; }
-void SpaceGraph::setRoot(const std::string& spaceId, const std::string& name = "", const std::string& topic = "", const std::string& avatarUrl = "") {}
+void SpaceGraph::setRoot(const std::string& spaceId, const std::string& name, const std::string& topic, const std::string& avatarUrl) {}
 void SpaceGraph::addChild(const std::string& parentId, const SpaceChildEntry& child) {}
 void SpaceGraph::setNodeMetadata(const std::string& roomId, const std::string& name, const std::string& topic, const std::string& avatarUrl, const std::string& joinRule, bool isJoined) {}
 void SpaceGraph::addParent(const std::string& roomId, const SpaceParentEntry& parent) {}
 void SpaceGraph::setOrder(const std::string& parentId, const std::string& childId, const std::string& order) {}
-SpaceGraphResult SpaceGraph::traverse(const SpaceTraversalOptions& options = {}) const { return {}; }
+SpaceGraphResult SpaceGraph::traverse(const SpaceTraversalOptions& options) const { return {}; }
 int SpaceGraph::getDepth(const std::string& roomId) const { return {}; }
 bool SpaceGraph::isInSpace(const std::string& spaceId, const std::string& roomId) const { return {}; }
 int SpaceGraph::deepestDepth() const { return {}; }
-std::string SpaceGraph::spaceToTreeJson(const std::string& spaceId, int maxDepth = 5) const { return {}; }
+std::string SpaceGraph::spaceToTreeJson(const std::string& spaceId, int maxDepth) const { return {}; }
 std::string SpaceGraph::flatListToJson(const std::vector<SpaceNode>& nodes) const { return {}; }
 std::string SpaceGraph::graphResultToJson(const SpaceGraphResult& result) const { return {}; }
 void SpaceGraph::clear() {}
