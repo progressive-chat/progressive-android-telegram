@@ -11,14 +11,10 @@ namespace progressive {
 
 bool isMxcUri(const std::string& url) { return {}; }
 MessageType parseMessageType(const std::string& contentJson) { return {}; }
-MessageContent parseMessageContent(const std::string& contentJson) { return {}; }
 bool supportsThumbnails(MessageType type) { return {}; }
 bool isInlineDisplayable(MessageType type) { return {}; }
 bool isMediaType(MessageType type) { return {}; }
 bool hasTextWithImage(const std::string& contentJson) { return {}; }
-bool isMimeTypeImage(const std::string& mt) { return {}; }
-bool isMimeTypeVideo(const std::string& mt) { return {}; }
-bool isMimeTypeAudio(const std::string& mt) { return {}; }
 bool isMimeTypeText(const std::string& mt) { return {}; }
 bool isReplyEvent(const std::string& contentJson) { return {}; }
 bool isEditionEvent(const std::string& contentJson) { return {}; }
