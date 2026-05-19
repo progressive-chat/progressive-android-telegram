@@ -152,7 +152,7 @@ MessageContent parseMessageContent(const std::string& contentJson) {
     content.format = extractStr("format");
     content.formattedBody = extractStr("formatted_body");
     content.filename = extractStr("filename");
-    content.mimeType = extractStr("mimetype");
+    content.mimetype = extractStr("mimetype");
     content.geoUri = extractStr("geo_uri");
 
     // Extract URL/media info from nested info/url fields
@@ -269,7 +269,7 @@ std::string messageContentToJson(const MessageContent& content) {
     json << R"("body": ")" << esc(content.body) << R"(",)";
     json << R"("format": ")" << esc(content.format) << R"(",)";
     json << R"("mxcUrl": ")" << esc(content.mxcUrl) << R"(",)";
-    json << R"("mimetype": ")" << esc(content.mimeType) << R"(",)";
+    json << R"("mimetype": ")" << esc(content.mimetype) << R"(",)";
     json << R"("filename": ")" << esc(content.filename) << R"(",)";
     json << R"("size": )" << content.size << ",";
     json << R"("imageWidth": )" << content.imageWidth << ",";
