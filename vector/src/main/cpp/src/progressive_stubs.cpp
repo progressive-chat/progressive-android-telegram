@@ -162,8 +162,6 @@ std::string getExtensionFromMimeType(const std::string& mime) { return ""; }
 std::string getLatestEditEventId(const std::string& json, const std::string& eventId) { return ""; }
 bool hasTextWithImage(const std::string& json) { return false; }
 std::string normalizeMimeType(const std::string& mime) { return mime; }
-std::string parseSpaceChild(const std::string& key, const std::string& json) { return ""; }
-std::string resolveMxcThumbnailUrl(const std::string& mxc, const std::string& hs, int w, int h, const std::string& m) { return ""; }
 bool visibilityToString(RoomDirectoryVisibility v) { return false; }
 
 // Constructors for missing modules
