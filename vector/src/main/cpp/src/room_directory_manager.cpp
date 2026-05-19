@@ -1,4 +1,6 @@
 #include "progressive/room_directory_manager.hpp"
+#include <unordered_map>
+#include "progressive/room_content.hpp"
 #include <sstream>
 #include <algorithm>
 #include <cctype>
