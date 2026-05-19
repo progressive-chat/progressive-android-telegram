@@ -73,8 +73,6 @@ std::string DeviceManager::trustLevelToJson(const DeviceTrustLevel& level) const
 std::string DeviceManager::extractStr(const std::string& json, const std::string& key) { return {}; }
 int64_t DeviceManager::extractInt(const std::string& json, const std::string& key) { return {}; }
 bool DeviceManager::extractBool(const std::string& json, const std::string& key) { return {}; }
-LoginAuthFlowsResult parseLoginFlows(const std::string& json) { return {}; }
-bool requiresIdentityServer(LoginFlowType type) { return {}; }
 std::string PollManager::buildPollStartContent(const std::string& question, const std::vector<std::string>& optionTexts, PollKind kind, int maxSelections, bool unstable, std::string& error) { return {}; }
 PollContent PollManager::parsePollStartContent(const std::string& contentJson, bool unstable) { return {}; }
 bool PollManager::isValidPollQuestion(const std::string& question) { return {}; }
@@ -114,7 +112,6 @@ std::string RoomDirectoryManager::extractStr(const std::string& json, const std:
 int64_t RoomDirectoryManager::extractInt(const std::string& json, const std::string& key) { return {}; }
 bool RoomDirectoryManager::extractBool(const std::string& json, const std::string& key) { return {}; }
 RoomDirectoryVisibility visibilityFromString(const std::string& s) { return {}; }
-bool isUniqueDisplayName(const std::vector<RoomMember>& members, const std::string& displayName) { return {}; }
 void RoomStateManager::setHistoryVisibility(const std::string& roomId, RSM_RoomHistoryVisibility visibility) {}
 void RoomStateManager::setJoinRule(const std::string& roomId, RoomJoinRule rule) {}
 void RoomStateManager::setRoomName(const std::string& roomId, const std::string& name) {}
