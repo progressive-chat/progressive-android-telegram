@@ -128,10 +128,6 @@ add_library(
     src/event_relations_manager.cpp
     src/draft_manager_full.cpp
     src/device_naming.cpp
-    src/device_manager_full.cpp
-    src/cross_signing_manager.cpp
-    src/content_utils.cpp
-    src/composer_manager.cpp
     src/call_manager.cpp
     src/sso_utils.cpp
     src/backup_utils.cpp
