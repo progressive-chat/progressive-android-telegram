@@ -183,5 +183,4 @@ std::string getEditedTargetEventId(const std::string& contentJson) { return ""; 
 std::string getExtensionFromMimeType(const std::string& mimeType) { return ""; }
 std::string getLatestEditEventId(const std::string& contentJson, const std::string& eventId) { return ""; }
 std::string normalizeMimeType(const std::string& mimeType) { return mimeType; }
-std::string visibilityToString(RoomDirectoryVisibility vis) { return ""; }
 } // namespace progressive
