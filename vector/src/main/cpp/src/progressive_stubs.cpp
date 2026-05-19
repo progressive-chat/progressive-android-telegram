@@ -10,32 +10,6 @@
 
 namespace progressive {
 
-bool CrossSigningManager::isInitialized() const { return {}; }
-bool CrossSigningManager::isVerified() const { return {}; }
-bool CrossSigningManager::canCrossSign() const { return {}; }
-bool CrossSigningManager::allPrivateKeysKnown() const { return {}; }
-void CrossSigningManager::setMyKeys(const CSM_CrossSigningInfo& info) {}
-void CrossSigningManager::setUserKeys(const std::string& userId, const CSM_CrossSigningInfo& info) {}
-CSM_CrossSigningInfo CrossSigningManager::getMyKeys() const { return {}; }
-CSM_CrossSigningInfo CrossSigningManager::getUserKeys(const std::string& userId) const { return {}; }
-UserTrustResult CrossSigningManager::importPrivateKeys(const std::string& masterKeyPrivate, const std::string& userSigningKeyPrivate, const std::string& selfSigningKeyPrivate) { return {}; }
-bool CrossSigningManager::importPrivateKey(CSM_KeyUsage usage, const std::string& privateKey) { return {}; }
-PrivateKeysInfo CrossSigningManager::getPrivateKeys() const { return {}; }
-UserTrustResult CrossSigningManager::checkSelfTrust() const { return {}; }
-UserTrustResult CrossSigningManager::checkUserTrust(const std::string& otherUserId) const { return {}; }
-DeviceTrustResult CrossSigningManager::checkDeviceTrust(const std::string& userId, const std::string& deviceId, bool locallyTrusted) const { return {}; }
-void CrossSigningManager::markMyMasterKeyAsTrusted() {}
-void CrossSigningManager::trustUser(const std::string& otherUserId) {}
-void CrossSigningManager::trustDevice(const std::string& deviceId) {}
-CSM_CrossSigningKey CrossSigningManager::buildMasterKey(const std::string& userId, const std::string& publicKey) { return {}; }
-CSM_CrossSigningKey CrossSigningManager::buildSelfSigningKey(const std::string& userId, const std::string& publicKey) { return {}; }
-CSM_CrossSigningKey CrossSigningManager::buildUserSigningKey(const std::string& userId, const std::string& publicKey) { return {}; }
-CSM_CrossSigningInfo CrossSigningManager::buildCrossSigningInfo(const std::string& userId, const CSM_CrossSigningKey& msk, const CSM_CrossSigningKey& usk, const CSM_CrossSigningKey& ssk) { return {}; }
-std::string CrossSigningManager::crossSigningInfoToJson(const CSM_CrossSigningInfo& info) const { return {}; }
-std::string CrossSigningManager::keyToJson(const CSM_CrossSigningKey& key) const { return {}; }
-std::string CrossSigningManager::trustResultToJson(const UserTrustResult& result) const { return {}; }
-std::string CrossSigningManager::deviceTrustToJson(const DeviceTrustResult& result) const { return {}; }
-bool CrossSigningManager::verifyKeySignatures(const CSM_CrossSigningKey& key) const { return {}; }
 DevicesListResponse DeviceManager::parseDevicesList(const std::string& json) { return {}; }
 DeviceInfo DeviceManager::parseDeviceInfo(const std::string& deviceId, const std::string& json) { return {}; }
 CryptoDeviceInfo DeviceManager::parseCryptoDeviceInfo(const std::string& deviceId, const std::string& userId, const std::string& json) { return {}; }
@@ -164,7 +138,6 @@ bool hasTextWithImage(const std::string& json) { return false; }
 std::string normalizeMimeType(const std::string& mime) { return mime; }
 
 // Constructors for missing modules
-CrossSigningManager::CrossSigningManager() {}
 DeviceManager::DeviceManager() {}
 PollManager::PollManager() {}
 RoomDirectoryManager::RoomDirectoryManager() {}
