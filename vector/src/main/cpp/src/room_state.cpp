@@ -42,12 +42,12 @@ RoomJoinRulesData parseJoinRules(const std::string& contentJson) {
 
     // Original Kotlin: content.get("join_rule")?.asString()
     rules.rawRule = extractStr(contentJson, "join_rule");
-    rules.joinRules = joinRuleFromString(rules.rawRule);
-    rules.valid = rules.joinRules != JoinRule::Unknown;
+    rules.rule = joinRuleFromString(rules.rawRule);
+    rules.valid = rules.rule != JoinRule::Unknown;
 
     // Parse "allow" array for restricted rooms
     // {"join_rule": "restricted", "allow": [{"room_id": "!abc:server", "type": "m.room_membership"}]}
-    if (rules.joinRules == JoinRule::Restricted) {
+    if (rules.rule == JoinRule::Restricted) {
         auto allowPos = contentJson.find("\"allow\"");
         if (allowPos != std::string::npos) {
             size_t pos = contentJson.find("\"room_id\"", allowPos);
@@ -62,9 +62,9 @@ RoomJoinRulesData parseJoinRules(const std::string& contentJson) {
     return rules;
 }
 
-bool isPublicRoom(const RoomJoinRulesData& rules) { return rules.joinRules == JoinRule::Public; }
-bool isInviteOnly(const RoomJoinRulesData& rules) { return rules.joinRules == JoinRule::Invite; }
-bool isKnockable(const RoomJoinRulesData& rules) { return rules.joinRules == JoinRule::Knock; }
+bool isPublicRoom(const RoomJoinRulesData& rules) { return rules.rule == JoinRule::Public; }
+bool isInviteOnly(const RoomJoinRulesData& rules) { return rules.rule == JoinRule::Invite; }
+bool isKnockable(const RoomJoinRulesData& rules) { return rules.rule == JoinRule::Knock; }
 
 JoinRule joinRuleFromString(const std::string& rule) {
     if (rule == "public") return JoinRule::Public;
@@ -75,7 +75,7 @@ JoinRule joinRuleFromString(const std::string& rule) {
     return JoinRule::Unknown;
 }
 
-std::string roomJoinRulesToString(JoinRule rule) {
+std::string joinRuleToString(JoinRule rule) {
     switch (rule) {
         case JoinRule::Public: return "public";
         case JoinRule::Invite: return "invite";
@@ -93,18 +93,18 @@ std::string roomJoinRulesToString(JoinRule rule) {
 RSH_RoomHistoryVisibility parseHistoryVisibility(const std::string& contentJson) {
     RSH_RoomHistoryVisibility vis;
     vis.rawValue = extractStr(contentJson, "history_visibility");
-    vis.historyVisibility = historyVisibilityFromString(vis.rawValue);
-    vis.valid = vis.historyVisibility != HistoryVisibility::Unknown;
+    vis.visibility = historyVisibilityFromString(vis.rawValue);
+    vis.valid = vis.visibility != HistoryVisibility::Unknown;
     return vis;
 }
 
 bool isHistoryPubliclyVisible(const RSH_RoomHistoryVisibility& vis) {
-    return vis.historyVisibility == HistoryVisibility::WorldReadable;
+    return vis.visibility == HistoryVisibility::WorldReadable;
 }
 
 bool isHistoryVisibleToGuests(const RSH_RoomHistoryVisibility& vis) {
-    return vis.historyVisibility == HistoryVisibility::WorldReadable ||
-           vis.historyVisibility == HistoryVisibility::Shared;
+    return vis.visibility == HistoryVisibility::WorldReadable ||
+           vis.visibility == HistoryVisibility::Shared;
 }
 
 HistoryVisibility historyVisibilityFromString(const std::string& vis) {
@@ -115,7 +115,7 @@ HistoryVisibility historyVisibilityFromString(const std::string& vis) {
     return HistoryVisibility::Unknown;
 }
 
-std::string roomHistoryVisibilityToString(HistoryVisibility vis) {
+std::string historyVisibilityToString(HistoryVisibility vis) {
     switch (vis) {
         case HistoryVisibility::WorldReadable: return "world_readable";
         case HistoryVisibility::Shared: return "shared";
@@ -193,7 +193,7 @@ std::string joinRulesToJson(const RoomJoinRulesData& rules) {
     };
     std::ostringstream json;
     json << R"({"valid": )" << (rules.valid ? "true" : "false") << ",";
-    json << R"("rule": ")" << esc(roomJoinRulesToString(rules.joinRules)) << R"(",)";
+    json << R"("rule": ")" << esc(joinRuleToString(rules.rule)) << R"(",)";
     json << R"("isPublic": )" << (isPublicRoom(rules) ? "true" : "false") << ",";
     json << R"("isInviteOnly": )" << (isInviteOnly(rules) ? "true" : "false") << ",";
     json << R"("isKnockable": )" << (isKnockable(rules) ? "true" : "false") << ",";
@@ -204,7 +204,7 @@ std::string joinRulesToJson(const RoomJoinRulesData& rules) {
 std::string historyVisibilityToJson(const RSH_RoomHistoryVisibility& vis) {
     std::ostringstream json;
     json << R"({"valid": )" << (vis.valid ? "true" : "false") << ",";
-    json << R"("visibility": ")" << roomHistoryVisibilityToString(vis.historyVisibility) << R"(",)";
+    json << R"("visibility": ")" << historyVisibilityToString(vis.visibility) << R"(",)";
     json << R"("isPublic": )" << (isHistoryPubliclyVisible(vis) ? "true" : "false") << ",";
     json << R"("isVisibleToGuests": )" << (isHistoryVisibleToGuests(vis) ? "true" : "false") << "}";
     return json.str();
