@@ -137,7 +137,6 @@ add_library(
     src/sso_utils.cpp
     src/backup_utils.cpp
     src/device_manager.cpp
-    src/device_manager_full.cpp
     src/presence_utils.cpp
     src/room_permissions.cpp
     src/room_summary.cpp
