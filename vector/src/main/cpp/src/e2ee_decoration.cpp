@@ -130,7 +130,7 @@ RoomEncryptionTrustLevel computeRoomShield(
     // Original Kotlin:
     //   return if (allTrustedUserIds.isEmpty()) RoomEncryptionTrustLevel.Default
     if (trustedUserIds.empty()) {
-        return RoomEncryptionTrustLevel::Default;
+        return RoomEncryptionTrustLevel::DEFAULT;
     }
 
     // Step 4: Check all devices of trusted users for unverified devices
@@ -183,23 +183,23 @@ RoomEncryptionTrustLevel computeRoomShield(
     //       }
     //   }
     if (hasUnverifiedDevice) {
-        return RoomEncryptionTrustLevel::Warning;
+        return RoomEncryptionTrustLevel::WARNING;
     }
 
     // All users are trusted and all devices are verified → green shield
     if (userIdentities.size() == trustedUserIds.size()) {
-        return RoomEncryptionTrustLevel::Trusted;
+        return RoomEncryptionTrustLevel::TRUSTED;
     }
 
-    return RoomEncryptionTrustLevel::Default;
+    return RoomEncryptionTrustLevel::DEFAULT;
 }
 
 const char* roomShieldToString(RoomEncryptionTrustLevel level) {
     switch (level) {
-        case RoomEncryptionTrustLevel::Default:    return "Default (black shield)";
-        case RoomEncryptionTrustLevel::Warning:    return "Warning (red shield)";
-        case RoomEncryptionTrustLevel::Trusted:    return "Trusted (green shield)";
-        case RoomEncryptionTrustLevel::E2EWithUnsupportedAlgorithm:
+        case RoomEncryptionTrustLevel::DEFAULT:    return "Default (black shield)";
+        case RoomEncryptionTrustLevel::WARNING:    return "Warning (red shield)";
+        case RoomEncryptionTrustLevel::TRUSTED:    return "Trusted (green shield)";
+        case RoomEncryptionTrustLevel::E2E_WITH_UNSUPPORTED:
             return "E2EE with unsupported algorithm";
         default: return "Unknown";
     }
@@ -207,10 +207,10 @@ const char* roomShieldToString(RoomEncryptionTrustLevel level) {
 
 const char* roomShieldIconName(RoomEncryptionTrustLevel level) {
     switch (level) {
-        case RoomEncryptionTrustLevel::Default:    return "ic_shield_black";
-        case RoomEncryptionTrustLevel::Warning:    return "ic_shield_warning";
-        case RoomEncryptionTrustLevel::Trusted:    return "ic_shield_trusted";
-        case RoomEncryptionTrustLevel::E2EWithUnsupportedAlgorithm:
+        case RoomEncryptionTrustLevel::DEFAULT:    return "ic_shield_black";
+        case RoomEncryptionTrustLevel::WARNING:    return "ic_shield_warning";
+        case RoomEncryptionTrustLevel::TRUSTED:    return "ic_shield_trusted";
+        case RoomEncryptionTrustLevel::E2E_WITH_UNSUPPORTED:
             return "ic_shield_unknown";
         default: return "";
     }
