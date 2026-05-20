@@ -35,19 +35,6 @@ namespace progressive {
     int64_t DeviceManager::extractInt(const std::string& json, const std::string& key) { return {}; }
     bool DeviceManager::extractBool(const std::string& json, const std::string& key) { return {}; }
 
-void RoomStateManager::setHistoryVisibility(const std::string& roomId, RSM_RoomHistoryVisibility visibility) {}
-void RoomStateManager::setJoinRule(const std::string& roomId, RoomJoinRule rule) {}
-void RoomStateManager::setRoomName(const std::string& roomId, const std::string& name) {}
-void RoomStateManager::setEncrypted(const std::string& roomId, bool encrypted) {}
-void RoomStateManager::setMemberCount(const std::string& roomId, int count) {}
-RoomStateSummary RoomStateManager::getRoomState(const std::string& roomId) const { return {}; }
-bool RoomStateManager::canShareRoomHistory(const std::string& roomId) const { return {}; }
-bool RoomStateManager::isPublicRoom(const std::string& roomId) const { return {}; }
-bool RoomStateManager::isWorldReadable(const std::string& roomId) const { return {}; }
-bool RoomStateManager::isInviteOnly(const std::string& roomId) const { return {}; }
-bool RoomStateManager::areGuestsAllowed(const std::string& roomId) const { return {}; }
-std::string RoomStateManager::roomStateToJson(const RoomStateSummary& state) const { return {}; }
-void RoomStateManager::clear() {}
 
 
 // Free functions from content_utils
@@ -62,7 +49,6 @@ bool hasTextWithImage(const std::string& json) { return false; }
 std::string normalizeMimeType(const std::string& mime) { return mime; }
 
 // Constructors for missing modules
-RoomStateManager::RoomStateManager() {}
 SpaceChildEntry parseSpaceChild(const std::string& stateKey, const std::string& contentJson) { return {}; }
 std::string resolveMxcThumbnailUrl(const std::string& mxcUrl, const std::string& homeServerUrl, int width, int height, const std::string& method) { return ""; }
 // SpaceGraph stubs
