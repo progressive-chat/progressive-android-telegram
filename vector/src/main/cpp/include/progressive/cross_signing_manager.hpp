@@ -87,8 +87,8 @@ struct CSM_CrossSigningKey {
         std::vector<SignatureEntry> sigs;
 
         Builder& key(const std::string& pk) { publicKey = pk; return *this; }
-        Builder& userId(const std::string& uid) { this->userId = uid; return *this; }
-        Builder& usage(CSM_KeyUsage u) { this->usage = u; return *this; }
+        Builder& setUserId(const std::string& uid) { this->userId = uid; return *this; }
+        Builder& setUsage(CSM_KeyUsage u) { this->usage = u; return *this; }
         Builder& signature(const std::string& uid, const std::string& ks, const std::string& sgn) {
             sigs.push_back({uid, ks, sgn}); return *this;
         }

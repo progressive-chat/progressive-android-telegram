@@ -249,24 +249,24 @@ void CrossSigningManager::trustDevice(const std::string& deviceId) {
 CSM_CrossSigningKey CrossSigningManager::buildMasterKey(const std::string& userId, const std::string& publicKey) {
     return CSM_CrossSigningKey::Builder()
         .key(publicKey)
-        .userId(userId)
-        .usage(CSM_KeyUsage::MASTER)
+        .setUserId(userId)
+        .setUsage(CSM_KeyUsage::MASTER)
         .build();
 }
 
 CSM_CrossSigningKey CrossSigningManager::buildSelfSigningKey(const std::string& userId, const std::string& publicKey) {
     return CSM_CrossSigningKey::Builder()
         .key(publicKey)
-        .userId(userId)
-        .usage(CSM_KeyUsage::SELF_SIGNING)
+        .setUserId(userId)
+        .setUsage(CSM_KeyUsage::SELF_SIGNING)
         .build();
 }
 
 CSM_CrossSigningKey CrossSigningManager::buildUserSigningKey(const std::string& userId, const std::string& publicKey) {
     return CSM_CrossSigningKey::Builder()
         .key(publicKey)
-        .userId(userId)
-        .usage(CSM_KeyUsage::USER_SIGNING)
+        .setUserId(userId)
+        .setUsage(CSM_KeyUsage::USER_SIGNING)
         .build();
 }
 
