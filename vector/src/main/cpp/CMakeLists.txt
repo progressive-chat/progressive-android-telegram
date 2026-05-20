@@ -108,7 +108,6 @@ add_library(
     src/widget_utils.cpp
     src/server_notice_manager.cpp
     src/poll_manager.cpp
-    src/space_graph.cpp
     src/progressive_stubs.cpp
     src/widget_manager.cpp
     src/user_directory.cpp
