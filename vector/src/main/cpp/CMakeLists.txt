@@ -98,7 +98,6 @@ add_library(
     src/notif_analyzer.cpp
     src/sync_models.cpp
     src/user_rating.cpp
-    src/event_timeline.cpp
     src/event_utils.cpp
     src/room_directory.cpp
     src/widget_utils.cpp
