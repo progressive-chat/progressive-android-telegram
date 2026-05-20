@@ -288,7 +288,7 @@ void SpaceGraph::traverseBFS(const SpaceTraversalOptions& options, SpaceGraphRes
 void SpaceGraph::traverseDFS(const std::string& nodeId, int depth,
                                const SpaceTraversalOptions& options,
                                SpaceGraphResult& result,
-                               std::unordered_set<std::string>& visited) {
+                               std::unordered_set<std::string>& visited) const {
     if (depth > options.maxDepth) return;
     if ((int)result.flatList.size() >= options.maxResults) return;
 
