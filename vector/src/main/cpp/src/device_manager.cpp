@@ -310,7 +310,7 @@ std::string CryptoDeviceInfo::identityKey() const {
 
 std::string CryptoDeviceInfo::displayName() const {
     // Original Kotlin: fun displayName(): String? { return unsigned?.deviceDisplayName }
-    return unsigned.deviceDisplayName;
+    return unsignedInfo.deviceDisplayName;
 }
 
 std::string CryptoDeviceInfo::shortDebugString() const {
