@@ -52,7 +52,6 @@ add_library(
     src/room_analytics.cpp
     src/room_content.cpp
     src/room_counter.cpp
-    src/chat_tools.cpp
     src/lang_detect.cpp
     src/avatar_history.cpp
     src/event_link.cpp
