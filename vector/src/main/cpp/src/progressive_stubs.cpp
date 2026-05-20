@@ -35,6 +35,25 @@ namespace progressive {
     int64_t DeviceManager::extractInt(const std::string& json, const std::string& key) { return {}; }
     bool DeviceManager::extractBool(const std::string& json, const std::string& key) { return {}; }
 
+std::string RoomDirectoryManager::buildPublicRoomsRequest(const PublicRoomsParams& params) const { return {}; }
+PublicRoomsResponse RoomDirectoryManager::parsePublicRoomsResponse(const std::string& json) const { return {}; }
+void RoomDirectoryManager::accumulateResults(PublicRoomsResponse& existing, const PublicRoomsResponse& nextPage) const {}
+std::string RoomDirectoryManager::buildVisibilityRequest(RoomDirectoryVisibility visibility) const { return {}; }
+RoomDirectoryVisibility RoomDirectoryManager::parseVisibilityResponse(const std::string& json) const { return {}; }
+std::string RoomDirectoryManager::buildAliasCheckRequest(const std::string& aliasLocalPart) const { return {}; }
+AliasAvailabilityResult RoomDirectoryManager::parseAliasAvailability(const std::string& json, const std::string& aliasLocalPart) const { return {}; }
+std::string RoomDirectoryManager::formatRoomPreview(const PublicRoom& room) const { return {}; }
+std::string RoomDirectoryManager::buildRoomJoinUrl(const std::string& roomId, const std::string& viaServer) const { return {}; }
+std::string RoomDirectoryManager::buildRoomAvatarUrl(const std::string& avatarUrl, const std::string& homeServer) const { return {}; }
+void RoomDirectoryManager::sortRoomsByPopularity(std::vector<PublicRoom>& rooms) const {}
+void RoomDirectoryManager::sortRoomsByName(std::vector<PublicRoom>& rooms) const {}
+std::string RoomDirectoryManager::roomToJson(const PublicRoom& room) const { return {}; }
+std::string RoomDirectoryManager::roomsToJson(const std::vector<PublicRoom>& rooms) const { return {}; }
+std::string RoomDirectoryManager::responseToJson(const PublicRoomsResponse& resp) const { return {}; }
+std::string RoomDirectoryManager::aliasResultToJson(const AliasAvailabilityResult& result) const { return {}; }
+std::string RoomDirectoryManager::extractStr(const std::string& json, const std::string& key) { return {}; }
+int64_t RoomDirectoryManager::extractInt(const std::string& json, const std::string& key) { return {}; }
+bool RoomDirectoryManager::extractBool(const std::string& json, const std::string& key) { return {}; }
 void RoomStateManager::setHistoryVisibility(const std::string& roomId, RSM_RoomHistoryVisibility visibility) {}
 void RoomStateManager::setJoinRule(const std::string& roomId, RoomJoinRule rule) {}
 void RoomStateManager::setRoomName(const std::string& roomId, const std::string& name) {}
@@ -62,6 +81,7 @@ bool hasTextWithImage(const std::string& json) { return false; }
 std::string normalizeMimeType(const std::string& mime) { return mime; }
 
 // Constructors for missing modules
+RoomDirectoryManager::RoomDirectoryManager() {}
 RoomStateManager::RoomStateManager() {}
 SpaceChildEntry parseSpaceChild(const std::string& stateKey, const std::string& contentJson) { return {}; }
 std::string resolveMxcThumbnailUrl(const std::string& mxcUrl, const std::string& homeServerUrl, int width, int height, const std::string& method) { return ""; }
