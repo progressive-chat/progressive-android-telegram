@@ -3630,8 +3630,8 @@ JNI_FUNC(jstring, nativeParseScanResult)(JNIEnv* env, jclass, jstring jJson) {
     return env->NewStringUTF(progressive::formatScanResult(result).c_str());
 }
 JNI_FUNC(jstring, nativeParseServerNotice)(JNIEnv* env, jclass, jstring jJson, jstring jEventId) {
-    auto notice = progressive::parseServerNotice(jStr(env, jJson), jStr(env, jEventId));
-    auto result = progressive::formatServerNotice(notice);
+    auto notice = progressive::parseServerNoticeEvent(jStr(env, jJson), jStr(env, jEventId));
+    auto result = progressive::formatServerNoticeEvent(notice);
     return env->NewStringUTF(result.c_str());
 }
 JNI_FUNC(jstring, nativeParseMemberList)(JNIEnv* env, jclass, jstring jRoomId, jstring jJson, jboolean jTruncated) {

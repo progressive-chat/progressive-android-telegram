@@ -32,7 +32,7 @@ std::string formatScanResult(const ScanResult& result);
 
 // ---- Server Notice Management ----
 
-struct ServerNotice {
+struct ServerNoticeEvent {
     std::string eventId;
     std::string body;
     std::string adminContact;
@@ -43,16 +43,16 @@ struct ServerNotice {
 };
 
 // Parse server notice from Matrix event.
-ServerNotice parseServerNotice(const std::string& eventContentJson, const std::string& eventId);
+ServerNoticeEvent parseServerNoticeEvent(const std::string& eventContentJson, const std::string& eventId);
 
 // Filter unread server notices.
-std::vector<const ServerNotice*> getUnreadNotices(const std::vector<ServerNotice>& notices);
+std::vector<const ServerNoticeEvent*> getUnreadNotices(const std::vector<ServerNoticeEvent>& notices);
 
 // Check if a message is a server notice.
 bool isServerNotice(const std::string& eventContentJson);
 
 // Format server notice for display.
-std::string formatServerNotice(const ServerNotice& notice);
+std::string formatServerNoticeEvent(const ServerNoticeEvent& notice);
 
 // ---- Terms of Service ----
 

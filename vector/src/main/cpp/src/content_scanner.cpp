@@ -43,8 +43,8 @@ std::string formatScanResult(const ScanResult& result) {
     return out.str();
 }
 
-ServerNotice parseServerNotice(const std::string& eventContentJson, const std::string& eventId) {
-    ServerNotice notice;
+ServerNoticeEvent parseServerNoticeEvent(const std::string& eventContentJson, const std::string& eventId) {
+    ServerNoticeEvent notice;
     notice.eventId = eventId;
     notice.body = parseJsonStringValue(eventContentJson, "body");
     notice.adminContact = parseJsonStringValue(eventContentJson, "admin_contact");
@@ -52,8 +52,8 @@ ServerNotice parseServerNotice(const std::string& eventContentJson, const std::s
     return notice;
 }
 
-std::vector<const ServerNotice*> getUnreadNotices(const std::vector<ServerNotice>& notices) {
-    std::vector<const ServerNotice*> result;
+std::vector<const ServerNoticeEvent*> getUnreadNotices(const std::vector<ServerNoticeEvent>& notices) {
+    std::vector<const ServerNoticeEvent*> result;
     for (const auto& n : notices) {
         if (!n.isRead && !n.isDismissed) result.push_back(&n);
     }
@@ -65,7 +65,7 @@ bool isServerNotice(const std::string& eventContentJson) {
            eventContentJson.find("server_notice") != std::string::npos;
 }
 
-std::string formatServerNotice(const ServerNotice& notice) {
+std::string formatServerNoticeEvent(const ServerNoticeEvent& notice) {
     std::ostringstream out;
     out << "[Server Notice] " << notice.body;
     if (!notice.adminContact.empty()) {
