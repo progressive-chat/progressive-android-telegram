@@ -110,7 +110,6 @@ add_library(
     src/widget_manager.cpp
     src/user_directory.cpp
     src/transparent_overlay.cpp
-    src/thread_manager.cpp
     src/text_undo_manager.cpp
     src/terms_manager.cpp
     src/sync_filter.cpp
