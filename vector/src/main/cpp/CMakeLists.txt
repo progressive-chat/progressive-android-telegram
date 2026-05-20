@@ -106,7 +106,6 @@ add_library(
     src/server_notice_manager.cpp
     src/room_name.cpp
     src/room_directory_manager.cpp
-    src/login_flow.cpp
     src/device_manager_full.cpp
     src/decryptor_utils.cpp
     src/cross_signing_manager.cpp
@@ -201,7 +200,6 @@ add_library(
     src/notif_formatter.cpp
     src/matrix_error.cpp
     src/message_content.cpp
-    src/message_extras.cpp
     src/agent_executor.cpp
     src/push_condition.cpp
     src/sender_notif_filter.cpp
