@@ -80,16 +80,12 @@ add_library(
     src/spellcheck.cpp
     src/draft_manager.cpp
     src/link_preview.cpp
-    src/hash_utils.cpp
     src/http_client.cpp
     src/room_stats.cpp
     src/mention_parser.cpp
     src/poll_utils.cpp
-    src/reaction_utils.cpp
     src/file_validator.cpp
-    src/graph_utils.cpp
     src/date_utils.cpp
-    src/message_queue.cpp
     src/pinned_events.cpp
     src/server_capabilities.cpp
     src/username_validator.cpp
@@ -144,7 +140,6 @@ add_library(
     src/push_rules.cpp
     src/raw_service.cpp
     src/space_utils.cpp
-    src/event_relations.cpp
     src/e2ee_decoration.cpp
     src/room_list.cpp
     src/room_uploads.cpp
@@ -152,16 +147,13 @@ add_library(
     src/notif_settings.cpp
     src/invite_utils.cpp
     src/verification_utils.cpp
-    src/session_manager.cpp
     src/signout_service.cpp
     src/auth_utils.cpp
-    src/content_scanner.cpp
     src/event_encryption.cpp
     src/federation_version.cpp
     src/report_utils.cpp
     src/message_retry.cpp
     src/sync_utils.cpp
-    src/event_display.cpp
     src/network_monitor.cpp
     src/client_info.cpp
     src/keyshare.cpp
