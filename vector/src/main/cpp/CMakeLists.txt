@@ -127,7 +127,6 @@ add_library(
     src/event_relations_manager.cpp
     src/draft_manager_full.cpp
     src/device_naming.cpp
-    src/composer_manager.cpp
     src/call_manager.cpp
     src/webrtc_utils.cpp
     src/sso_utils.cpp
