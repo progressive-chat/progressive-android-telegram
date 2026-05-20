@@ -82,7 +82,7 @@ DevicesListResponse DeviceManager::parseDevicesList(const std::string& json) {
         if (dev.valid) resp.devices.push_back(dev);
     }
 
-    resp.totalCount = static_cast<int>(resp.devices.size());
+    resp.devices.size() = static_cast<int>(resp.devices.size());
     return resp;
 }
 
@@ -175,9 +175,9 @@ CryptoDeviceInfo DeviceManager::parseCryptoDeviceInfo(const std::string& deviceI
                 unsignedPos++;
             }
             auto uJson = unsignedJson.substr(s, unsignedPos - s);
-            dev.unsignedDisplayName = extractStr(uJson, "device_display_name");
-            if (dev.unsignedDisplayName.empty()) {
-                dev.unsignedDisplayName = extractStr(uJson, "deviceDisplayName");
+            dev.unsignedInfo.deviceDisplayName = extractStr(uJson, "device_display_name");
+            if (dev.unsignedInfo.deviceDisplayName.empty()) {
+                dev.unsignedInfo.deviceDisplayName = extractStr(uJson, "deviceDisplayName");
             }
         }
     }
