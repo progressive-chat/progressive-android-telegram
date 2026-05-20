@@ -68,7 +68,7 @@ std::string PollManager::optionIdFromIndex(int index) const {
     // Convert index to letters: 0→A, 1→B, ..., 25→Z, 26→AA, etc.
     int n = index;
     do {
-        id.insert(0, 1, 'A' + (n % 26));
+        id.insert(static_cast<size_t>(0), static_cast<size_t>(1), 'A' + (n % 26));
         n /= 26;
     } while (n > 0);
     return id;
