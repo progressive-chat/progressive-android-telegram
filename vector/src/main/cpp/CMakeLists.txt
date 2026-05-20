@@ -11,9 +11,11 @@ add_library(
     src/json_parser.cpp
     src/relation.cpp
     src/exporter.cpp
+    src/eventcache.cpp
     src/translate.cpp
     src/proxy.cpp
     src/yggdrasil.cpp
+    src/markdown.cpp
     src/matrix_api.cpp
     src/account_data_utils.cpp
     src/account_export.cpp
@@ -52,6 +54,7 @@ add_library(
     src/room_analytics.cpp
     src/room_content.cpp
     src/room_counter.cpp
+    src/chat_tools.cpp
     src/lang_detect.cpp
     src/avatar_history.cpp
     src/event_link.cpp
@@ -96,25 +99,26 @@ add_library(
     src/emoji_analyzer.cpp
     src/identity_utils.cpp
     src/notif_analyzer.cpp
+    src/sync_analyzer.cpp
     src/sync_models.cpp
     src/user_rating.cpp
+    src/event_timeline.cpp
     src/event_utils.cpp
     src/room_directory.cpp
     src/widget_utils.cpp
-    src/voice_broadcast.cpp
-    src/sync_handler.cpp
-    src/server_notice_manager.cpp
-    src/room_name.cpp
-    src/decryptor_utils.cpp
-    src/content_utils.cpp
+    src/progressive_stubs.cpp
+    src/progressive_stubs.cpp
+    src/progressive_stubs.cpp
     src/widget_manager.cpp
     src/user_directory.cpp
     src/transparent_overlay.cpp
+    src/thread_manager.cpp
     src/text_undo_manager.cpp
     src/terms_manager.cpp
     src/sync_filter.cpp
     src/spoiler_manager.cpp
     src/session_manager_full.cpp
+    src/room_state.cpp
     src/room_permissions_manager.cpp
     src/profiler.cpp
     src/pin_manager.cpp
@@ -127,10 +131,13 @@ add_library(
     src/event_relations_manager.cpp
     src/draft_manager_full.cpp
     src/device_naming.cpp
+    src/composer_manager.cpp
     src/call_manager.cpp
     src/webrtc_utils.cpp
     src/sso_utils.cpp
     src/backup_utils.cpp
+    src/device_manager.cpp
+    src/presence_utils.cpp
     src/room_permissions.cpp
     src/room_summary.cpp
     src/room_tombstone.cpp
@@ -192,11 +199,13 @@ add_library(
     src/notif_formatter.cpp
     src/matrix_error.cpp
     src/message_content.cpp
+    src/message_extras.cpp
     src/agent_executor.cpp
     src/push_condition.cpp
     src/sender_notif_filter.cpp
     src/string_order.cpp
     src/event_classifier.cpp
+    src/encrypted_file.cpp
     src/content_guard.cpp
     src/user_status.cpp
     src/offline_cache.cpp
