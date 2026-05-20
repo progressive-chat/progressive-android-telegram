@@ -178,6 +178,7 @@ add_library(
     src/timeline_chunk.cpp
     src/timeline_utils.cpp
     src/cross_signing.cpp
+    src/cross_signing_manager.cpp
     src/crypto_algorithms.cpp
     src/crypto_models.cpp
     src/terms_service.cpp

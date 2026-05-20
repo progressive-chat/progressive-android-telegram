@@ -10,56 +10,6 @@
 
 namespace progressive {
 
-bool CrossSigningManager::isInitialized() const { return {}; }
-bool CrossSigningManager::isVerified() const { return {}; }
-bool CrossSigningManager::canCrossSign() const { return {}; }
-bool CrossSigningManager::allPrivateKeysKnown() const { return {}; }
-void CrossSigningManager::setMyKeys(const CSM_CrossSigningInfo& info) {}
-void CrossSigningManager::setUserKeys(const std::string& userId, const CSM_CrossSigningInfo& info) {}
-CSM_CrossSigningInfo CrossSigningManager::getMyKeys() const { return {}; }
-CSM_CrossSigningInfo CrossSigningManager::getUserKeys(const std::string& userId) const { return {}; }
-UserTrustResult CrossSigningManager::importPrivateKeys(const std::string& masterKeyPrivate, const std::string& userSigningKeyPrivate, const std::string& selfSigningKeyPrivate) { return {}; }
-bool CrossSigningManager::importPrivateKey(CSM_KeyUsage usage, const std::string& privateKey) { return {}; }
-PrivateKeysInfo CrossSigningManager::getPrivateKeys() const { return {}; }
-UserTrustResult CrossSigningManager::checkSelfTrust() const { return {}; }
-UserTrustResult CrossSigningManager::checkUserTrust(const std::string& otherUserId) const { return {}; }
-DeviceTrustResult CrossSigningManager::checkDeviceTrust(const std::string& userId, const std::string& deviceId, bool locallyTrusted) const { return {}; }
-void CrossSigningManager::markMyMasterKeyAsTrusted() {}
-void CrossSigningManager::trustUser(const std::string& otherUserId) {}
-void CrossSigningManager::trustDevice(const std::string& deviceId) {}
-CSM_CrossSigningKey CrossSigningManager::buildMasterKey(const std::string& userId, const std::string& publicKey) { return {}; }
-CSM_CrossSigningKey CrossSigningManager::buildSelfSigningKey(const std::string& userId, const std::string& publicKey) { return {}; }
-CSM_CrossSigningKey CrossSigningManager::buildUserSigningKey(const std::string& userId, const std::string& publicKey) { return {}; }
-CSM_CrossSigningInfo CrossSigningManager::buildCrossSigningInfo(const std::string& userId, const CSM_CrossSigningKey& msk, const CSM_CrossSigningKey& usk, const CSM_CrossSigningKey& ssk) { return {}; }
-std::string CrossSigningManager::crossSigningInfoToJson(const CSM_CrossSigningInfo& info) const { return {}; }
-std::string CrossSigningManager::keyToJson(const CSM_CrossSigningKey& key) const { return {}; }
-std::string CrossSigningManager::trustResultToJson(const UserTrustResult& result) const { return {}; }
-std::string CrossSigningManager::deviceTrustToJson(const DeviceTrustResult& result) const { return {}; }
-bool CrossSigningManager::verifyKeySignatures(const CSM_CrossSigningKey& key) const { return {}; }
-DevicesListResponse DeviceManager::parseDevicesList(const std::string& json) { return {}; }
-DeviceInfo DeviceManager::parseDeviceInfo(const std::string& deviceId, const std::string& json) { return {}; }
-CryptoDeviceInfo DeviceManager::parseCryptoDeviceInfo(const std::string& deviceId, const std::string& userId, const std::string& json) { return {}; }
-std::string DeviceManager::buildRenameRequest(const DeviceRenameRequest& req) const { return {}; }
-std::string DeviceManager::buildDeleteRequest(const DeviceDeletionRequest& req) const { return {}; }
-std::string DeviceManager::buildBatchDeleteRequest(const std::vector<DeviceDeletionRequest>& requests) const { return {}; }
-bool DeviceManager::requiresUia(const std::string& deleteResponseJson) const { return {}; }
-std::string DeviceManager::formatTrustLevel(const DeviceTrustLevel& level) const { return {}; }
-std::string DeviceManager::getTrustLabel(const DeviceTrustLevel& level) const { return {}; }
-std::string DeviceManager::formatFingerprint(const std::string& rawKey) const { return {}; }
-std::string DeviceManager::formatShortKey(const std::string& rawKey) const { return {}; }
-bool DeviceManager::isDeviceInactive(int64_t lastSeenTs, int inactivityDays) const { return {}; }
-std::string DeviceManager::formatLastSeen(int64_t lastSeenTs) const { return {}; }
-bool DeviceManager::satisfiesMinVersion(const std::string& clientVersion, const std::string& minRequired) const { return {}; }
-void DeviceManager::sortDevices(std::vector<DeviceInfo>& devices, DeviceSortMode mode) const {}
-void DeviceManager::sortCryptoDevices(std::vector<CryptoDeviceInfo>& devices, DeviceSortMode mode) const {}
-std::string DeviceManager::deviceToJson(const DeviceInfo& device) const { return {}; }
-std::string DeviceManager::cryptoDeviceToJson(const CryptoDeviceInfo& device) const { return {}; }
-std::string DeviceManager::devicesToJson(const std::vector<DeviceInfo>& devices) const { return {}; }
-std::string DeviceManager::cryptoDevicesToJson(const std::vector<CryptoDeviceInfo>& devices) const { return {}; }
-std::string DeviceManager::trustLevelToJson(const DeviceTrustLevel& level) const { return {}; }
-std::string DeviceManager::extractStr(const std::string& json, const std::string& key) { return {}; }
-int64_t DeviceManager::extractInt(const std::string& json, const std::string& key) { return {}; }
-bool DeviceManager::extractBool(const std::string& json, const std::string& key) { return {}; }
 std::string PollManager::buildPollStartContent(const std::string& question, const std::vector<std::string>& optionTexts, PollKind kind, int maxSelections, bool unstable, std::string& error) { return {}; }
 PollContent PollManager::parsePollStartContent(const std::string& contentJson, bool unstable) { return {}; }
 bool PollManager::isValidPollQuestion(const std::string& question) { return {}; }
@@ -140,9 +90,6 @@ std::string getLatestEditEventId(const std::string& json, const std::string& eve
 bool hasTextWithImage(const std::string& json) { return false; }
 std::string normalizeMimeType(const std::string& mime) { return mime; }
 
-// Constructors for missing modules
-CrossSigningManager::CrossSigningManager() {}
-DeviceManager::DeviceManager() {}
 PollManager::PollManager() {}
 RoomDirectoryManager::RoomDirectoryManager() {}
 RoomStateManager::RoomStateManager() {}
