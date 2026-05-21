@@ -1889,22 +1889,22 @@ JNI_FUNC(jstring, nativeFormatCallDuration)(JNIEnv* env, jclass, jint jSeconds) 
 
 // --- Notification Settings ---
 
-JNI_FUNC(jstring, nativeFormatNightMode)(JNIEnv* env, jclass, jstring jMode) {
+JNI_FUNC(jstring, nativeFormatNotifMode)(JNIEnv* env, jclass, jstring jMode) {
     auto ms = jStr(env, jMode);
-    progressive::NightMode m = progressive::NightMode::Default;
-    if (ms == "all") m = progressive::NightMode::All;
-    else if (ms == "mentions") m = progressive::NightMode::Mentions;
-    else if (ms == "none") m = progressive::NightMode::None;
-    auto result = progressive::formatNightMode(m);
+    progressive::NotifMode m = progressive::NotifMode::Default;
+    if (ms == "all") m = progressive::NotifMode::All;
+    else if (ms == "mentions") m = progressive::NotifMode::Mentions;
+    else if (ms == "none") m = progressive::NotifMode::None;
+    auto result = progressive::formatNotifMode(m);
     return env->NewStringUTF(result.c_str());
 }
 
-JNI_FUNC(jstring, nativeParseNightMode)(JNIEnv* env, jclass, jstring jAction) {
-    auto mode = progressive::parseNightMode(jStr(env, jAction));
+JNI_FUNC(jstring, nativeParseNotifMode)(JNIEnv* env, jclass, jstring jAction) {
+    auto mode = progressive::parseNotifMode(jStr(env, jAction));
     const char* s = "default";
-    if (mode == progressive::NightMode::All) s = "all";
-    else if (mode == progressive::NightMode::Mentions) s = "mentions";
-    else if (mode == progressive::NightMode::None) s = "none";
+    if (mode == progressive::NotifMode::All) s = "all";
+    else if (mode == progressive::NotifMode::Mentions) s = "mentions";
+    else if (mode == progressive::NotifMode::None) s = "none";
     return env->NewStringUTF(s);
 }
 
@@ -2227,10 +2227,10 @@ JNI_FUNC(jboolean, nativeNeedsBackupAttention)(JNIEnv* env, jclass, jstring jInf
 
 JNI_FUNC(jstring, nativeBuildRoomNotifSettingsBody)(JNIEnv* env, jclass, jstring jMode) {
     auto ms = jStr(env, jMode);
-    progressive::NightMode m = progressive::NightMode::Default;
-    if (ms == "all") m = progressive::NightMode::All;
-    else if (ms == "mentions") m = progressive::NightMode::Mentions;
-    else if (ms == "none") m = progressive::NightMode::None;
+    progressive::NotifMode m = progressive::NotifMode::Default;
+    if (ms == "all") m = progressive::NotifMode::All;
+    else if (ms == "mentions") m = progressive::NotifMode::Mentions;
+    else if (ms == "none") m = progressive::NotifMode::None;
     auto result = progressive::buildRoomNotifSettingsBody(m);
     return env->NewStringUTF(result.c_str());
 }
@@ -3355,9 +3355,9 @@ JNI_FUNC(jstring, nativeBuildUserIdentifier)(JNIEnv* env, jclass, jstring jUserI
 }
 JNI_FUNC(jboolean, nativeIsNightModeDifferent)(JNIEnv* env, jclass, jstring jOld, jstring jNew) {
     auto parse = [](const std::string& s) -> progressive::NightMode {
-        if (s == "all") return progressive::NightMode::All;
-        if (s == "mentions") return progressive::NightMode::Mentions;
-        if (s == "none") return progressive::NightMode::None;
+        if (s == "all") return progressive::NotifMode::All;
+        if (s == "mentions") return progressive::NotifMode::Mentions;
+        if (s == "none") return progressive::NotifMode::None;
         return progressive::NightMode::Default;
     };
     return progressive::isNightModeDifferent(parse(jStr(env, jOld)), parse(jStr(env, jNew))) ? JNI_TRUE : JNI_FALSE;
@@ -3365,9 +3365,9 @@ JNI_FUNC(jboolean, nativeIsNightModeDifferent)(JNIEnv* env, jclass, jstring jOld
 JNI_FUNC(jstring, nativeGetDefaultModeForRoom)(JNIEnv* env, jclass, jboolean jDirect, jboolean jEncrypted) {
     auto mode = progressive::getDefaultModeForRoom(jDirect, jEncrypted);
     const char* s = "default";
-    if (mode == progressive::NightMode::All) s = "all";
-    else if (mode == progressive::NightMode::Mentions) s = "mentions";
-    else if (mode == progressive::NightMode::None) s = "none";
+    if (mode == progressive::NotifMode::All) s = "all";
+    else if (mode == progressive::NotifMode::Mentions) s = "mentions";
+    else if (mode == progressive::NotifMode::None) s = "none";
     return env->NewStringUTF(s);
 }
 JNI_FUNC(jboolean, nativeMeetsMinimumRequirements)(JNIEnv* env, jclass, jstring jPassword) {
@@ -6095,7 +6095,7 @@ JNI_FUNC(jstring, nativeFormatLlmBroadcast)(JNIEnv* env, jclass, jstring jPrompt
 // Alarm Engine
 // ============================================================
 
-static progressive::NightModeManager g_notifMode;
+static progressive::NightModeManager g_nightMode;
 
 static progressive::AlarmManager g_alarmMgr;
 
@@ -6134,33 +6134,33 @@ JNI_FUNC(void, nativeAlarmLoad)(JNIEnv* env, jclass, jstring jJson) {
 // ============================================================
 
 JNI_FUNC(void, nativeNotifSetMode)(JNIEnv* env, jclass, jint jMode) {
-    g_notifMode.setMode(static_cast<progressive::NightMode>(jMode));
+    g_nightMode.setMode(static_cast<progressive::NightMode>(jMode));
 }
 
 JNI_FUNC(jint, nativeNotifGetMode)(JNIEnv* env, jclass) {
-    return static_cast<jint>(g_notifMode.getMode());
+    return static_cast<jint>(g_nightMode.getMode());
 }
 
 JNI_FUNC(jboolean, nativeNotifShouldPing)(JNIEnv* env, jclass, jstring jBody, jstring jSender,
                                             jboolean jIsRoomPing, jboolean jIsAlarm) {
-    return g_notifMode.shouldNotify(jStr(env, jBody), jStr(env, jSender), jIsRoomPing, jIsAlarm)
+    return g_nightMode.shouldNotify(jStr(env, jBody), jStr(env, jSender), jIsRoomPing, jIsAlarm)
            ? JNI_TRUE : JNI_FALSE;
 }
 
 JNI_FUNC(void, nativeNotifAddKeyword)(JNIEnv* env, jclass, jstring jKw) {
-    g_notifMode.addNightKeyword(jStr(env, jKw));
+    g_nightMode.addNightKeyword(jStr(env, jKw));
 }
 
 JNI_FUNC(void, nativeNotifRemoveKeyword)(JNIEnv* env, jclass, jstring jKw) {
-    g_notifMode.removeNightKeyword(jStr(env, jKw));
+    g_nightMode.removeNightKeyword(jStr(env, jKw));
 }
 
 JNI_FUNC(jstring, nativeNotifExport)(JNIEnv* env, jclass) {
-    return env->NewStringUTF(g_notifMode.toJson().c_str());
+    return env->NewStringUTF(g_nightMode.toJson().c_str());
 }
 
 JNI_FUNC(void, nativeNotifLoad)(JNIEnv* env, jclass, jstring jJson) {
-    g_notifMode.fromJson(jStr(env, jJson));
+    g_nightMode.fromJson(jStr(env, jJson));
 }
 
 
