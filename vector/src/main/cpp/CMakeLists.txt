@@ -111,6 +111,7 @@ add_library(
     src/room_directory_manager.cpp
     src/room_state_manager.cpp
     src/space_graph.cpp
+    src/notif_mode.cpp
     src/alarm_engine.cpp
     src/progressive_stubs.cpp
     src/widget_manager.cpp

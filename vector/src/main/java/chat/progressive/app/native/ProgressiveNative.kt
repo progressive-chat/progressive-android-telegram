@@ -749,6 +749,16 @@ object ProgressiveNative {
     @JvmStatic external fun nativeAlarmDelete(id: String)
     @JvmStatic external fun nativeAlarmLoad(json: String)
 
+    // --- Notification Mode (Night Mode) ---
+
+    @JvmStatic external fun nativeNotifSetMode(mode: Int)
+    @JvmStatic external fun nativeNotifGetMode(): Int
+    @JvmStatic external fun nativeNotifShouldPing(body: String, sender: String, isRoomPing: Boolean, isAlarm: Boolean): Boolean
+    @JvmStatic external fun nativeNotifAddKeyword(keyword: String)
+    @JvmStatic external fun nativeNotifRemoveKeyword(keyword: String)
+    @JvmStatic external fun nativeNotifExport(): String
+    @JvmStatic external fun nativeNotifLoad(json: String)
+
     // --- Duplicate Names ---
 
     @JvmStatic external fun nativeFormatUserDisplayName(displayName: String, mxid: String, showMxid: Boolean): String

@@ -38,6 +38,7 @@
 #include "progressive/input_tools.hpp"
 #include "progressive/llm.hpp"
 #include "progressive/alarm_engine.hpp"
+#include "progressive/notif_mode.hpp"
 #include "progressive/read_receipts.hpp"
 #include "progressive/room_analytics.hpp"
 #include "progressive/chat_tools.hpp"
@@ -6094,6 +6095,8 @@ JNI_FUNC(jstring, nativeFormatLlmBroadcast)(JNIEnv* env, jclass, jstring jPrompt
 // Alarm Engine
 // ============================================================
 
+static progressive::NotifModeManager g_notifMode;
+
 static progressive::AlarmManager g_alarmMgr;
 
 JNI_FUNC(jstring, nativeAlarmCreate)(JNIEnv* env, jclass, jstring jText) {
@@ -6124,6 +6127,40 @@ JNI_FUNC(void, nativeAlarmDelete)(JNIEnv* env, jclass, jstring jId) {
 
 JNI_FUNC(void, nativeAlarmLoad)(JNIEnv* env, jclass, jstring jJson) {
     g_alarmMgr.loadAlarmsFromJson(jStr(env, jJson));
+}
+
+// ============================================================
+// Notification Mode (Night Mode)
+// ============================================================
+
+JNI_FUNC(void, nativeNotifSetMode)(JNIEnv* env, jclass, jint jMode) {
+    g_notifMode.setMode(static_cast<progressive::NotifMode>(jMode));
+}
+
+JNI_FUNC(jint, nativeNotifGetMode)(JNIEnv* env, jclass) {
+    return static_cast<jint>(g_notifMode.getMode());
+}
+
+JNI_FUNC(jboolean, nativeNotifShouldPing)(JNIEnv* env, jclass, jstring jBody, jstring jSender,
+                                            jboolean jIsRoomPing, jboolean jIsAlarm) {
+    return g_notifMode.shouldNotify(jStr(env, jBody), jStr(env, jSender), jIsRoomPing, jIsAlarm)
+           ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_FUNC(void, nativeNotifAddKeyword)(JNIEnv* env, jclass, jstring jKw) {
+    g_notifMode.addNightKeyword(jStr(env, jKw));
+}
+
+JNI_FUNC(void, nativeNotifRemoveKeyword)(JNIEnv* env, jclass, jstring jKw) {
+    g_notifMode.removeNightKeyword(jStr(env, jKw));
+}
+
+JNI_FUNC(jstring, nativeNotifExport)(JNIEnv* env, jclass) {
+    return env->NewStringUTF(g_notifMode.toJson().c_str());
+}
+
+JNI_FUNC(void, nativeNotifLoad)(JNIEnv* env, jclass, jstring jJson) {
+    g_notifMode.fromJson(jStr(env, jJson));
 }
 
 
