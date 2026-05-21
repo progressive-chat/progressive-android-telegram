@@ -136,10 +136,4 @@ std::string formatJumpToUnreadLabel(const ReadMarkerState& state, int64_t nowMs)
     return "Jump to unread (" + timeLabel + ")";
 }
 
-
-ReadMarker() — marker is above visible area
-    if (position.displayIndex < 0) return false;
-    return position.displayIndex < firstVisibleIndex;
-}
-
 } // namespace progressive
