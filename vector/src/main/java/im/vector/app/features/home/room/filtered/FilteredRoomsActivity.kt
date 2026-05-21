@@ -106,17 +106,20 @@ class FilteredRoomsActivity : VectorBaseActivity<ActivityFilteredRoomsBinding>()
 
                 val jsonMedia = "application/json".toMediaType()
                 val requestBody = body.toRequestBody(jsonMedia)
-                val request = Request.Builder()
+                val requestBuilder = Request.Builder()
                     .url(endpoint)
                     .post(requestBody)
                     .addHeader("Content-Type", "application/json")
-                    .apply {
-                        val headerJson = JSONObject(headers)
-                        for (key in headerJson.keys()) {
-                            addHeader(key, headerJson.getString(key))
-                        }
+                // Parse headers as key: value lines
+                for (line in headers.split("\n")) {
+                    val colon = line.indexOf(": ")
+                    if (colon > 0) {
+                        val key = line.substring(0, colon).trim()
+                        val value = line.substring(colon + 2).trim()
+                        requestBuilder.addHeader(key, value)
                     }
-                    .build()
+                }
+                val request = requestBuilder.build()
 
                 val session = activeSessionHolder.getActiveSession()
                 if (session == null) return@withContext "No active session"
