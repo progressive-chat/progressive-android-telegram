@@ -159,6 +159,12 @@ std::string setSettingString(const std::string& settingsJson, const std::string&
     }
     newJson.replace(colonPos, end - colonPos, val);
     return newJson;
+
+LightweightSettingType::JSON:
+        default:
+            return value;
+    }
+
 }
 
 } // namespace progressive
