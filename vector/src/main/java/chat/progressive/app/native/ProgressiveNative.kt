@@ -5037,4 +5037,159 @@ object ProgressiveNative {
         return (System.currentTimeMillis() - ts) < maxFutureMs
     }
 
+    // ===== Telegram MTProto Native Bridge =====
+    // All functions prefixed with 'tg' call into tg_jni_bridge.cpp
+
+    // -- Init / lifecycle --
+    @JvmStatic external fun tgInit()
+    @JvmStatic external fun tgCreateClient(apiId: Int, apiHash: String, dbDir: String, filesDir: String): Long
+    @JvmStatic external fun tgDestroyClient(handle: Long)
+    @JvmStatic external fun tgIsReady(handle: Long): Boolean
+    @JvmStatic external fun tgGetUserId(handle: Long): String
+
+    // -- Auth --
+    @JvmStatic external fun tgSendPhone(handle: Long, phone: String)
+    @JvmStatic external fun tgSendCode(handle: Long, code: String)
+    @JvmStatic external fun tgSendPassword(handle: Long, password: String)
+    @JvmStatic external fun tgLogout(handle: Long)
+
+    // -- Messages --
+    @JvmStatic external fun tgSendText(handle: Long, chatId: Long, text: String, threadId: Long, replyTo: Long)
+    @JvmStatic external fun tgSendPhoto(handle: Long, chatId: Long, path: String, caption: String, threadId: Long)
+    @JvmStatic external fun tgSendVideo(handle: Long, chatId: Long, path: String, caption: String, duration: Int, width: Int, height: Int, threadId: Long)
+    @JvmStatic external fun tgSendVoice(handle: Long, chatId: Long, path: String, duration: Int)
+    @JvmStatic external fun tgSendDocument(handle: Long, chatId: Long, path: String, caption: String)
+    @JvmStatic external fun tgSendSticker(handle: Long, chatId: Long, fileId: Int)
+    @JvmStatic external fun tgSendDice(handle: Long, chatId: Long, emoji: String)
+    @JvmStatic external fun tgSendLocation(handle: Long, chatId: Long, lat: Double, lon: Double, livePeriod: Int)
+    @JvmStatic external fun tgSendPoll(handle: Long, chatId: Long, question: String, options: Array<String>, anonymous: Boolean, quiz: Boolean, correctOption: Int)
+    @JvmStatic external fun tgSendAnimation(handle: Long, chatId: Long, path: String, caption: String, duration: Int, width: Int, height: Int)
+    @JvmStatic external fun tgSendVideoNote(handle: Long, chatId: Long, path: String, duration: Int, length: Int)
+    @JvmStatic external fun tgSendAudio(handle: Long, chatId: Long, path: String, title: String, performer: String, duration: Int)
+    @JvmStatic external fun tgGetChatHistory(handle: Long, chatId: Long, limit: Int, fromMsgId: Long)
+    @JvmStatic external fun tgLoadChats(handle: Long, limit: Int)
+    @JvmStatic external fun tgOpenChat(handle: Long, chatId: Long)
+    @JvmStatic external fun tgDeleteMessages(handle: Long, chatId: Long, msgIds: LongArray, revoke: Boolean)
+    @JvmStatic external fun tgEditMessage(handle: Long, chatId: Long, msgId: Long, newText: String)
+    @JvmStatic external fun tgViewMessages(handle: Long, chatId: Long, msgIds: LongArray)
+    @JvmStatic external fun tgSearchMessages(handle: Long, chatId: Long, query: String, limit: Int)
+    @JvmStatic external fun tgForwardMessages(handle: Long, toChatId: Long, fromChatId: Long, msgIds: LongArray, sendCopy: Boolean)
+    @JvmStatic external fun tgSetReaction(handle: Long, chatId: Long, msgId: Long, reaction: String)
+    @JvmStatic external fun tgRemoveReaction(handle: Long, chatId: Long, msgId: Long, reaction: String)
+    @JvmStatic external fun tgSetPollVote(handle: Long, chatId: Long, msgId: Long, optionIds: IntArray)
+    @JvmStatic external fun tgPinMessage(handle: Long, chatId: Long, msgId: Long, disableNotif: Boolean)
+    @JvmStatic external fun tgUnpinMessage(handle: Long, chatId: Long, msgId: Long)
+
+    // -- Threads & Forums --
+    @JvmStatic external fun tgGetMessageThread(handle: Long, chatId: Long, msgId: Long)
+    @JvmStatic external fun tgGetThreadHistory(handle: Long, chatId: Long, msgId: Long, fromMsgId: Long, limit: Int)
+    @JvmStatic external fun tgGetForumTopics(handle: Long, chatId: Long, query: String, limit: Int)
+    @JvmStatic external fun tgGetForumTopic(handle: Long, chatId: Long, topicId: Long)
+    @JvmStatic external fun tgCreateForumTopic(handle: Long, chatId: Long, name: String, iconColor: Int)
+    @JvmStatic external fun tgDeleteForumTopic(handle: Long, chatId: Long, topicId: Long)
+    @JvmStatic external fun tgToggleForumClosed(handle: Long, chatId: Long, topicId: Long, closed: Boolean)
+    @JvmStatic external fun tgToggleForumPinned(handle: Long, chatId: Long, topicId: Long, pinned: Boolean)
+
+    // -- Stickers --
+    @JvmStatic external fun tgGetStickerSet(handle: Long, setId: Long)
+    @JvmStatic external fun tgSearchStickerSet(handle: Long, name: String)
+    @JvmStatic external fun tgGetInstalledStickerSets(handle: Long)
+    @JvmStatic external fun tgGetRecentStickers(handle: Long)
+    @JvmStatic external fun tgSearchStickers(handle: Long, emoji: String, limit: Int)
+
+    // -- Stories --
+    @JvmStatic external fun tgGetActiveStories(handle: Long, limit: Int)
+    @JvmStatic external fun tgGetStory(handle: Long, chatId: Long, storyId: Long)
+    @JvmStatic external fun tgOpenStory(handle: Long, chatId: Long, storyId: Long)
+    @JvmStatic external fun tgCloseStory(handle: Long, chatId: Long, storyId: Long)
+    @JvmStatic external fun tgSetStoryReaction(handle: Long, chatId: Long, storyId: Long, reaction: String)
+    @JvmStatic external fun tgDeleteStory(handle: Long, chatId: Long, storyId: Long)
+
+    // -- Profiles --
+    @JvmStatic external fun tgGetUser(handle: Long, userId: Long)
+    @JvmStatic external fun tgGetMe(handle: Long)
+    @JvmStatic external fun tgSetBio(handle: Long, bio: String)
+    @JvmStatic external fun tgSetName(handle: Long, firstName: String, lastName: String)
+    @JvmStatic external fun tgSetUsername(handle: Long, username: String)
+    @JvmStatic external fun tgSetProfilePhoto(handle: Long, path: String)
+    @JvmStatic external fun tgGetUserProfilePhotos(handle: Long, userId: Long, offset: Int, limit: Int)
+    @JvmStatic external fun tgGetActiveSessions(handle: Long)
+    @JvmStatic external fun tgTerminateSession(handle: Long, sessionId: Long)
+    @JvmStatic external fun tgTerminateAllOtherSessions(handle: Long)
+    @JvmStatic external fun tgBlockUser(handle: Long, userId: Long)
+    @JvmStatic external fun tgUnblockUser(handle: Long, userId: Long)
+    @JvmStatic external fun tgGetBlockedUsers(handle: Long, offset: Int, limit: Int)
+    @JvmStatic external fun tgGetPremiumState(handle: Long)
+
+    // -- Emoji Status / Presence --
+    @JvmStatic external fun tgSetEmojiStatus(handle: Long, customEmojiId: Long, duration: Int)
+    @JvmStatic external fun tgClearEmojiStatus(handle: Long)
+    @JvmStatic external fun tgGetDefaultEmojiStatuses(handle: Long)
+    @JvmStatic external fun tgGetThemedEmojiStatuses(handle: Long)
+    @JvmStatic external fun tgGetRecentEmojiStatuses(handle: Long)
+    @JvmStatic external fun tgSetCloseFriends(handle: Long, userIds: LongArray)
+    @JvmStatic external fun tgGetCloseFriends(handle: Long)
+    @JvmStatic external fun tgCreateSecretChat(handle: Long, userId: Long)
+    @JvmStatic external fun tgOpenSecretChat(handle: Long, secretChatId: Long)
+    @JvmStatic external fun tgCloseSecretChat(handle: Long, secretChatId: Long)
+    @JvmStatic external fun tgGetSecretChat(handle: Long, secretChatId: Long)
+    @JvmStatic external fun tgSetMessageTtl(handle: Long, chatId: Long, ttl: Int)
+
+    // -- Backgrounds --
+    @JvmStatic external fun tgGetBackgrounds(handle: Long, dark: Boolean)
+    @JvmStatic external fun tgGetChatBackground(handle: Long, chatId: Long)
+    @JvmStatic external fun tgSetChatBackground(handle: Long, chatId: Long, bgId: Long)
+    @JvmStatic external fun tgDeleteChatBackground(handle: Long, chatId: Long)
+
+    // -- Calls / Live Location / Story Privacy --
+    @JvmStatic external fun tgCreateCall(handle: Long, userId: Long, isVideo: Boolean)
+    @JvmStatic external fun tgAcceptCall(handle: Long, callId: Int)
+    @JvmStatic external fun tgDiscardCall(handle: Long, callId: Int, isDisconnected: Boolean)
+    @JvmStatic external fun tgEditLiveLocation(handle: Long, chatId: Long, msgId: Long, lat: Double, lon: Double, heading: Int, proximityAlertRadius: Int)
+    @JvmStatic external fun tgStopLiveLocation(handle: Long, chatId: Long, msgId: Long)
+    @JvmStatic external fun tgSetStoryPrivacy(handle: Long, everyone: Boolean, contacts: Boolean, closeFriends: Boolean, selectedUserIds: LongArray)
+    @JvmStatic external fun tgGetStoryPrivacy(handle: Long)
+    @JvmStatic external fun tgActivateStealthMode(handle: Long)
+    @JvmStatic external fun tgCanSendStoryToChat(handle: Long, chatId: Long)
+
+    // -- Folders --
+    @JvmStatic external fun tgSetChatFolder(handle: Long, folderId: Int, title: String, pinnedIds: LongArray, includedIds: LongArray, excludedIds: LongArray)
+    @JvmStatic external fun tgGetChatFolders(handle: Long)
+    @JvmStatic external fun tgDeleteChatFolder(handle: Long, folderId: Int)
+
+    // -- Scheduled --
+    @JvmStatic external fun tgGetScheduledMessages(handle: Long, chatId: Long)
+    @JvmStatic external fun tgSendScheduled(handle: Long, chatId: Long, text: String, scheduleDate: Int)
+
+    // -- Drafts --
+    @JvmStatic external fun tgSetChatDraft(handle: Long, chatId: Long, threadId: Long, text: String)
+    @JvmStatic external fun tgClearChatDraft(handle: Long, chatId: Long, threadId: Long)
+
+    // -- Silent / TTL --
+    @JvmStatic external fun tgSendTextSilent(handle: Long, chatId: Long, text: String, threadId: Long)
+    @JvmStatic external fun tgSendTextWithTtl(handle: Long, chatId: Long, text: String, ttl: Int)
+
+    // -- Contacts --
+    @JvmStatic external fun tgImportContacts(handle: Long, contacts: Array<Array<String>>)
+    @JvmStatic external fun tgSearchContacts(handle: Long, query: String, limit: Int)
+    @JvmStatic external fun tgRemoveContacts(handle: Long, userIds: LongArray)
+
+    // -- Notifications --
+    @JvmStatic external fun tgGetNotificationSettings(handle: Long)
+    @JvmStatic external fun tgSetNotificationSettings(handle: Long, muteFor: Int, showPreview: Boolean, soundId: Long)
+
+    // -- Files --
+    @JvmStatic external fun tgDownloadFile(handle: Long, fileId: Int, priority: Int, offset: Long, limit: Long, sync: Boolean)
+    @JvmStatic external fun tgCancelDownload(handle: Long, fileId: Int)
+    @JvmStatic external fun tgGetFile(handle: Long, fileId: Int)
+    @JvmStatic external fun tgDeleteFile(handle: Long, fileId: Int)
+
+    // -- Proxy --
+    @JvmStatic external fun tgAddProxy(handle: Long, server: String, port: Int, enable: Boolean, proxyType: String, username: String, password: String, secret: String)
+    @JvmStatic external fun tgEnableProxy(handle: Long, proxyId: Int)
+    @JvmStatic external fun tgDisableProxy(handle: Long)
+    @JvmStatic external fun tgRemoveProxy(handle: Long, proxyId: Int)
+    @JvmStatic external fun tgGetProxies(handle: Long)
+    @JvmStatic external fun tgPingProxy(handle: Long, proxyId: Int)
+
 }
