@@ -116,6 +116,10 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_SYMBOL_BAR_KEY = "SETTINGS_LABS_SYMBOL_BAR_KEY"
         const val SETTINGS_LABS_AUTO_REPLACE_KEY = "SETTINGS_LABS_AUTO_REPLACE_KEY"
         const val SETTINGS_LABS_LLM_SLASH_KEY = "SETTINGS_LABS_LLM_SLASH_KEY"
+        const val SETTINGS_LLM_PROVIDER = "SETTINGS_LLM_PROVIDER"
+        const val SETTINGS_LLM_ENDPOINT = "SETTINGS_LLM_ENDPOINT"
+        const val SETTINGS_LLM_TOKEN = "SETTINGS_LLM_TOKEN"
+        const val SETTINGS_LLM_MODEL = "SETTINGS_LLM_MODEL"
         const val SETTINGS_LABS_EXTENDED_VIA_PARAMS_KEY = "SETTINGS_LABS_EXTENDED_VIA_PARAMS_KEY"
         const val SETTINGS_LABS_VIA_PARAM_COUNT_KEY = "SETTINGS_LABS_VIA_PARAM_COUNT_KEY"
         const val SETTINGS_LABS_INCLUDE_HISTORICAL_SERVERS_KEY = "SETTINGS_LABS_INCLUDE_HISTORICAL_SERVERS_KEY"
@@ -1548,6 +1552,22 @@ class VectorPreferences @Inject constructor(
 
     fun isLlmSlashEnabled(): Boolean {
         return defaultPrefs.getBoolean(SETTINGS_LABS_LLM_SLASH_KEY, false)
+    }
+
+    fun getLlmProvider(): Int {
+        return (defaultPrefs.getString(SETTINGS_LLM_PROVIDER, "0") ?: "0").toInt()
+    }
+
+    fun getLlmEndpoint(): String {
+        return defaultPrefs.getString(SETTINGS_LLM_ENDPOINT, "https://api.openai.com/v1/chat/completions") ?: ""
+    }
+
+    fun getLlmToken(): String {
+        return defaultPrefs.getString(SETTINGS_LLM_TOKEN, "") ?: ""
+    }
+
+    fun getLlmModel(): String {
+        return defaultPrefs.getString(SETTINGS_LLM_MODEL, "gpt-4o-mini") ?: ""
     }
 
     fun isExtendedViaParamsEnabled(): Boolean {

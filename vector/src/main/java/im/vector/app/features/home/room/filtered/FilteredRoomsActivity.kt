@@ -7,11 +7,14 @@
 
 package im.vector.app.features.home.room.filtered
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.lifecycleScope
+import chat.progressive.app.native.ProgressiveNative
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.VectorBaseActivity
@@ -20,6 +23,13 @@ import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.home.RoomListDisplayMode
 import im.vector.app.features.home.room.list.RoomListFragment
 import im.vector.app.features.home.room.list.RoomListParams
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 
 @AndroidEntryPoint
 class FilteredRoomsActivity : VectorBaseActivity<ActivityFilteredRoomsBinding>() {
@@ -47,16 +57,83 @@ class FilteredRoomsActivity : VectorBaseActivity<ActivityFilteredRoomsBinding>()
         }
         views.filteredRoomsSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
+                if (handleLlmQuery(query)) return true
                 return true
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
+                if (newText.startsWith("?")) return true
                 roomListFragment?.filterRoomsWith(newText)
                 return true
             }
         })
         // Open the keyboard immediately
         views.filteredRoomsSearchView.requestFocus()
+    }
+
+    private fun handleLlmQuery(query: String): Boolean {
+        if (!query.startsWith("? ")) return false
+        if (!vectorPreferences.isLlmSlashEnabled()) return false
+        val prompt = query.removePrefix("? ").trim()
+        if (prompt.isEmpty()) return false
+
+        lifecycleScope.launch {
+            val result = queryLlm(prompt)
+            withContext(Dispatchers.Main) {
+                AlertDialog.Builder(this@FilteredRoomsActivity)
+                    .setTitle("LLM Response")
+                    .setMessage(result)
+                    .setPositiveButton("OK", null)
+                    .show()
+            }
+        }
+        return true
+    }
+
+    private suspend fun queryLlm(prompt: String): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                ProgressiveNative.ensureLoaded()
+                val provider = vectorPreferences.getLlmProvider()
+                val endpoint = vectorPreferences.getLlmEndpoint()
+                val token = vectorPreferences.getLlmToken()
+                val model = vectorPreferences.getLlmModel()
+
+                val body = ProgressiveNative.nativeBuildLlmRequest(
+                    prompt, provider, endpoint, token, model, "", 0.7f, 1024
+                )
+                val headers = ProgressiveNative.nativeBuildLlmHeaders(provider, token)
+
+                val jsonMedia = "application/json".toMediaType()
+                val requestBody = body.toRequestBody(jsonMedia)
+                val request = Request.Builder()
+                    .url(endpoint)
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                    .apply {
+                        val headerJson = JSONObject(headers)
+                        for (key in headerJson.keys()) {
+                            addHeader(key, headerJson.getString(key))
+                        }
+                    }
+                    .build()
+
+                val session = activeSessionHolder.getActiveSession()
+                if (session == null) return@withContext "No active session"
+                val client = session.getOkHttpClient()
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string() ?: ""
+                val statusCode = response.code
+                response.close()
+
+                val parsed = ProgressiveNative.nativeParseLlmResponse(responseBody, statusCode, provider)
+                val json = JSONObject(parsed)
+                if (json.getBoolean("success")) json.getString("text")
+                else json.getString("errorMessage")
+            } catch (e: Exception) {
+                "LLM request failed: ${e.message}"
+            }
+        }
     }
 
     companion object {
