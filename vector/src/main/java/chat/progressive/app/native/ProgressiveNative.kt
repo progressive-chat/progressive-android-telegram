@@ -5192,4 +5192,50 @@ object ProgressiveNative {
     @JvmStatic external fun tgGetProxies(handle: Long)
     @JvmStatic external fun tgPingProxy(handle: Long, proxyId: Int)
 
+    // -- Callbacks (called by native threads, override in Kotlin) --
+    @JvmStatic fun tgOnAuth(type: String, stateJson: String) {
+        Timber.tag("TgNative").d("tgOnAuth: %s", type)
+        tgAuthListener?.onAuthStateChanged(type, stateJson)
+    }
+    @JvmStatic fun tgOnConnection(state: String, unused: String) {
+        Timber.tag("TgNative").d("tgOnConnection: %s", state)
+        tgAuthListener?.onConnectionStateChanged(state)
+    }
+    @JvmStatic fun tgOnUpdate(type: String, dataJson: String) {
+        Timber.tag("TgNative").d("tgOnUpdate: %s", type)
+        try {
+            chat.progressive.app.features.home.TelegramChatRepository.handleUpdate(type, dataJson)
+            if (type == "updateNewMessage") {
+                val msg = org.json.JSONObject(dataJson).optJSONObject("message")
+                if (msg != null) {
+                    val chatId = msg.optLong("chat_id", 0)
+                    val item = chat.progressive.app.features.home.TelegramMessageRepository.parseSingleMessage(chatId, dataJson)
+                    if (item != null) {
+                        chat.progressive.app.features.home.TelegramMessageRepository.addMessage(chatId, item)
+                    }
+                }
+            }
+        } catch (_: Exception) { }
+    }
+    @JvmStatic fun tgOnResponse(type: String, dataJson: String) {
+        Timber.tag("TgNative").d("tgOnResponse: %s", type)
+        try {
+            if (type == "messages") {
+                val json = org.json.JSONObject(dataJson)
+                val chatId = json.optLong("chat_id", 0)
+                if (chatId > 0) {
+                    val msgs = chat.progressive.app.features.home.TelegramMessageRepository.parseMessages(chatId, dataJson)
+                    chat.progressive.app.features.home.TelegramMessageRepository.addMessages(chatId, msgs)
+                }
+            }
+        } catch (_: Exception) { }
+    }
+
+    interface TgAuthListener {
+        fun onAuthStateChanged(type: String, stateJson: String) {}
+        fun onConnectionStateChanged(state: String) {}
+    }
+
+    @JvmStatic var tgAuthListener: TgAuthListener? = null
+
 }

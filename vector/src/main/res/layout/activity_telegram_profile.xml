@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:colorBackground"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/tgProfileAvatar"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:src="@drawable/ic_share_plane"
+            app:tint="?colorPrimary"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tgProfileName"
+            style="@style/Widget.Vector.TextView.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="?vctr_content_primary"
+            tools:text="User Name" />
+
+        <TextView
+            android:id="@+id/tgProfileUsername"
+            style="@style/Widget.Vector.TextView.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="?vctr_content_secondary"
+            tools:text="@username" />
+
+        <TextView
+            android:id="@+id/tgProfilePhone"
+            style="@style/Widget.Vector.TextView.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="?vctr_content_secondary"
+            tools:text="+7 900 123-45-67" />
+
+        <TextView
+            android:id="@+id/tgProfileBio"
+            style="@style/Widget.Vector.TextView.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textColor="?vctr_content_primary"
+            android:padding="16dp"
+            android:background="?vctr_system"
+            tools:text="Bio text here" />
+
+        <Button
+            android:id="@+id/tgProfileEditBtn"
+            style="@style/Widget.Vector.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Edit Profile" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:padding="12dp"
+                android:id="@+id/tgProfileSharedBtn">
+
+                <TextView
+                    style="@style/Widget.Vector.TextView.Subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shared Media"
+                    android:textColor="?colorPrimary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:padding="12dp"
+                android:id="@+id/tgProfileGroupsBtn">
+
+                <TextView
+                    style="@style/Widget.Vector.TextView.Subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Groups in Common"
+                    android:textColor="?colorPrimary" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/tgProfileSessionsBtn"
+                style="@style/Widget.Vector.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Active Sessions" />
+
+            <Button
+                android:id="@+id/tgProfileProxyBtn"
+                style="@style/Widget.Vector.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Proxy Settings" />
+
+            <Button
+                android:id="@+id/tgProfileFoldersBtn"
+                style="@style/Widget.Vector.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Chat Folders" />
+
+            <Button
+                android:id="@+id/tgProfileSecretChatBtn"
+                style="@style/Widget.Vector.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Start Secret Chat"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/tgProfileBlockBtn"
+                style="@style/Widget.Vector.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Block User"
+                android:textColor="?colorError"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/tgProfileLogoutBtn"
+                style="@style/Widget.Vector.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Log Out"
+                android:textColor="?colorError" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

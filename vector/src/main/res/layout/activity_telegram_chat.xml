@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:colorBackground">
+
+    <include android:id="@+id/telegramChatToolbar" layout="@layout/merge_header_toolbar" />
+
+    <LinearLayout
+        android:id="@+id/telegramPinnedBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?vctr_system"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_attachment"
+            android:contentDescription="Pinned"
+            app:tint="?colorPrimary" />
+
+        <TextView
+            android:id="@+id/telegramPinnedText"
+            style="@style/Widget.Vector.TextView.Body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="?colorPrimary"
+            tools:text="Pinned message text..." />
+
+        <ImageButton
+            android:id="@+id/telegramPinnedClose"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_close"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Close" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/telegramMsgRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false" />
+
+    <LinearLayout
+        android:id="@+id/telegramMsgInputBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="?vctr_system"
+        android:elevation="4dp">
+
+        <ImageButton
+            android:id="@+id/telegramStickerBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_share_plane"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Sticker"
+            android:scaleType="centerInside"
+            android:padding="8dp"
+            app:tint="?vctr_content_secondary" />
+
+        <ImageButton
+            android:id="@+id/telegramAttachBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_attachment"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Attach"
+            android:scaleType="centerInside"
+            android:padding="8dp"
+            app:tint="?vctr_content_secondary" />
+
+        <ImageButton
+            android:id="@+id/telegramMicBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_attachment_camera"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Voice"
+            android:scaleType="centerInside"
+            android:padding="8dp"
+            app:tint="?vctr_content_secondary" />
+
+        <EditText
+            android:id="@+id/telegramMsgInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:hint="Message"
+            android:maxLines="4"
+            android:inputType="textMultiLine"
+            android:imeOptions="actionSend" />
+
+        <ImageButton
+            android:id="@+id/telegramMsgSendBtn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_send"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Send" />
+
+    </LinearLayout>
+
+</LinearLayout>
