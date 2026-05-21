@@ -271,6 +271,7 @@ TurnServerResponse parseTurnServerResponse(const std::string& json) {
     }
 
     return ts;
+}
 
 const char* callEndReasonToString(CallEndReason r) {
     switch (r) {
