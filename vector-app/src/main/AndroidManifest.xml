@@ -24,6 +24,14 @@
             android:name="android.content.APP_RESTRICTIONS"
             android:resource="@xml/vector_app_restrictions" />
 
+        <!-- Telegram MTProto API credentials (get yours at https://my.telegram.org/apps) -->
+        <meta-data
+            android:name="tg_api_id"
+            android:value="0" />
+        <meta-data
+            android:name="tg_api_hash"
+            android:value="" />
+
         <!-- Activity alias for the launcher Activity (must be declared after the Activity it targets) -->
         <!-- exported="true" is required to launch application -->
         <activity-alias

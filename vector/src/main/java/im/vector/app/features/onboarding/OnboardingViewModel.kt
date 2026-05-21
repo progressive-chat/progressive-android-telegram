@@ -231,6 +231,10 @@ class OnboardingViewModel @AssistedInject constructor(
     }
 
     private fun handleSplashAction(action: OnboardingAction.SplashAction) {
+        if (action is OnboardingAction.SplashAction.OnProtocolSelected && action.protocol == "telegram") {
+            _viewEvents.post(OnboardingViewEvents.OpenTelegramAuth("telegram"))
+            return
+        }
         setState { copy(onboardingFlow = action.onboardingFlow) }
         continueToPageAfterSplash(action.onboardingFlow)
     }

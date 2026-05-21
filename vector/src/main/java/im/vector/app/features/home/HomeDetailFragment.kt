@@ -53,6 +53,8 @@ import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.session.crypto.model.DeviceInfo
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
 import javax.inject.Inject
+import chat.progressive.app.features.home.TelegramChatListFragment
+import chat.progressive.app.features.home.TelegramChatRepository
 
 @AndroidEntryPoint
 class HomeDetailFragment :
@@ -319,11 +321,13 @@ class HomeDetailFragment :
 
     private fun setupBottomNavigationView() {
         views.bottomNavigationView.menu.findItem(R.id.bottom_action_notification).isVisible = vectorPreferences.labAddNotificationTab()
+        views.bottomNavigationView.menu.findItem(R.id.bottom_action_telegram).isVisible = TelegramChatRepository.isLoggedIn.value
         views.bottomNavigationView.setOnItemSelectedListener {
             val tab = when (it.itemId) {
                 R.id.bottom_action_people -> HomeTab.RoomList(RoomListDisplayMode.PEOPLE)
                 R.id.bottom_action_rooms -> HomeTab.RoomList(RoomListDisplayMode.ROOMS)
                 R.id.bottom_action_notification -> HomeTab.RoomList(RoomListDisplayMode.NOTIFICATIONS)
+                R.id.bottom_action_telegram -> HomeTab.RoomList(RoomListDisplayMode.TELEGRAM)
                 else -> HomeTab.DialPad
             }
             viewModel.handle(HomeDetailAction.SwitchTab(tab))
@@ -352,8 +356,12 @@ class HomeDetailFragment :
             if (fragmentToShow == null) {
                 when (tab) {
                     is HomeTab.RoomList -> {
-                        val params = RoomListParams(tab.displayMode)
-                        add(R.id.roomListContainer, RoomListFragment::class.java, params.toMvRxBundle(), fragmentTag)
+                        if (tab.displayMode == RoomListDisplayMode.TELEGRAM) {
+                            add(R.id.roomListContainer, TelegramChatListFragment::class.java, null, fragmentTag)
+                        } else {
+                            val params = RoomListParams(tab.displayMode)
+                            add(R.id.roomListContainer, RoomListFragment::class.java, params.toMvRxBundle(), fragmentTag)
+                        }
                     }
                     is HomeTab.DialPad -> {
                         add(R.id.roomListContainer, createDialPadFragment(), fragmentTag)
@@ -440,6 +448,7 @@ class HomeDetailFragment :
         is HomeTab.RoomList -> when (displayMode) {
             RoomListDisplayMode.PEOPLE -> R.id.bottom_action_people
             RoomListDisplayMode.ROOMS -> R.id.bottom_action_rooms
+            RoomListDisplayMode.TELEGRAM -> R.id.bottom_action_telegram
             else -> R.id.bottom_action_notification
         }
     }

@@ -370,6 +370,50 @@
         <activity android:name=".features.settings.devices.v2.rename.RenameSessionActivity" />
         <activity android:name=".features.roomprofile.polls.detail.ui.RoomPollDetailActivity" />
 
+        <activity
+            android:name="chat.progressive.app.features.auth.TelegramAuthActivity"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name="chat.progressive.app.features.home.TelegramChatActivity"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name="chat.progressive.app.features.home.TelegramChatListActivity"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name="chat.progressive.app.features.home.TelegramProfileActivity" />
+
+        <activity
+            android:name="chat.progressive.app.features.home.TelegramMembersActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramAccountActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramPrivacyActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramFoldersActivity" />
+
+        <activity
+            android:name="chat.progressive.app.features.home.TelegramProxyActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramDownloadsActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramSecurityActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramAdminActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramLanguageActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramJoinRequestsActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramExportActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramEventLogActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramStatsActivity" />
+
         <!-- Services -->
 
         <service

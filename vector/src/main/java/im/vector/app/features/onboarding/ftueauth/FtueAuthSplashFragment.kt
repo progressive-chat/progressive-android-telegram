@@ -1,10 +1,3 @@
-/*
- * Copyright 2021-2024 New Vector Ltd.
- *
- * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
- * Please see LICENSE files in the repository root for full details.
- */
-
 package im.vector.app.features.onboarding.ftueauth
 
 import android.annotation.SuppressLint
@@ -13,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import com.google.android.material.card.MaterialCardView
 import dagger.hilt.android.AndroidEntryPoint
+import im.vector.app.R
 import im.vector.app.core.resources.BuildMeta
 import im.vector.app.databinding.FragmentFtueAuthSplashBinding
 import im.vector.app.features.VectorFeatures
@@ -24,7 +19,8 @@ import im.vector.lib.strings.CommonStrings
 import javax.inject.Inject
 
 /**
- * In this screen, the user is viewing an introduction to what he can do with this application.
+ * Shows protocol selection (Matrix / Telegram) as two tappable cards,
+ * each with its description visible at a glance.
  */
 @AndroidEntryPoint
 class FtueAuthSplashFragment :
@@ -33,6 +29,8 @@ class FtueAuthSplashFragment :
     @Inject lateinit var vectorPreferences: VectorPreferences
     @Inject lateinit var vectorFeatures: VectorFeatures
     @Inject lateinit var buildMeta: BuildMeta
+
+    private var selectedProtocol = "matrix"
 
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentFtueAuthSplashBinding {
         return FragmentFtueAuthSplashBinding.inflate(inflater, container, false)
@@ -44,6 +42,51 @@ class FtueAuthSplashFragment :
     }
 
     private fun setupViews() {
+        setupProtocolCards()
+        setupButtons()
+        setupDebugInfo()
+    }
+
+    private fun setupProtocolCards() {
+        views.cardMatrix.debouncedClicks { onProtocolSelected("matrix") }
+        views.cardTelegram.debouncedClicks { onProtocolSelected("telegram") }
+    }
+
+    private fun onProtocolSelected(protocol: String) {
+        selectedProtocol = protocol
+        val isMatrix = protocol == "matrix"
+
+        views.cardMatrix.apply {
+            isChecked = isMatrix
+            strokeWidth = if (isMatrix) 2 else 1
+            setStrokeColor(
+                if (isMatrix) getColor(im.vector.lib.ui.styles.R.color.colorPrimary)
+                else getColor(im.vector.lib.ui.styles.R.color.vctr_content_quaternary)
+            )
+        }
+        views.cardTelegram.apply {
+            isChecked = !isMatrix
+            strokeWidth = if (isMatrix) 1 else 2
+            setStrokeColor(
+                if (isMatrix) getColor(im.vector.lib.ui.styles.R.color.vctr_content_quaternary)
+                else getColor(im.vector.lib.ui.styles.R.color.colorPrimary)
+            )
+        }
+
+        views.radioMatrix.isChecked = isMatrix
+        views.radioTelegram.isChecked = !isMatrix
+
+        val isAlreadyHaveAccountEnabled = vectorFeatures.isOnboardingAlreadyHaveAccountSplashEnabled()
+        views.loginSplashSubmit.apply {
+            setText(
+                if (isMatrix && isAlreadyHaveAccountEnabled) CommonStrings.login_splash_create_account
+                else CommonStrings.login_splash_submit
+            )
+        }
+        views.loginSplashAlreadyHaveAccount.isVisible = isMatrix && isAlreadyHaveAccountEnabled
+    }
+
+    private fun setupButtons() {
         val isAlreadyHaveAccountEnabled = vectorFeatures.isOnboardingAlreadyHaveAccountSplashEnabled()
         views.loginSplashSubmit.apply {
             setText(if (isAlreadyHaveAccountEnabled) CommonStrings.login_splash_create_account else CommonStrings.login_splash_submit)
@@ -53,26 +96,37 @@ class FtueAuthSplashFragment :
             isVisible = vectorFeatures.isOnboardingAlreadyHaveAccountSplashEnabled()
             debouncedClicks { alreadyHaveAnAccount() }
         }
+    }
 
+    private fun setupDebugInfo() {
         if (buildMeta.isDebug || vectorPreferences.developerMode()) {
             views.loginSplashVersion.isVisible = true
             @SuppressLint("SetTextI18n")
             views.loginSplashVersion.text = "Version : ${buildMeta.versionName}\n" +
-                    "Branch: ${buildMeta.gitBranchName} ${buildMeta.gitRevision}"
+                    "Branch: ${buildMeta.gitBranchName} ${buildMeta.gitRevision}\n" +
+                    "Protocol: ${if (selectedProtocol == "matrix") "Matrix" else "Telegram"}"
             views.loginSplashVersion.debouncedClicks { navigator.openDebug(requireContext()) }
         }
     }
 
     private fun splashSubmit(isAlreadyHaveAccountEnabled: Boolean) {
         val getStartedFlow = if (isAlreadyHaveAccountEnabled) OnboardingFlow.SignUp else OnboardingFlow.SignInSignUp
-        viewModel.handle(OnboardingAction.SplashAction.OnGetStarted(onboardingFlow = getStartedFlow))
+        viewModel.handle(OnboardingAction.SplashAction.OnProtocolSelected(protocol = selectedProtocol, onboardingFlow = getStartedFlow))
     }
 
     private fun alreadyHaveAnAccount() {
-        viewModel.handle(OnboardingAction.SplashAction.OnIAlreadyHaveAnAccount(onboardingFlow = OnboardingFlow.SignIn))
+        viewModel.handle(OnboardingAction.SplashAction.OnProtocolSelected(protocol = selectedProtocol, onboardingFlow = OnboardingFlow.SignIn))
     }
 
     override fun resetViewModel() {
         // Nothing to do
+    }
+
+    private fun getColor(id: Int): Int {
+        return try {
+            requireContext().resources.getColor(id, requireContext().theme)
+        } catch (e: Exception) {
+            android.graphics.Color.GRAY
+        }
     }
 }

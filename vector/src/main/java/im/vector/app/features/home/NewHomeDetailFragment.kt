@@ -61,6 +61,7 @@ import kotlinx.coroutines.flow.onEach
 import org.matrix.android.sdk.api.session.crypto.model.DeviceInfo
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
 import javax.inject.Inject
+import chat.progressive.app.features.home.TelegramChatListActivity
 
 @AndroidEntryPoint
 class NewHomeDetailFragment :
@@ -214,11 +215,16 @@ class NewHomeDetailFragment :
         views.newLayoutOpenSpacesButton.debouncedClicks {
             spaceListBottomSheet.takeIf { !it.isAdded }?.show(requireActivity().supportFragmentManager, SpaceListBottomSheet.TAG)
         }
+
+        views.telegramFab.debouncedClicks {
+            startActivity(TelegramChatListActivity.newIntent(requireContext()))
+        }
     }
 
     private fun showFABs() {
         views.newLayoutCreateChatButton.show()
         views.newLayoutOpenSpacesButton.show()
+        views.telegramFab.show()
     }
 
     private fun setCurrentSpace(spaceId: String?) {

@@ -1344,6 +1344,27 @@
     <string name="room_join_rules_invite_by_you">Вы сделали комнату только по приглашению.</string>
     <string name="login_splash_text2">Храните тайну переписки с помощью шифрования</string>
     <string name="login_splash_text3">Расширьте и персонализируйте свой опыт использования</string>
+    <string name="protocol_section_label">Выберите протокол</string>
+    <string name="protocol_matrix">Matrix</string>
+    <string name="protocol_telegram">Telegram</string>
+    <string name="protocol_matrix_desc">Технически лучший в мире мессенджер — децентрализованный, с настоящим end‑to‑end шифрованием и открытым протоколом</string>
+    <string name="protocol_telegram_desc">Самый популярный мессенджер — со сторисами и кружочками</string>
+
+    <string name="tg_auth_phone_hint">Номер телефона</string>
+    <string name="tg_auth_code_hint">Код подтверждения</string>
+    <string name="tg_auth_password_hint">Пароль двухфакторной аутентификации</string>
+    <string name="tg_auth_button_next">Далее</string>
+    <string name="tg_auth_button_verify">Подтвердить</string>
+    <string name="tg_auth_status_connecting">Подключение…</string>
+    <string name="tg_auth_status_ready">Вход выполнен!</string>
+    <string name="tg_auth_status_closed">Сессия закрыта</string>
+    <string name="tg_auth_status_logging_out">Выход…</string>
+    <string name="tg_auth_error_phone_empty">Введите номер телефона</string>
+    <string name="tg_auth_error_code_empty">Введите код подтверждения</string>
+    <string name="tg_auth_error_password_empty">Введите пароль</string>
+    <string name="tg_chat_list_connecting">Подключение к Telegram…</string>
+    <string name="tg_chat_list_empty">Чатов Telegram пока нет</string>
+    <string name="bottom_action_telegram">Telegram</string>
     <string name="login_server_matrix_org_text">Присоединяйтесь к миллионам бесплатно на крупнейшем публичном сервере</string>
     <string name="login_signin_to">Войти в %1$s</string>
     <string name="login_server_url_form_common_notice">Введите адрес сервера, который вы хотите использовать</string>
