@@ -221,6 +221,17 @@ add_library(
     src/openid_token.cpp
     src/jni_bridge.cpp
     src/eventdb.cpp
+    src/tdlib_bridge.cpp
+    src/tdlib_client.cpp
+    src/tdlib_auth.cpp
+    src/tdlib_messages.cpp
+    src/tg_jni_bridge.cpp
+    src/tdlib_parser.cpp
+    src/tdlib_event_dispatcher.cpp
+    src/tdlib_cache.cpp
+    src/tdlib_connection.cpp
+    src/tdlib_file_manager.cpp
+    src/tdlib_native_client.cpp
 )
 
 # --- Download SQLite3 amalgamation at configure time ---
@@ -281,6 +292,40 @@ target_link_libraries(
 )
 
 target_compile_definitions(progressive_native PRIVATE PROGRESSIVE_HAS_OLM=1)
+
+# --- TDLib (Telegram MTProto) — optional, not required ---
+# TDLib provides the Telegram protocol implementation.
+# Enable with: -DPROGRESSIVE_ENABLE_TDLIB=ON
+# Prebuilt libtdjson.so must be placed in jniLibs or built separately.
+# Build TDLib for Android:
+#   git clone https://github.com/tdlib/td.git
+#   cd td && mkdir build-android && cd build-android
+#   cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+#         -DANDROID_ABI=<abi> -DANDROID_PLATFORM=android-21 \
+#         -DCMAKE_BUILD_TYPE=Release -DTD_ENABLE_JNI=OFF ..
+#   cmake --build . --target tdjson
+# Copy the resulting libtdjson.so to the appropriate jniLibs/<abi>/ directory.
+option(PROGRESSIVE_ENABLE_TDLIB "Enable Telegram MTProto support via TDLib" OFF)
+
+if(PROGRESSIVE_ENABLE_TDLIB)
+    find_library(TDJSON_LIB tdjson
+        PATHS ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}
+        NO_DEFAULT_PATH
+    )
+
+    if(NOT TDJSON_LIB)
+        find_library(TDJSON_LIB tdjson)
+    endif()
+
+    if(TDJSON_LIB)
+        message(STATUS "TDLib found: ${TDJSON_LIB}")
+        target_link_libraries(progressive_native ${TDJSON_LIB})
+        target_compile_definitions(progressive_native PRIVATE PROGRESSIVE_HAS_TDLIB=1)
+    else()
+        message(WARNING "TDLib not found — Telegram support disabled. "
+                "Build TDLib for Android and place libtdjson.so in jniLibs/<abi>/")
+    endif()
+endif()
 
 # SQLite3 amalgamation compile flags (optimize for Android, downloaded at build time)
 set_source_files_properties(
