@@ -566,8 +566,11 @@ class MessageComposerViewModel @AssistedInject constructor(
                                      val args = parsedCommand.args
                                      if (args.isNotBlank()) {
                                          room.sendService().sendTextMessage(args, autoMarkdown = false)
-                                         // Also dispatch agent task (handled by native bridge)
-                                         // Agent processes: alarms, reminders, actions
+                                         // Dispatch to alarm engine agent
+                                         try {
+                                             ProgressiveNative.ensureLoaded()
+                                             val alarmId = ProgressiveNative.nativeAlarmCreate(args)
+                                         } catch (_: Exception) { }
                                          _viewEvents.post(MessageComposerViewEvents.SlashCommandResultOk(parsedCommand))
                                      } else {
                                          _viewEvents.post(MessageComposerViewEvents.SlashCommandResultOk(parsedCommand))
