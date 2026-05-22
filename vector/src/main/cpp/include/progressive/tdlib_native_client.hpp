@@ -122,7 +122,7 @@ public:
     // Event dispatcher
     TdEventDispatcher& events() { return *dispatcher; }
     TdConnectionManager& connMgr() { return *connection; }
-    TdFileManager& fileMgr() { return *fileMgr; }
+    TdFileManager& fileMgr() { return *fileManager; }
 
 private:
     void setupCallbacks();
@@ -134,7 +134,7 @@ private:
     std::unique_ptr<TdEventDispatcher> dispatcher;
     std::unique_ptr<TdCache> cache;
     std::unique_ptr<TdConnectionManager> connection;
-    std::unique_ptr<TdFileManager> fileMgr;
+    std::unique_ptr<TdFileManager> fileManager;
 
     std::atomic<bool> ready{false};
     int apiId;

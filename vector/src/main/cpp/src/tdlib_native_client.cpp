@@ -16,7 +16,7 @@ TdNativeClient::TdNativeClient(int apiId_, const std::string& apiHash_,
     dispatcher = std::make_unique<TdEventDispatcher>();
     cache = std::make_unique<TdCache>(dbDir + "/td_cache.db");
     connection = std::make_unique<TdConnectionManager>();
-    fileMgr = std::make_unique<TdFileManager>();
+    fileManager = std::make_unique<TdFileManager>();
 }
 
 TdNativeClient::~TdNativeClient() {
@@ -101,7 +101,7 @@ void TdNativeClient::setupCallbacks() {
             TlObject local = file.optObject("local");
             int64_t downloaded = local.optLong("downloaded_size", 0);
             bool completed = local.optBool("is_downloading_completed", false);
-            fileMgr->onFileUpdate(fileId, size, downloaded, completed);
+            fileManager->onFileUpdate(fileId, size, downloaded, completed);
             dispatcher->onFileProgress(fileId, size, downloaded, completed);
         } else if (type == "updateActiveStories") {
             // Parse and dispatch
@@ -270,11 +270,11 @@ void TdNativeClient::getBlockedUsers(int offset, int limit) { messages->getBlock
 // --- Files ---
 void TdNativeClient::downloadFile(int fileId, int priority) {
     messages->downloadFile(fileId, priority);
-    fileMgr->addDownload(fileId);
+    fileManager->addDownload(fileId);
 }
 void TdNativeClient::cancelDownload(int fileId) {
     messages->cancelDownloadFile(fileId);
-    fileMgr->removeDownload(fileId);
+    fileManager->removeDownload(fileId);
 }
 void TdNativeClient::getFileInfo(int fileId) { messages->getFile(fileId); }
 void TdNativeClient::deleteFile(int fileId) { messages->deleteFile(fileId); }
