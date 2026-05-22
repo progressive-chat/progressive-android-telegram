@@ -8,11 +8,12 @@ import android.view.inputmethod.EditorInfo
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import chat.progressive.app.native.ProgressiveNative
+import chat.progressive.app.native.TgAuthListener
 import im.vector.app.R
 import im.vector.app.databinding.FragmentTelegramAuthBinding
 import timber.log.Timber
 
-class TelegramAuthFragment : Fragment(), ProgressiveNative.TgAuthListener {
+class TelegramAuthFragment : Fragment(), TgAuthListener {
 
     private var _binding: FragmentTelegramAuthBinding? = null
     private val views get() = _binding!!

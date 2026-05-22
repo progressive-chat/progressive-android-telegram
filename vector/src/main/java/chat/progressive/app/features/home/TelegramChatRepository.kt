@@ -3,13 +3,14 @@ package chat.progressive.app.features.home
 import android.os.Handler
 import android.os.Looper
 import chat.progressive.app.native.ProgressiveNative
+import chat.progressive.app.native.TgAuthListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 import timber.log.Timber
 
-object TelegramChatRepository : ProgressiveNative.TgAuthListener {
+object TelegramChatRepository : TgAuthListener {
 
     private val _chats = MutableStateFlow<List<TelegramChatSummary>>(emptyList())
     val chats: StateFlow<List<TelegramChatSummary>> = _chats.asStateFlow()
