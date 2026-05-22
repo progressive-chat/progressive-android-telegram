@@ -217,7 +217,11 @@ class NewHomeDetailFragment :
         }
 
         views.telegramFab.debouncedClicks {
-            startActivity(TelegramChatListActivity.newIntent(requireContext()))
+            if (!chat.progressive.app.features.home.TelegramChatRepository.isLoggedIn.value) {
+                startActivity(android.content.Intent(requireContext(), chat.progressive.app.features.auth.TelegramAuthActivity::class.java))
+            } else {
+                startActivity(TelegramChatListActivity.newIntent(requireContext()))
+            }
         }
     }
 

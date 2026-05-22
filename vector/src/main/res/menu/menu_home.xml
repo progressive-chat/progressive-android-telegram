@@ -20,6 +20,11 @@
         android:title="@string/send_bug_report" />
 
     <item
+        android:id="@+id/menu_home_add_telegram"
+        android:title="Add Telegram"
+        android:visible="true" />
+
+    <item
         android:id="@+id/menu_home_init_sync_legacy"
         android:title="Do a legacy init sync"
         tools:ignore="HardcodedText" />

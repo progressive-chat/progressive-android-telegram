@@ -22,7 +22,7 @@
         android:id="@+id/bottom_action_telegram"
         android:icon="@drawable/ic_share_plane"
         android:title="@string/bottom_action_telegram"
-        android:visible="false" />
+        android:visible="true" />
     <item
         android:id="@+id/bottom_action_dial_pad"
         android:enabled="true"

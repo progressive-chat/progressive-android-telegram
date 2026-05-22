@@ -321,17 +321,29 @@ class HomeDetailFragment :
 
     private fun setupBottomNavigationView() {
         views.bottomNavigationView.menu.findItem(R.id.bottom_action_notification).isVisible = vectorPreferences.labAddNotificationTab()
-        views.bottomNavigationView.menu.findItem(R.id.bottom_action_telegram).isVisible = TelegramChatRepository.isLoggedIn.value
+        views.bottomNavigationView.menu.findItem(R.id.bottom_action_telegram).isVisible = true
         views.bottomNavigationView.setOnItemSelectedListener {
-            val tab = when (it.itemId) {
-                R.id.bottom_action_people -> HomeTab.RoomList(RoomListDisplayMode.PEOPLE)
-                R.id.bottom_action_rooms -> HomeTab.RoomList(RoomListDisplayMode.ROOMS)
-                R.id.bottom_action_notification -> HomeTab.RoomList(RoomListDisplayMode.NOTIFICATIONS)
-                R.id.bottom_action_telegram -> HomeTab.RoomList(RoomListDisplayMode.TELEGRAM)
-                else -> HomeTab.DialPad
+            when (it.itemId) {
+                R.id.bottom_action_telegram -> {
+                    if (!TelegramChatRepository.isLoggedIn.value) {
+                        startActivity(android.content.Intent(requireContext(), chat.progressive.app.features.auth.TelegramAuthActivity::class.java))
+                        false
+                    } else {
+                        viewModel.handle(HomeDetailAction.SwitchTab(HomeTab.RoomList(RoomListDisplayMode.TELEGRAM)))
+                        true
+                    }
+                }
+                else -> {
+                    val tab = when (it.itemId) {
+                        R.id.bottom_action_people -> HomeTab.RoomList(RoomListDisplayMode.PEOPLE)
+                        R.id.bottom_action_rooms -> HomeTab.RoomList(RoomListDisplayMode.ROOMS)
+                        R.id.bottom_action_notification -> HomeTab.RoomList(RoomListDisplayMode.NOTIFICATIONS)
+                        else -> HomeTab.DialPad
+                    }
+                    viewModel.handle(HomeDetailAction.SwitchTab(tab))
+                    true
+                }
             }
-            viewModel.handle(HomeDetailAction.SwitchTab(tab))
-            true
         }
     }
 

@@ -30,6 +30,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_home_add_telegram"
+        android:title="Add Telegram"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_home_init_sync_legacy"
         android:title="Do a legacy init sync"
         tools:ignore="HardcodedText"
