@@ -57,6 +57,15 @@
 
     </im.vector.app.core.preference.VectorPreferenceCategory>
 
+    <im.vector.app.core.preference.VectorPreferenceCategory android:title="Protocols">
+
+        <im.vector.app.core.preference.VectorPreference
+            android:key="SETTINGS_PROTOCOL_ADD_TELEGRAM_KEY"
+            android:title="Add Telegram Account"
+            android:summary="Connect a Telegram account alongside Matrix" />
+
+    </im.vector.app.core.preference.VectorPreferenceCategory>
+
     <im.vector.app.core.preference.VectorPreferenceCategory android:title="@string/settings_integrations">
 
         <im.vector.app.core.preference.VectorPreference
