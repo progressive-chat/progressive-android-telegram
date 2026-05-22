@@ -3,14 +3,13 @@ package chat.progressive.app.features.home
 import android.os.Handler
 import android.os.Looper
 import chat.progressive.app.native.ProgressiveNative
-import chat.progressive.app.native.TgAuthListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 import timber.log.Timber
 
-object TelegramChatRepository : TgAuthListener {
+object TelegramChatRepository {
 
     private val _chats = MutableStateFlow<List<TelegramChatSummary>>(emptyList())
     val chats: StateFlow<List<TelegramChatSummary>> = _chats.asStateFlow()
@@ -27,13 +26,30 @@ object TelegramChatRepository : TgAuthListener {
 
     fun attach(handle: Long) {
         nativeHandle = handle
-        ProgressiveNative.tgAuthListener = this
+        ProgressiveNative.tgAuthListener = authListener
         Timber.d("TelegramChatRepository attached to handle $handle")
     }
 
     fun detach() {
         ProgressiveNative.tgAuthListener = null
         nativeHandle = 0
+    }
+
+    private val authListener = object : chat.progressive.app.native.TgAuthListener {
+        override fun onAuthStateChanged(type: String, stateJson: String) {
+            if (type == "authorizationStateReady") {
+                mainHandler.post {
+                    _isLoggedIn.value = true
+                    loadChats()
+                }
+            }
+        }
+
+        override fun onConnectionStateChanged(state: String) {
+            mainHandler.post {
+                _isConnected.value = state == "connectionStateReady"
+            }
+        }
     }
 
     fun loadChats() {
@@ -47,23 +63,6 @@ object TelegramChatRepository : TgAuthListener {
         val h = NativeSessionManager.getHandle()
         if (h == 0L) return
         ProgressiveNative.tgOpenChat(h, chatId)
-    }
-
-    // --- Native callbacks ---
-
-    override fun onAuthStateChanged(type: String, stateJson: String) {
-        if (type == "authorizationStateReady") {
-            mainHandler.post {
-                _isLoggedIn.value = true
-                loadChats()
-            }
-        }
-    }
-
-    override fun onConnectionStateChanged(state: String) {
-        mainHandler.post {
-            _isConnected.value = state == "connectionStateReady"
-        }
     }
 
     // Called from native via update callback bridge

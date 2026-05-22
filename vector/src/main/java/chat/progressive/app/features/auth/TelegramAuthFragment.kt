@@ -8,12 +8,11 @@ import android.view.inputmethod.EditorInfo
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import chat.progressive.app.native.ProgressiveNative
-import chat.progressive.app.native.TgAuthListener
 import im.vector.app.R
 import im.vector.app.databinding.FragmentTelegramAuthBinding
 import timber.log.Timber
 
-class TelegramAuthFragment : Fragment(), TgAuthListener {
+class TelegramAuthFragment : Fragment() {
 
     private var _binding: FragmentTelegramAuthBinding? = null
     private val views get() = _binding!!
@@ -39,8 +38,45 @@ class TelegramAuthFragment : Fragment(), TgAuthListener {
 
     fun bind(handle: Long) {
         nativeHandle = handle
-        ProgressiveNative.tgAuthListener = this
+        ProgressiveNative.tgAuthListener = authListener
         showPhoneStep()
+    }
+
+    private val authListener = object : chat.progressive.app.native.TgAuthListener {
+        override fun onAuthStateChanged(type: String, stateJson: String) {
+            Timber.d("Auth state: %s", type)
+            activity?.runOnUiThread {
+                showLoading(false)
+                when (type) {
+                    "authorizationStateWaitPhoneNumber" -> showPhoneStep()
+                    "authorizationStateWaitCode" -> showCodeStep("Code sent")
+                    "authorizationStateWaitPassword" -> showPasswordStep()
+                    "authorizationStateReady" -> {
+                        currentStep = AuthStep.READY
+                        showStatus(getString(R.string.tg_auth_status_ready))
+                        views.tgAuthButton.isEnabled = false
+                        views.tgAuthInputGroup.isVisible = false
+                        val userId = ProgressiveNative.tgGetUserId(nativeHandle)
+                        if (userId.isNotEmpty()) {
+                            (activity as? AuthCallback)?.onAuthReady(userId)
+                        }
+                    }
+                    "authorizationStateClosed" -> showError(getString(R.string.tg_auth_status_closed))
+                    "authorizationStateLoggingOut" -> showStatus(getString(R.string.tg_auth_status_logging_out))
+                    else -> {
+                        if (type.contains("Error") || type.contains("error")) {
+                            showError(type)
+                        }
+                    }
+                }
+            }
+        }
+
+        override fun onConnectionStateChanged(state: String) {
+            activity?.runOnUiThread {
+                showStatus(state)
+            }
+        }
     }
 
     private fun setupListeners() {
@@ -77,43 +113,6 @@ class TelegramAuthFragment : Fragment(), TgAuthListener {
                 ProgressiveNative.tgSendPassword(nativeHandle, password)
             }
             AuthStep.READY -> {}
-        }
-    }
-
-    // --- Native auth callback ---
-
-    override fun onAuthStateChanged(type: String, stateJson: String) {
-        Timber.d("Auth state: %s", type)
-        activity?.runOnUiThread {
-            showLoading(false)
-            when (type) {
-                "authorizationStateWaitPhoneNumber" -> showPhoneStep()
-                "authorizationStateWaitCode" -> showCodeStep("Code sent")
-                "authorizationStateWaitPassword" -> showPasswordStep()
-                "authorizationStateReady" -> {
-                    currentStep = AuthStep.READY
-                    showStatus(getString(R.string.tg_auth_status_ready))
-                    views.tgAuthButton.isEnabled = false
-                    views.tgAuthInputGroup.isVisible = false
-                    val userId = ProgressiveNative.tgGetUserId(nativeHandle)
-                    if (userId.isNotEmpty()) {
-                        (activity as? AuthCallback)?.onAuthReady(userId)
-                    }
-                }
-                "authorizationStateClosed" -> showError(getString(R.string.tg_auth_status_closed))
-                "authorizationStateLoggingOut" -> showStatus(getString(R.string.tg_auth_status_logging_out))
-                else -> {
-                    if (type.contains("Error") || type.contains("error")) {
-                        showError(type)
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onConnectionStateChanged(state: String) {
-        activity?.runOnUiThread {
-            showStatus(state)
         }
     }
 
