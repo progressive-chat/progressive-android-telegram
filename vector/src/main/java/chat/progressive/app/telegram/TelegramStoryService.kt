@@ -465,7 +465,7 @@ class TelegramStoryService(private val client: TdLibClient) {
                     TelegramVideo(
                         duration = videoJson.optInt("duration", 0),
                         width = videoJson.optInt("width", 0),
-                        height = videoJson.optString("height", "0"),
+                        height = videoJson.optInt("height", 0),
                         mimeType = videoJson.optString("mime_type", "video/mp4"),
                         thumbnail = null,
                         videoId = videoJson.optInt("id", 0),

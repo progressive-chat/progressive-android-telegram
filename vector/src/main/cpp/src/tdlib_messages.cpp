@@ -585,8 +585,7 @@ void TdLibMessages::setMessageReaction(long long chatId, long long msgId, const 
     req.fields = {
         {"@type", str("@type", "setMessageReaction")},
         {"chat_id", big("chat_id", chatId)},
-        {"message_id", big("message_id", msgId)},
-        {"reaction_types", obj("reaction_types", {})}
+        {"message_id", big("message_id", msgId)}
     };
     if (!reaction.empty()) {
         std::vector<TlField> arrVals;

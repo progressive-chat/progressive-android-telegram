@@ -27,7 +27,7 @@ class TdLibClient(
     val connectionState: StateFlow<ConnectionState> = _connectionState
 
     val userId: String get() = _userId
-    private var _userId = ""
+    internal var _userId = ""
 
     private val listeners = mutableListOf<TelegramUpdateListener>()
 

@@ -2,6 +2,7 @@
 
 #ifdef PROGRESSIVE_HAS_TDLIB
 
+#include <algorithm>
 #include <sqlite3.h>
 #include <sstream>
 #include <android/log.h>

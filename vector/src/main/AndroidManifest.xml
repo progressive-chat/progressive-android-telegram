@@ -414,6 +414,12 @@
 
         <activity android:name="chat.progressive.app.features.home.TelegramStatsActivity" />
 
+        <activity android:name="chat.progressive.app.features.home.TelegramStickersActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramChatInfoActivity" />
+
+        <activity android:name="chat.progressive.app.features.home.TelegramStoryViewerActivity" />
+
         <!-- Services -->
 
         <service

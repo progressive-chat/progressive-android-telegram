@@ -1,6 +1,7 @@
 #include "progressive/tdlib_client.hpp"
 #include "progressive/tdlib_bridge.hpp"
 #include <android/log.h>
+#include <cctype>
 #include <sstream>
 #include <cstring>
 

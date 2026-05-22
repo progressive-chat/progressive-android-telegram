@@ -528,7 +528,7 @@ class TelegramProfileService(private val client: TdLibClient) {
                 val s = arr.getJSONObject(i)
                 TelegramPhoto.PhotoSize(
                     type = s.optString("type", ""),
-                    photoId = s.optInt("id", 0),
+                    photoId = s.optLong("id", 0L),
                     width = s.optInt("width", 0),
                     height = s.optInt("height", 0),
                     fileId = s.optJSONObject("photo")?.optInt("id", 0) ?: 0,

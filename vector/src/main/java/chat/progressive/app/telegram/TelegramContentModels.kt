@@ -11,7 +11,7 @@ data class TelegramPhoto(
 ) {
     data class PhotoSize(
         val type: String,
-        val photoId: Int,
+        val photoId: Long,
         val width: Int,
         val height: Int,
         val fileId: Int,
@@ -34,7 +34,7 @@ data class TelegramVoice(
 data class TelegramVideo(
     val duration: Int,
     val width: Int,
-    val height: String,
+    val height: Int,
     val mimeType: String,
     val thumbnail: TelegramThumbnail?,
     val videoId: Int,

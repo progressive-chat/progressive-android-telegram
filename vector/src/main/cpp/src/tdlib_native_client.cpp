@@ -165,6 +165,14 @@ void TdNativeClient::sendDocument(int64_t chatId, const std::string& path, const
 void TdNativeClient::sendVideoNote(int64_t chatId, const std::string& path, int duration, int length) {
     messages->sendVideoNote(chatId, path, duration, length);
 }
+void TdNativeClient::sendAnimation(int64_t chatId, const std::string& path, const std::string& caption,
+                                   int duration, int width, int height) {
+    messages->sendAnimation(chatId, path, caption, duration, width, height);
+}
+void TdNativeClient::sendAudio(int64_t chatId, const std::string& path, const std::string& title,
+                               const std::string& performer, int duration) {
+    messages->sendAudio(chatId, path, title, performer, duration);
+}
 
 // --- Message Operations ---
 void TdNativeClient::loadChats(int limit) { messages->loadChats(limit); }
@@ -183,6 +191,24 @@ void TdNativeClient::forwardMessages(int64_t toChatId, int64_t fromChatId,
 }
 void TdNativeClient::setReaction(int64_t chatId, int64_t msgId, const std::string& reaction) {
     messages->setMessageReaction(chatId, msgId, reaction);
+}
+void TdNativeClient::getScheduledMessages(int64_t chatId) {
+    messages->getScheduledMessages(chatId);
+}
+void TdNativeClient::sendScheduled(int64_t chatId, const std::string& text, int scheduleDate) {
+    messages->sendScheduled(chatId, text, scheduleDate);
+}
+void TdNativeClient::sendTextWithTtl(int64_t chatId, const std::string& text, int ttlSeconds) {
+    messages->sendTextWithTtl(chatId, text, ttlSeconds);
+}
+void TdNativeClient::sendTextSilent(int64_t chatId, const std::string& text, int64_t threadId) {
+    messages->sendTextSilent(chatId, text, threadId);
+}
+void TdNativeClient::setChatDraftMessage(int64_t chatId, int64_t threadId, const std::string& text) {
+    messages->setChatDraftMessage(chatId, threadId, text);
+}
+void TdNativeClient::clearChatDraftMessage(int64_t chatId, int64_t threadId) {
+    messages->clearChatDraftMessage(chatId, threadId);
 }
 void TdNativeClient::pinMessage(int64_t chatId, int64_t msgId, bool disableNotification) {
     messages->pinMessage(chatId, msgId, disableNotification);

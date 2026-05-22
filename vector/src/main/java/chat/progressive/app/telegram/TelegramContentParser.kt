@@ -207,7 +207,7 @@ object TelegramContentParser {
         return TelegramVideo(
             duration = video.optInt("duration", 0),
             width = video.optInt("width", 0),
-            height = video.optString("height", "0"),
+            height = video.optInt("height", 0),
             mimeType = video.optString("mime_type", "video/mp4"),
             thumbnail = thumbnail,
             videoId = video.optJSONObject("video")?.optInt("id", 0) ?: video.optInt("id", 0),

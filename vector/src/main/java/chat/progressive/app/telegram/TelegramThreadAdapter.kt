@@ -18,6 +18,7 @@ class TelegramThreadAdapter(
         val draftText: String = "",
         val isLoading: Boolean = false,
         val hasMoreMessages: Boolean = false,
+        val totalCount: Int = 0,
         val nextFromMessageId: Long = 0
     ) {
         val unreadThreadCount: Int get() = threads.values.count { it.unreadCount > 0 }

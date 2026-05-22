@@ -5192,6 +5192,21 @@ object ProgressiveNative {
     @JvmStatic external fun tgGetProxies(handle: Long)
     @JvmStatic external fun tgPingProxy(handle: Long, proxyId: Int)
 
+    // -- Chat Members / Invites --
+    @JvmStatic external fun tgGetChatAdministrators(handle: Long, chatId: Long)
+    @JvmStatic external fun tgGetChatMember(handle: Long, chatId: Long, userId: Long)
+    @JvmStatic external fun tgSearchChatMembers(handle: Long, chatId: Long, query: String, limit: Int)
+    @JvmStatic external fun tgCheckChatInviteLink(handle: Long, inviteLink: String)
+    @JvmStatic external fun tgGetChatInviteLink(handle: Long, chatId: Long)
+    @JvmStatic external fun tgJoinChatByInviteLink(handle: Long, inviteLink: String)
+    @JvmStatic external fun tgSearchPublicChat(handle: Long, username: String)
+    @JvmStatic external fun tgSearchPublicChats(handle: Long, query: String)
+    @JvmStatic external fun tgCreateBasicGroup(handle: Long, userIds: LongArray, title: String)
+    @JvmStatic external fun tgCreateSupergroup(handle: Long, title: String, isChannel: Boolean, description: String)
+    @JvmStatic external fun tgSetChatTitle(handle: Long, chatId: Long, title: String)
+    @JvmStatic external fun tgGetGroupsInCommon(handle: Long, userId: Long, offset: Long)
+    @JvmStatic external fun tgGetArchivedStories(handle: Long, chatId: Long, limit: Int)
+
     // -- Callbacks (called by native threads, override in Kotlin) --
     @JvmStatic fun tgOnAuth(type: String, stateJson: String) {
         Timber.tag("TgNative").d("tgOnAuth: %s", type)

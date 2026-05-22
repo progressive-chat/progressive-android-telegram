@@ -7,7 +7,7 @@
 
 #include "progressive/tdlib_native_client.hpp"
 
-#define JNI_TG(ret, name) \
+#define JNI_FUNC(ret, name) \
     JNIEXPORT ret JNICALL Java_chat_progressive_app_native_ProgressiveNative_##name
 
 #define TAG "TgNative"
@@ -339,12 +339,6 @@ JNI_FUNC(void, tgDeleteFile)(JNIEnv* env, jclass, jlong handle, jint fileId) {
     GET_CLIENT(handle); it->second->deleteFile(fileId);
 }
 
-// ===== Kotlin callback entry points =====
-JNI_FUNC(void, tgOnAuth)(JNIEnv* env, jclass, jstring type, jstring json) {}
-JNI_FUNC(void, tgOnConnection)(JNIEnv* env, jclass, jstring state, jstring) {}
-JNI_FUNC(void, tgOnUpdate)(JNIEnv* env, jclass, jstring type, jstring json) {}
-JNI_FUNC(void, tgOnResponse)(JNIEnv* env, jclass, jstring type, jstring json) {}
-
 // ===== Extended JNI bridge — all remaining functions =====
 
 // --- Video/Animation/Audio ---
@@ -352,30 +346,32 @@ JNI_FUNC(void, tgSendVideoNote)(JNIEnv* env, jclass, jlong handle, jlong chatId,
     GET_CLIENT(handle); it->second->sendVideoNote(chatId, jstring2str(env, path), duration, length);
 }
 JNI_FUNC(void, tgSendAnimation)(JNIEnv* env, jclass, jlong handle, jlong chatId, jstring path, jstring caption, jint duration, jint width, jint height) {
-    GET_CLIENT(handle); it->second->sendVideo(chatId, jstring2str(env, path), jstring2str(env, caption), duration, width, height);
+    GET_CLIENT(handle); it->second->sendAnimation(chatId, jstring2str(env, path), jstring2str(env, caption), duration, width, height);
 }
 JNI_FUNC(void, tgSendAudio)(JNIEnv* env, jclass, jlong handle, jlong chatId, jstring path, jstring title, jstring performer, jint duration) {
-    GET_CLIENT(handle); it->second->sendDocument(chatId, jstring2str(env, path));
+    GET_CLIENT(handle); it->second->sendAudio(chatId, jstring2str(env, path), jstring2str(env, title), jstring2str(env, performer), duration);
 }
 
 // --- Scheduled ---
 JNI_FUNC(void, tgGetScheduledMessages)(JNIEnv* env, jclass, jlong handle, jlong chatId) {
-    GET_CLIENT(handle); it->second->getChatHistory(chatId, 50, 0);
+    GET_CLIENT(handle); it->second->getScheduledMessages(chatId);
 }
 JNI_FUNC(void, tgSendScheduled)(JNIEnv* env, jclass, jlong handle, jlong chatId, jstring text, jint scheduleDate) {
-    GET_CLIENT(handle); it->second->sendText(chatId, jstring2str(env, text));
+    GET_CLIENT(handle); it->second->sendScheduled(chatId, jstring2str(env, text), scheduleDate);
 }
 
 // --- Draft / Silent / TTL ---
-JNI_FUNC(void, tgSetChatDraft)(JNIEnv* env, jclass, jlong handle, jlong chatId, jlong, jstring text) {
-    GET_CLIENT(handle); /* setChatDraftMessage */
+JNI_FUNC(void, tgSetChatDraft)(JNIEnv* env, jclass, jlong handle, jlong chatId, jlong threadId, jstring text) {
+    GET_CLIENT(handle); it->second->setChatDraftMessage(chatId, threadId, jstring2str(env, text));
 }
-JNI_FUNC(void, tgClearChatDraft)(JNIEnv* env, jclass, jlong handle, jlong chatId, jlong) { GET_CLIENT(handle); }
+JNI_FUNC(void, tgClearChatDraft)(JNIEnv* env, jclass, jlong handle, jlong chatId, jlong threadId) {
+    GET_CLIENT(handle); it->second->clearChatDraftMessage(chatId, threadId);
+}
 JNI_FUNC(void, tgSendTextSilent)(JNIEnv* env, jclass, jlong handle, jlong chatId, jstring text, jlong threadId) {
-    GET_CLIENT(handle); it->second->sendText(chatId, jstring2str(env, text), threadId);
+    GET_CLIENT(handle); it->second->sendTextSilent(chatId, jstring2str(env, text), threadId);
 }
 JNI_FUNC(void, tgSendTextWithTtl)(JNIEnv* env, jclass, jlong handle, jlong chatId, jstring text, jint ttl) {
-    GET_CLIENT(handle); it->second->sendText(chatId, jstring2str(env, text));
+    GET_CLIENT(handle); it->second->sendTextWithTtl(chatId, jstring2str(env, text), ttl);
 }
 
 // --- Contacts ---
@@ -490,6 +486,10 @@ JNI_FUNC(void, tgGetForumTopic)(JNIEnv* env, jclass, jlong handle, jlong chatId,
 }
 JNI_FUNC(void, tgGetArchivedStories)(JNIEnv* env, jclass, jlong handle, jlong, jint) {
     GET_CLIENT(handle); it->second->getActiveStories(100);
+}
+
+JNI_FUNC(void, tgGetGroupsInCommon)(JNIEnv* env, jclass, jlong handle, jlong userId, jlong offset) {
+    GET_CLIENT(handle);
 }
 
 } // extern "C"

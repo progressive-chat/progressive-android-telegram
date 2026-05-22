@@ -227,7 +227,7 @@ class TelegramSession(
         val phone = json.optString("phone_number", "")
 
         if (json.optString("@type", "") == "user" && username.isNotEmpty()) {
-            _userId = username
+            tdClient._userId = username
         }
     }
 

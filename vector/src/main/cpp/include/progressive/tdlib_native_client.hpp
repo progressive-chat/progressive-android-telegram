@@ -50,6 +50,10 @@ public:
                    int duration = 0, int width = 0, int height = 0);
     void sendDocument(int64_t chatId, const std::string& path, const std::string& caption = "");
     void sendVideoNote(int64_t chatId, const std::string& path, int duration = 0, int length = 240);
+    void sendAnimation(int64_t chatId, const std::string& path, const std::string& caption = "",
+                       int duration = 0, int width = 0, int height = 0);
+    void sendAudio(int64_t chatId, const std::string& path, const std::string& title = "",
+                   const std::string& performer = "", int duration = 0);
 
     // Message operations
     void loadChats(int limit = 100);
@@ -62,6 +66,12 @@ public:
     void pinMessage(int64_t chatId, int64_t msgId, bool disableNotification = false);
     void unpinMessage(int64_t chatId, int64_t msgId = 0);
     void markAsRead(int64_t chatId, const std::vector<int64_t>& msgIds);
+    void getScheduledMessages(int64_t chatId);
+    void sendScheduled(int64_t chatId, const std::string& text, int scheduleDate);
+    void sendTextWithTtl(int64_t chatId, const std::string& text, int ttlSeconds);
+    void sendTextSilent(int64_t chatId, const std::string& text, int64_t threadId = 0);
+    void setChatDraftMessage(int64_t chatId, int64_t threadId, const std::string& text);
+    void clearChatDraftMessage(int64_t chatId, int64_t threadId = 0);
 
     // Chats
     void setChatTitle(int64_t chatId, const std::string& title);
