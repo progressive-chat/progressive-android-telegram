@@ -43,7 +43,7 @@
             android:id="@+id/telegramPinnedClose"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_close"
+            android:src="@drawable/ic_close_24dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Close" />
     </LinearLayout>
