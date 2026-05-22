@@ -101,7 +101,7 @@ class TelegramRoom(
     }
 
     fun getThreadHistory(messageId: Long, fromMessageId: Long = 0) {
-        tdClient.getMessageThreadHistory(id, messageId, fromMessageId)
+        tdClient.getMessageThreadHistory(id, messageId, fromMessageId, 0, 50)
     }
 
     fun replyInThread(threadRootMessageId: Long, text: String, replyToMessageId: Long = 0) {

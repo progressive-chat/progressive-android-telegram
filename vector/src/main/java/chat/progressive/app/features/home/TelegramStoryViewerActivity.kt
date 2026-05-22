@@ -54,6 +54,9 @@ class TelegramStoryViewerActivity : VectorBaseActivity<ActivityTelegramChatBindi
 
     override fun getBinding() = ActivityTelegramChatBinding.inflate(layoutInflater)
 
+    override val rootView: View
+        get() = views.root
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.apply {

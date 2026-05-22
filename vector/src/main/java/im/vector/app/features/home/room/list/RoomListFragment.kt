@@ -214,6 +214,7 @@ class RoomListFragment :
             RoomListDisplayMode.PEOPLE -> views.createChatRoomButton.isVisible = true
             RoomListDisplayMode.ROOMS -> views.createGroupRoomButton.isVisible = true
             RoomListDisplayMode.FILTERED -> Unit // No button in this mode
+            RoomListDisplayMode.TELEGRAM -> Unit
         }
 
         views.createChatRoomButton.debouncedClicks {

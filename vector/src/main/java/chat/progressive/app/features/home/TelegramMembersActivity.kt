@@ -28,6 +28,9 @@ class TelegramMembersActivity : VectorBaseActivity<ActivityTelegramChatBinding>(
 
     override fun getBinding() = ActivityTelegramChatBinding.inflate(layoutInflater)
 
+    override val rootView: View
+        get() = views.root
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         chatId = intent.getLongExtra(EXTRA_CHAT_ID, 0)

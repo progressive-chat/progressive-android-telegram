@@ -84,6 +84,9 @@ class RoomListSectionBuilder(
             RoomListDisplayMode.NOTIFICATIONS -> {
                 buildNotificationsSection(sections, activeSpaceAwareQueries)
             }
+            RoomListDisplayMode.TELEGRAM -> {
+                /* Telegram handled separately */
+            }
         }
 
         spaceStateHandler.getSelectedSpaceFlow()

@@ -10,6 +10,7 @@ import com.google.android.material.card.MaterialCardView
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
 import im.vector.app.core.resources.BuildMeta
+import im.vector.app.core.resources.ThemeUtils
 import im.vector.app.databinding.FragmentFtueAuthSplashBinding
 import im.vector.app.features.VectorFeatures
 import im.vector.app.features.onboarding.OnboardingAction
@@ -60,16 +61,16 @@ class FtueAuthSplashFragment :
             isChecked = isMatrix
             strokeWidth = if (isMatrix) 2 else 1
             setStrokeColor(
-                if (isMatrix) getColor(im.vector.lib.ui.styles.R.color.colorPrimary)
-                else getColor(im.vector.lib.ui.styles.R.color.vctr_content_quaternary)
+                if (isMatrix) ThemeUtils.getColor(requireContext(), com.google.android.material.R.attr.colorPrimary)
+                else ThemeUtils.getColor(requireContext(), im.vector.lib.ui.styles.R.attr.vctr_content_quaternary)
             )
         }
         views.cardTelegram.apply {
             isChecked = !isMatrix
             strokeWidth = if (isMatrix) 1 else 2
             setStrokeColor(
-                if (isMatrix) getColor(im.vector.lib.ui.styles.R.color.vctr_content_quaternary)
-                else getColor(im.vector.lib.ui.styles.R.color.colorPrimary)
+                if (isMatrix) ThemeUtils.getColor(requireContext(), im.vector.lib.ui.styles.R.attr.vctr_content_quaternary)
+                else ThemeUtils.getColor(requireContext(), com.google.android.material.R.attr.colorPrimary)
             )
         }
 

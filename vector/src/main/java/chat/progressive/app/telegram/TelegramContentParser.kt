@@ -196,7 +196,7 @@ object TelegramContentParser {
         return TelegramPhoto(
             hasStickers = json.optBoolean("has_stickers", false),
             minithumbnail = null,
-            sizes = sizes,
+            sizes = sizes ?: emptyList(),
             isSpoiler = false
         )
     }
@@ -441,7 +441,7 @@ object TelegramContentParser {
             "callDiscardReasonDisconnected" -> TelegramCallInfo.CallDiscardReason.DISCONNECTED
             "callDiscardReasonHungUp" -> TelegramCallInfo.CallDiscardReason.HUNG_UP
             else -> TelegramCallInfo.CallDiscardReason.EMPTY
-        }.takeIf { reasonStr.isNotEmpty() }
+        }.takeIf { !reasonStr.isNullOrEmpty() }
         return TelegramCallInfo(
             id = call.optInt("id", 0),
             userId = call.optLong("user_id", 0),

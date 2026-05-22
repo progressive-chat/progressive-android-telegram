@@ -749,15 +749,6 @@ class TdLibClient(
         })
     }
 
-    fun getUserProfilePhotos(userId: Long, offset: Int = 0, limit: Int = 100) {
-        sendRequest(buildJson {
-            put("@type", "getUserProfilePhotos")
-            put("user_id", userId)
-            put("offset", offset)
-            put("limit", limit)
-        })
-    }
-
     fun setEmojiStatus(customEmojiId: Long, duration: Int = 0) {
         sendRequest(buildJson {
             put("@type", "setEmojiStatus")
@@ -800,15 +791,6 @@ class TdLibClient(
         })
     }
 
-    fun getGroupsInCommon(userId: Long, offsetChatId: Long = 0, limit: Int = 100) {
-        sendRequest(buildJson {
-            put("@type", "getGroupsInCommon")
-            put("user_id", userId)
-            put("offset_chat_id", offsetChatId)
-            put("limit", limit)
-        })
-    }
-
     fun getPremiumState() {
         sendRequest(buildJson {
             put("@type", "getPremiumState")
@@ -845,14 +827,6 @@ class TdLibClient(
             put("@type", "deleteChatBackground")
             put("chat_id", chatId)
             put("restore_previous", restorePrevious)
-        })
-    }
-
-    fun getMessageThread(chatId: Long, messageId: Long) {
-        sendRequest(buildJson {
-            put("@type", "getMessageThread")
-            put("chat_id", chatId)
-            put("message_id", messageId)
         })
     }
 

@@ -12,7 +12,6 @@ import android.net.Uri
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.EditText
 import android.widget.Button
 import android.widget.Toast
 import android.view.Menu
@@ -83,6 +82,9 @@ class TelegramChatActivity : VectorBaseActivity<ActivityTelegramChatBinding>() {
     }
 
     override fun getBinding() = ActivityTelegramChatBinding.inflate(layoutInflater)
+
+    override val rootView: View
+        get() = views.root
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -270,15 +272,15 @@ class TelegramChatActivity : VectorBaseActivity<ActivityTelegramChatBinding>() {
 
             val bubble = binding.itemTgMsgBubble
             val isOut = msg.isOutgoing
-            (bubble.layoutParams as? LinearLayoutManager.LayoutParams
-                ?: LinearLayoutManager.LayoutParams(
+            (bubble.layoutParams as? android.widget.FrameLayout.LayoutParams
+                ?: android.widget.FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
                 )).apply {
                 gravity = if (isOut) android.view.Gravity.END else android.view.Gravity.START
             }
-            val bgColor = if (isOut) R.attr.colorPrimary else R.attr.vctr_system
-            val textColor = if (isOut) R.attr.colorOnPrimary else R.attr.vctr_content_primary
-            val timeColor = if (isOut) R.attr.vctr_content_secondary else R.attr.vctr_content_quaternary
+            val bgColor = if (isOut) com.google.android.material.R.attr.colorPrimary else im.vector.lib.ui.styles.R.attr.vctr_system
+            val textColor = if (isOut) com.google.android.material.R.attr.colorOnPrimary else im.vector.lib.ui.styles.R.attr.vctr_content_primary
+            val timeColor = if (isOut) im.vector.lib.ui.styles.R.attr.vctr_content_secondary else im.vector.lib.ui.styles.R.attr.vctr_content_quaternary
 
             bubble.setBackgroundColor(getAttrColor(bgColor))
             binding.itemTgMsgText.setTextColor(getAttrColor(textColor))
@@ -1154,7 +1156,7 @@ class TelegramChatActivity : VectorBaseActivity<ActivityTelegramChatBinding>() {
         menu.add("Search by Date").setOnMenuItemClickListener {
             val input = EditText(this).apply {
                 hint = "YYYY-MM-DD"
-                inputType = android.text.InputType.TYPE_CLASS_DATASET
+                inputType = android.text.InputType.TYPE_CLASS_DATETIME
             }
             AlertDialog.Builder(this)
                 .setTitle("Search Messages by Date")

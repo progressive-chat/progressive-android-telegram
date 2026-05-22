@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.view.View
 import android.os.Looper
 import android.view.ViewGroup
 import android.widget.Button
@@ -17,7 +18,7 @@ import chat.progressive.app.native.ProgressiveNative
 import im.vector.app.R
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.databinding.ActivityTelegramProfileBinding
-import im.vector.app.features.MainActivity
+import im.vector.app.features.home.HomeActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -41,6 +42,9 @@ class TelegramProfileActivity : VectorBaseActivity<ActivityTelegramProfileBindin
     private var profileJson: String? = null
 
     override fun getBinding() = ActivityTelegramProfileBinding.inflate(layoutInflater)
+
+    override val rootView: View
+        get() = views.root
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -315,7 +319,7 @@ class TelegramProfileActivity : VectorBaseActivity<ActivityTelegramProfileBindin
         val h = NativeSessionManager.getHandle()
         val uid = userId.takeIf { it > 0 } ?: 0
         if (uid > 0) {
-            ProgressiveNative.tgGetGroupsInCommon(h, uid)
+            ProgressiveNative.tgGetGroupsInCommon(h, uid, 0)
             android.widget.Toast.makeText(this, "Loading groups...", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
@@ -352,7 +356,7 @@ class TelegramProfileActivity : VectorBaseActivity<ActivityTelegramProfileBindin
                 ProgressiveNative.tgLogout(h)
                 NativeSessionManager.clear()
                 finishAffinity()
-                startActivity(MainActivity.newIntent(this))
+                startActivity(HomeActivity.newIntent(this, firstStartMainActivity = true))
             }
             .setNegativeButton("Cancel", null)
             .show()

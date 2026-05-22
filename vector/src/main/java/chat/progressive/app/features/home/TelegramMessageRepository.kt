@@ -9,7 +9,8 @@ data class TelegramMessageItem(
     val chatId: Long,
     val text: String,
     val date: Long,
-    val isOutgoing: Boolean
+    val isOutgoing: Boolean,
+    val senderId: String = ""
 )
 
 object TelegramMessageRepository {
@@ -26,12 +27,15 @@ object TelegramMessageRepository {
                 if (msgId <= 0) continue
                 val content = m.optJSONObject("content") ?: continue
                 val text = extractText(content)
+                val senderObj = m.optJSONObject("sender_id")
+                val senderId = senderObj?.optString("user_id", "") ?: senderObj?.optString("chat_id", "") ?: ""
                 val msg = TelegramMessageItem(
                     id = msgId,
                     chatId = chatId,
                     text = text,
                     date = m.optLong("date", 0),
-                    isOutgoing = m.optBoolean("is_outgoing", false)
+                    isOutgoing = m.optBoolean("is_outgoing", false),
+                    senderId = senderId
                 )
                 if (messageCache.getOrPut(chatId) { mutableListOf() }.none { it.id == msgId }) {
                     msgs.add(msg)
@@ -48,12 +52,15 @@ object TelegramMessageRepository {
             val msgId = msg.optLong("id", 0)
             if (msgId <= 0) return null
             val content = msg.optJSONObject("content") ?: return null
+            val senderObj = msg.optJSONObject("sender_id")
+            val senderId = senderObj?.optString("user_id", "") ?: senderObj?.optString("chat_id", "") ?: ""
             return TelegramMessageItem(
                 id = msgId,
                 chatId = chatId,
                 text = extractText(content),
                 date = msg.optLong("date", 0),
-                isOutgoing = msg.optBoolean("is_outgoing", false)
+                isOutgoing = msg.optBoolean("is_outgoing", false),
+                senderId = senderId
             )
         } catch (_: Exception) { return null }
     }

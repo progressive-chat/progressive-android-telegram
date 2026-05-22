@@ -219,7 +219,7 @@ class FtueAuthVariant(
             OnboardingViewEvents.OnPersonalizationComplete -> onPersonalizationComplete()
             OnboardingViewEvents.OnBack -> activity.popBackstack()
             is OnboardingViewEvents.OpenTelegramAuth -> {
-                val intent = TelegramAuthActivity.newIntent(activity)
+                val intent = Intent(activity, TelegramAuthActivity::class.java)
                 activity.startActivity(intent)
                 activity.finish()
             }

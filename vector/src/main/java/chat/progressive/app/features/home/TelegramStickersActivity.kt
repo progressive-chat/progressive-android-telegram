@@ -3,6 +3,7 @@ package chat.progressive.app.features.home
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -19,6 +20,9 @@ class TelegramStickersActivity : VectorBaseActivity<ActivityTelegramChatBinding>
     }
 
     override fun getBinding() = ActivityTelegramChatBinding.inflate(layoutInflater)
+
+    override val rootView: View
+        get() = views.root
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

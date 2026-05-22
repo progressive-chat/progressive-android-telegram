@@ -89,7 +89,7 @@ class TelegramAuthFragment : Fragment() {
         views.tgAuthPasswordInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) { onButtonClicked(); true } else false
         }
-        views.tgAuthButton.debouncedClicks { onButtonClicked() }
+        views.tgAuthButton.setOnClickListener { onButtonClicked() }
     }
 
     private fun onButtonClicked() {

@@ -3,15 +3,18 @@ package chat.progressive.app.features.auth
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import chat.progressive.app.features.home.NativeSessionManager
+import chat.progressive.app.features.home.TelegramChatRepository
 import chat.progressive.app.native.ProgressiveNative
 import im.vector.app.R
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.databinding.ActivityTelegramAuthBinding
-import im.vector.app.features.home.HomeActivity
-import chat.progressive.app.features.home.TelegramChatRepository
 
 class TelegramAuthActivity : VectorBaseActivity<ActivityTelegramAuthBinding>(),
     TelegramAuthFragment.AuthCallback {
+
+    override val rootView: View
+        get() = views.root
 
     private var nativeHandle: Long = 0
     private var authFragment: TelegramAuthFragment? = null
@@ -60,8 +63,7 @@ class TelegramAuthActivity : VectorBaseActivity<ActivityTelegramAuthBinding>(),
     override fun onAuthReady(userId: String) {
         NativeSessionManager.setActiveSession(nativeHandle, userId)
         TelegramChatRepository.attach(nativeHandle)
-        val intent = HomeActivity.newIntent(this, accountId = "tg_$userId")
-        startActivity(intent)
+        startActivity(im.vector.app.features.home.HomeActivity.newIntent(this, firstStartMainActivity = true))
         finish()
     }
 

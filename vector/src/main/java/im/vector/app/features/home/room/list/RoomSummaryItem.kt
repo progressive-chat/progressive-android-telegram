@@ -127,6 +127,7 @@ abstract class RoomSummaryItem : VectorEpoxyModel<RoomSummaryItem.Holder>(R.layo
         RoomListDisplayMode.PEOPLE,
         RoomListDisplayMode.NOTIFICATIONS -> renderForDefaultDisplayMode(holder)
         RoomListDisplayMode.FILTERED -> renderForFilteredDisplayMode(holder)
+        RoomListDisplayMode.TELEGRAM -> renderForDefaultDisplayMode(holder)
     }
 
     private fun renderForDefaultDisplayMode(holder: Holder) {

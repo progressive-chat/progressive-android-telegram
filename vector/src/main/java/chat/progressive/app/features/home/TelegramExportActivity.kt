@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
+import android.view.View
 import android.widget.CheckBox
 import android.widget.Toast
 import chat.progressive.app.native.ProgressiveNative
@@ -22,6 +23,9 @@ class TelegramExportActivity : VectorBaseActivity<ActivityTelegramChatBinding>()
     }
 
     override fun getBinding() = ActivityTelegramChatBinding.inflate(layoutInflater)
+
+    override val rootView: View
+        get() = views.root
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

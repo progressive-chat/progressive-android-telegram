@@ -391,7 +391,7 @@ class TelegramStoryService(private val client: TdLibClient) {
     }
 
     private fun buildPrivacySettings(settings: StoryPrivacySettings?): JSONObject {
-        val visibility = settings?.visibility ?: StoryPrivacy.EVERYONE
+        val visibility = settings?.visibility ?: StoryVisibility.EVERYONE
         val exceptionIds = settings?.exceptionUserIds ?: emptyList()
         val forwardingAllowed = settings?.isForwardingAllowed ?: true
 
