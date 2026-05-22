@@ -241,6 +241,7 @@ class RoomListFragment :
                                     RoomListDisplayMode.PEOPLE -> views.createChatRoomButton.hide()
                                     RoomListDisplayMode.ROOMS -> views.createGroupRoomButton.hide()
                                     RoomListDisplayMode.FILTERED -> Unit
+                                    RoomListDisplayMode.TELEGRAM -> Unit
                                 }
                             }
                         }
@@ -406,6 +407,7 @@ class RoomListFragment :
                 RoomListDisplayMode.PEOPLE -> views.createChatRoomButton.show()
                 RoomListDisplayMode.ROOMS -> views.createGroupRoomButton.show()
                 RoomListDisplayMode.FILTERED -> Unit
+                RoomListDisplayMode.TELEGRAM -> Unit
             }
         }
     }
@@ -491,6 +493,8 @@ class RoomListFragment :
                     )
                 RoomListDisplayMode.FILTERED ->
                     // Always display the content in this mode, because if the footer
+                    StateView.State.Content
+                RoomListDisplayMode.TELEGRAM ->
                     StateView.State.Content
             }
             views.stateView.state = emptyState

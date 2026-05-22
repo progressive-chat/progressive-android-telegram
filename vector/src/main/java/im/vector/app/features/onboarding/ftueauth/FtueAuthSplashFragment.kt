@@ -10,7 +10,7 @@ import com.google.android.material.card.MaterialCardView
 import dagger.hilt.android.AndroidEntryPoint
 import im.vector.app.R
 import im.vector.app.core.resources.BuildMeta
-import im.vector.app.core.resources.ThemeUtils
+import im.vector.app.features.themes.ThemeUtils
 import im.vector.app.databinding.FragmentFtueAuthSplashBinding
 import im.vector.app.features.VectorFeatures
 import im.vector.app.features.onboarding.OnboardingAction
