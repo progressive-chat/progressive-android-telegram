@@ -33,7 +33,14 @@ class TelegramAuthActivity : VectorBaseActivity<ActivityTelegramAuthBinding>(),
     }
 
     private fun initNativeClient() {
-        ProgressiveNative.tgInit()
+        try {
+            ProgressiveNative.ensureLoaded()
+            ProgressiveNative.tgInit()
+        } catch (e: Exception) {
+            views.telegramAuthLoading.isVisible = false
+            authFragment?.showError("Failed to initialize native library: ${e.message}")
+            return
+        }
 
         val filesDir = getExternalFilesDir(null)?.absolutePath ?: filesDir.absolutePath
         val dbDir = "$filesDir/tdlib"
@@ -52,7 +59,7 @@ class TelegramAuthActivity : VectorBaseActivity<ActivityTelegramAuthBinding>(),
 
         if (nativeHandle == 0L) {
             views.telegramAuthLoading.isVisible = false
-            authFragment?.showError("Failed to initialize Telegram client")
+            authFragment?.showError("TDLib not available. Rebuild with PROGRESSIVE_HAS_TDLIB=1 and include the TDLib native library (.so).")
             return
         }
 
