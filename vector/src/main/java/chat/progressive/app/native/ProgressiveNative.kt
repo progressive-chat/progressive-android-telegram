@@ -5249,8 +5249,3 @@ object ProgressiveNative {
     @JvmStatic var tgAuthListener: TgAuthListener? = null
 
 }
-
-interface TgAuthListener {
-    fun onAuthStateChanged(type: String, stateJson: String) {}
-    fun onConnectionStateChanged(state: String) {}
-}
