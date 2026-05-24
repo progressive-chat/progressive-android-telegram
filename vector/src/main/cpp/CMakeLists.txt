@@ -232,6 +232,7 @@ add_library(
     src/tdlib_connection.cpp
     src/tdlib_file_manager.cpp
     src/tdlib_native_client.cpp
+    src/tdlib_stub.c
 )
 
 # --- Download SQLite3 amalgamation at configure time ---
@@ -307,8 +308,7 @@ if(PROGRESSIVE_ENABLE_TDLIB)
     if(TDJSON_LIB)
         message(STATUS "TDLib found: ${TDJSON_LIB}")
         target_link_libraries(progressive_native ${TDJSON_LIB})
-        # TDLib integration stubs (set PROGRESSIVE_HAS_TDLIB=1 when real TDLib is available)
-        # target_compile_definitions(progressive_native PRIVATE PROGRESSIVE_HAS_TDLIB=1)
+        target_compile_definitions(progressive_native PRIVATE PROGRESSIVE_HAS_TDLIB=1)
     else()
         message(WARNING "TDLib not found — Telegram support disabled")
     endif()

@@ -59,7 +59,7 @@ class TelegramAuthActivity : VectorBaseActivity<ActivityTelegramAuthBinding>(),
 
         if (nativeHandle == 0L) {
             views.telegramAuthLoading.isVisible = false
-            authFragment?.showError("TDLib not available. Rebuild with PROGRESSIVE_HAS_TDLIB=1 and include the TDLib native library (.so).")
+            authFragment?.showError("Failed to initialize Telegram client")
             return
         }
 

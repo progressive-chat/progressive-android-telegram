@@ -24,7 +24,6 @@ TdNativeClient::~TdNativeClient() {
 }
 
 bool TdNativeClient::initialize() {
-#ifdef PROGRESSIVE_HAS_TDLIB
     if (!cache->open()) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to open cache database");
     }
@@ -32,10 +31,6 @@ bool TdNativeClient::initialize() {
     setupCallbacks();
     client->initialize();
     return true;
-#else
-    __android_log_print(ANDROID_LOG_ERROR, TAG, "TDLib not available — rebuild with PROGRESSIVE_HAS_TDLIB=1");
-    return false;
-#endif
 }
 
 void TdNativeClient::shutdown() {
