@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,24 +11,39 @@
         android:id="@+id/telegramChatListToolbar"
         layout="@layout/merge_header_toolbar" />
 
-    <TextView
-        android:id="@+id/telegramChatListStatus"
-        style="@style/Widget.Vector.TextView.Body"
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/telegramChatSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="16dp"
-        android:textColor="?vctr_content_secondary"
-        android:visibility="gone"
-        tools:text="Connecting to Telegram…"
-        tools:visibility="visible" />
+        android:layout_margin="8dp"
+        android:queryHint="Search chats..."
+        app:queryBackground="@android:color/transparent" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/telegramChatListRecycler"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="8dp" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/telegramChatListRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/telegramChatListStatus"
+            style="@style/Widget.Vector.TextView.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="32dp"
+            android:textColor="?vctr_content_secondary"
+            android:visibility="gone"
+            tools:text="No Telegram chats yet"
+            tools:visibility="visible" />
+
+    </FrameLayout>
 
 </LinearLayout>

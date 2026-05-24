@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -34,26 +35,37 @@ class TelegramChatListFragment : Fragment() {
 
         views.telegramChatListRecycler.layoutManager = LinearLayoutManager(requireContext())
 
+        // Search
+        views.telegramChatSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?) = false
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (views.telegramChatListRecycler.adapter as? ChatAdapter)?.filter(newText.orEmpty())
+                return true
+            }
+        })
+
         lifecycleScope.launch {
             TelegramChatRepository.isConnected.collectLatest { connected ->
-                if (!connected) {
-                    views.telegramChatListStatus.isVisible = true
-                    views.telegramChatListStatus.text = getString(R.string.tg_chat_list_connecting)
+                views.telegramChatListStatus.isVisible = !connected || (views.telegramChatListRecycler.adapter?.itemCount ?: 0) == 0
+                views.telegramChatListStatus.text = when {
+                    !connected -> getString(R.string.tg_chat_list_connecting)
+                    else -> getString(R.string.tg_chat_list_empty)
                 }
             }
         }
 
         lifecycleScope.launch {
             TelegramChatRepository.chats.collectLatest { chatList ->
-                views.telegramChatListStatus.isVisible = false
+                views.telegramChatListStatus.isVisible = chatList.isEmpty()
+                views.telegramChatListStatus.text = if (chatList.isEmpty()) getString(R.string.tg_chat_list_empty) else ""
 
-                if (chatList.isEmpty()) {
-                    views.telegramChatListStatus.isVisible = true
-                    views.telegramChatListStatus.text = getString(R.string.tg_chat_list_empty)
-                } else {
+                val adapter = views.telegramChatListRecycler.adapter as? ChatAdapter
+                if (adapter == null) {
                     views.telegramChatListRecycler.adapter = ChatAdapter(chatList) { chat ->
                         onChatClicked(chat)
                     }
+                } else {
+                    adapter.updateChats(chatList)
                 }
             }
         }
@@ -76,6 +88,21 @@ class TelegramChatListFragment : Fragment() {
         private var chats: List<TelegramChatSummary>,
         private val onClick: (TelegramChatSummary) -> Unit
     ) : RecyclerView.Adapter<ChatHolder>() {
+
+        private val allChats = chats.toList()
+
+        fun updateChats(newChats: List<TelegramChatSummary>) {
+            chats = newChats
+            (allChats as MutableList).clear()
+            (allChats as MutableList).addAll(newChats)
+            notifyDataSetChanged()
+        }
+
+        fun filter(query: String) {
+            chats = if (query.isBlank()) allChats
+            else allChats.filter { it.title.contains(query, ignoreCase = true) }
+            notifyDataSetChanged()
+        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatHolder {
             val binding = ItemTelegramChatBinding.inflate(LayoutInflater.from(parent.context), parent, false)
