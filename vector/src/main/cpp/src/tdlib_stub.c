@@ -8,13 +8,16 @@
    Provides td_json_client_* symbols so progressive_native.so links
    and the Telegram auth/messaging UI works without a real TDLib .so.
 
-   Auth flow simulated:
-     1. Client create → returns "authorizationStateWaitPhoneNumber"
-     2. Send setAuthenticationPhoneNumber → returns "authorizationStateWaitCode"
-     3. Send checkAuthenticationCode → returns "authorizationStateReady"
-     4. All other requests → returns "ok" or empty responses
+   Simulated:
+   - Full auth flow (phone → wait_code → send_code → ready)
+   - Fake user profile, chat list with 3 sample chats
+   - Fake messages in each chat
+   - All API calls return valid JSON responses
 
-   To replace with real TDLib: delete this file, link against libtdjson.
+   To replace with real TDLib:
+     1. Delete this file (tdlib_stub.c)
+     2. Build libtdjson.so for armeabi-v7a (see TDLib docs)
+     3. Place it in jniLibs/ or add to CMake target_link_libraries
    ─────────────────────────────────────────────────────────────────── */
 
 typedef struct {
@@ -102,10 +105,11 @@ void td_json_client_send(void *client, const char *request) {
                 "\"profile_photo\":null,\"is_verified\":false,\"is_premium\":false}");
         }
     } else if (strstr(request, "loadChats") || strstr(request, "getChats")) {
-        /* Return empty chat list */
+        /* Return 3 fake chats */
         set_response(c,
-            "{\"@type\":\"chats\",\"chat_ids\":[],\"total_count\":0}");
-    } else if (strstr(request, "getOption")) {
+            "{\"@type\":\"chats\",\"total_count\":3,\"chat_ids\":[1001,1002,1003]}");
+        c->has_updates = 3;  // will generate 3 updateNewChat events
+    } else if (strstr(request, "getChatHistory")) {
         /* Return fake version and my_id */
         if (strstr(request, "\"version\"")) {
             set_response(c,
@@ -130,25 +134,47 @@ const char *td_json_client_receive(void *client, double timeout) {
     char *r = c->staged_response;
     c->staged_response = NULL;
 
-    /* Generate updateNewMessage after auth is ready */
+    /* Generate events after auth is ready */
     if (!r && c->step >= 2 && c->has_updates > 0) {
+        int update_num = c->has_updates;
         c->has_updates--;
-        if (c->has_updates == 1) {
-            r = strdup(
-                "{\"@type\":\"updateNewMessage\","
-                "\"message\":{"
-                "\"@type\":\"message\","
-                "\"id\":1,"
-                "\"chat_id\":777000,"
-                "\"sender_id\":{\"@type\":\"messageSenderUser\",\"user_id\":777000},"
-                "\"date\":1000000,"
-                "\"is_outgoing\":false,"
+        if (update_num >= 1 && update_num <= 3) {
+            /* updateNewChat for fake chats */
+            const char *chats[] = {
+                "{\"@type\":\"updateNewChat\",\"chat\":{"
+                "\"@type\":\"chat\",\"id\":1001,"
+                "\"title\":\"Progressive Chat News\","
+                "\"type\":{\"@type\":\"chatTypeSupergroup\",\"is_channel\":true},"
+                "\"last_message\":{"
+                "\"@type\":\"message\",\"id\":1,\"chat_id\":1001,\"date\":1000001,"
                 "\"content\":{"
                 "\"@type\":\"messageText\","
-                "\"text\":{\"@type\":\"formattedText\",\"text\":\"Hello from Progressive Chat!\"}},"
-                "\"can_be_edited\":false,"
-                "\"can_be_deleted_only_for_self\":false,"
-                "\"can_be_deleted_for_all_users\":false}}");
+                "\"text\":{\"@type\":\"formattedText\",\"text\":\"Welcome to Progressive Chat!\"}}},"
+                "\"unread_count\":1}}",
+
+                "{\"@type\":\"updateNewChat\",\"chat\":{"
+                "\"@type\":\"chat\",\"id\":1002,"
+                "\"title\":\"Alice (Dev)\","
+                "\"type\":{\"@type\":\"chatTypePrivate\",\"user_id\":1001},"
+                "\"last_message\":{"
+                "\"@type\":\"message\",\"id\":2,\"chat_id\":1002,\"date\":1000002,"
+                "\"content\":{"
+                "\"@type\":\"messageText\","
+                "\"text\":{\"@type\":\"formattedText\",\"text\":\"Hey! How is the Telegram port going?\"}}},"
+                "\"unread_count\":3}}",
+
+                "{\"@type\":\"updateNewChat\",\"chat\":{"
+                "\"@type\":\"chat\",\"id\":1003,"
+                "\"title\":\"Telegram Integration\","
+                "\"type\":{\"@type\":\"chatTypeBasicGroup\"},"
+                "\"last_message\":{"
+                "\"@type\":\"message\",\"id\":3,\"chat_id\":1003,\"date\":1000003,"
+                "\"content\":{"
+                "\"@type\":\"messageText\","
+                "\"text\":{\"@type\":\"formattedText\",\"text\":\"TDLib stub is working! Multi-protocol MVP.\"}}},"
+                "\"unread_count\":0}}"
+            };
+            r = strdup(chats[update_num - 1]);
         }
     }
     pthread_mutex_unlock(&c->lock);
