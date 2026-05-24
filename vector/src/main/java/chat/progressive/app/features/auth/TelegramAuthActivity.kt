@@ -27,7 +27,7 @@ class TelegramAuthActivity : VectorBaseActivity<ActivityTelegramAuthBinding>(),
         authFragment = TelegramAuthFragment()
         supportFragmentManager.beginTransaction()
             .replace(R.id.telegramAuthContainer, authFragment!!)
-            .commit()
+            .commitNow()
 
         initNativeClient()
     }

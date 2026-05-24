@@ -35,6 +35,9 @@ class TelegramChatListFragment : Fragment() {
 
         views.telegramChatListRecycler.layoutManager = LinearLayoutManager(requireContext())
 
+        // Toolbar title
+        (views.telegramChatListToolbar.findViewById<android.view.View>(R.id.toolbar) as? androidx.appcompat.widget.Toolbar)?.title = "Telegram"
+
         // Search
         views.telegramChatSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?) = false

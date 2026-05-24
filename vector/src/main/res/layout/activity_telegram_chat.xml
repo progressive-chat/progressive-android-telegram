@@ -108,7 +108,7 @@
             android:hint="Message"
             android:maxLines="4"
             android:inputType="textMultiLine"
-            android:imeOptions="actionSend" />
+            android:imeOptions="actionSend|flagNoExtractUi" />
 
         <ImageButton
             android:id="@+id/telegramMsgSendBtn"
